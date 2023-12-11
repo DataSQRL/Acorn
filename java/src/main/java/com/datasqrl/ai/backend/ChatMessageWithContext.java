@@ -1,4 +1,4 @@
-package com.datasqrl.function;
+package com.datasqrl.ai.backend;
 
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -8,6 +8,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents a chat message with the additional context
+ *
+ * @see ChatMessage
+ */
 @Data
 @Builder
 @NoArgsConstructor

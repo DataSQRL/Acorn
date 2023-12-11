@@ -1,4 +1,4 @@
-package com.datasqrl.function;
+package com.datasqrl.ai.backend;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
@@ -11,6 +11,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Definition of a chat function that can be invoked by the language model.
+ *
+ * Essentially a copy of {@link com.theokanning.openai.completion.chat.ChatFunctionDynamic}
+ * but with the necessary constructors, so it can be deserialized from JSON.
+ */
 @Data
 @Builder
 @AllArgsConstructor

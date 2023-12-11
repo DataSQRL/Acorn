@@ -1,4 +1,4 @@
-package com.datasqrl.api;
+package com.datasqrl.ai.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +12,9 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+/**
+ * Implements the {@link APIExecutor} interface for GraphQL APIs using OkHTTP as the client.
+ */
 public class GraphQLExecutor implements APIExecutor {
 
   private static final MediaType MEDIA_TYPE_JSON = MediaType.parse("application/json; charset=utf-8");
@@ -25,15 +28,10 @@ public class GraphQLExecutor implements APIExecutor {
   }
 
   @Override
-  public String executeQuery(String graphqlQuery, JsonNode variables) throws IOException {
-    // Prepare the request body
+  public String executeQuery(String readQuery, JsonNode variables) throws IOException {
     JsonNode requestBody = objectMapper.createObjectNode()
-        .put("query", graphqlQuery)
+        .put("query", readQuery)
         .set("variables", variables);
-
-//    System.out.println("Executing query: " + requestBody.toPrettyString());
-
-    // Create the request
     RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, requestBody.toString());
     Request request = new Request.Builder()
         .url(endpoint)
@@ -42,28 +40,22 @@ public class GraphQLExecutor implements APIExecutor {
 
     // Execute the request
     try (Response response = client.newCall(request).execute()) {
-      if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-      // Parse and return the response body
+      if (!response.isSuccessful()) throw new IOException("Query failed: " + response);
       return response.body().string();
     }
   }
 
   @Override
-  public CompletableFuture<String> executeWrite(String graphqlMutation, JsonNode variables) {
-    // Prepare the request body
+  public CompletableFuture<String> executeWrite(String writeQuery, JsonNode arguments) {
     JsonNode requestBody = objectMapper.createObjectNode()
-        .put("query", graphqlMutation)
-        .set("variables", variables);
-
-    // Create the request
+        .put("query", writeQuery)
+        .set("variables", arguments);
     RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, requestBody.toString());
     Request request = new Request.Builder()
         .url(endpoint)
         .post(body)
         .build();
 
-    // Execute the request asynchronously
     final CompletableFuture<String> future = new CompletableFuture<>();
     client.newCall(request).enqueue(new Callback() {
       @Override
@@ -73,7 +65,7 @@ public class GraphQLExecutor implements APIExecutor {
 
       @Override
       public void onResponse(Call call, Response response) throws IOException {
-        if (!response.isSuccessful()) future.completeExceptionally(new IOException("Unexpected code " + response));
+        if (!response.isSuccessful()) future.completeExceptionally(new IOException("Query failed " + response));
         else future.complete(response.body().string());
       }
     });

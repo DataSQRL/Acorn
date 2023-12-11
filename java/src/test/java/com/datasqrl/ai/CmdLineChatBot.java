@@ -1,7 +1,6 @@
-package com.datasqrl;
+package com.datasqrl.ai;
 
-import com.datasqrl.api.GraphQLExecutor;
-import com.datasqrl.function.APIChatBackend;
+import com.datasqrl.ai.backend.APIChatBackend;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
@@ -9,15 +8,22 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Value;
 
+/**
+ * A simple streaming chatbot for the command line.
+ * The implementation uses OpenAI's GPT3.5 with a default configuration
+ * and {@link APIChatBackend} to call APIs that pull in requested data
+ * as well as save and restore chat messages across sessions.
+ *
+ * This implementation is based on <a href="https://github.com/TheoKanning/openai-java/blob/main/example/src/main/java/example/OpenAiApiFunctionsWithStreamExample.java">https://github.com/TheoKanning/openai-java</a>
+ * and meant only for demonstration and testing.
+ */
 @Value
 public class CmdLineChatBot {
 
@@ -26,12 +32,24 @@ public class CmdLineChatBot {
 
   List<ChatMessage> messages = new ArrayList<>();
 
+  /**
+   * Initializes a command line chat bot
+   *
+   * @param openAIKey The OpenAI API key to call the API
+   * @param backend An initialized backend to use for function execution and chat message persistence
+   */
   public CmdLineChatBot(String openAIKey, APIChatBackend backend) {
     service = new OpenAiService(openAIKey);
     this.backend = backend;
   }
 
-  public void start(String instructionMessage) throws Exception {
+  /**
+   * Starts the chatbot on the command line which will accepts questions and produce responses.
+   * Type "exit" to terminate.
+   *
+   * @param instructionMessage The system instruction message for the ChatBot
+   */
+  public void start(String instructionMessage) {
     Scanner scanner = new Scanner(System.in);
     ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), instructionMessage);
     messages.add(systemMessage);
@@ -51,7 +69,7 @@ public class CmdLineChatBot {
           .functions(backend.getChatFunctions())
           .functionCall(ChatCompletionRequest.ChatCompletionRequestFunctionCall.of("auto"))
           .n(1)
-          .maxTokens(256)
+          .maxTokens(512)
           .logitBias(new HashMap<>())
           .build();
       Flowable<ChatCompletionChunk> flowable = service.streamChatCompletion(chatCompletionRequest);
