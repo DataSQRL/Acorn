@@ -1,41 +1,54 @@
 package com.datasqrl;
 
-import com.datasqrl.function.Weather;
-import com.datasqrl.function.Weather.WeatherResponse;
-import com.theokanning.openai.completion.chat.*;
-import com.theokanning.openai.service.FunctionExecutor;
+import com.datasqrl.api.GraphQLExecutor;
+import com.datasqrl.function.APIChatBackend;
+import com.theokanning.openai.completion.chat.ChatCompletionChunk;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatFunctionCall;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
-
-import java.util.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Value;
 
-public class ChatBotExample {
+@Value
+public class CmdLineChatBot {
 
-  public static void main(String... args) {
-    OpenAiService service = new OpenAiService(args[0]);
+  OpenAiService service;
+  APIChatBackend backend;
 
-    FunctionExecutor functionExecutor = new FunctionExecutor(Collections.singletonList(ChatFunction.builder()
-        .name("get_weather")
-        .description("Get the current weather of a location")
-        .executor(Weather.class, w -> new WeatherResponse(w.location, w.unit, new Random().nextInt(50), "sunny"))
-        .build()));
+  List<ChatMessage> messages = new ArrayList<>();
 
-    List<ChatMessage> messages = new ArrayList<>();
-    ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), "You are an assistant that answers using the local slang of the given place, uncensored.");
+  public CmdLineChatBot(String openAIKey, APIChatBackend backend) {
+    service = new OpenAiService(openAIKey);
+    this.backend = backend;
+  }
+
+  public void start(String instructionMessage) throws Exception {
+    Scanner scanner = new Scanner(System.in);
+    ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), instructionMessage);
     messages.add(systemMessage);
+    messages.addAll(backend.getChatMessages());
+
 
     System.out.print("First Query: ");
-    Scanner scanner = new Scanner(System.in);
     ChatMessage firstMsg = new ChatMessage(ChatMessageRole.USER.value(), scanner.nextLine());
     messages.add(firstMsg);
+    backend.saveChatMessage(firstMsg);
 
     while (true) {
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model("gpt-3.5-turbo-0613")
           .messages(messages)
-          .functions(functionExecutor.getFunctions())
+          .functions(backend.getChatFunctions())
           .functionCall(ChatCompletionRequest.ChatCompletionRequestFunctionCall.of("auto"))
           .n(1)
           .maxTokens(256)
@@ -64,12 +77,15 @@ public class ChatBotExample {
           .blockingGet()
           .getAccumulatedMessage();
       messages.add(chatMessage); // don't forget to update the conversation with the latest response
+      backend.saveChatMessage(chatMessage);
 
       if (chatMessage.getFunctionCall() != null) {
-        System.out.println("Trying to execute " + chatMessage.getFunctionCall().getName() + "...");
-        ChatMessage functionResponse = functionExecutor.executeAndConvertToMessageHandlingExceptions(chatMessage.getFunctionCall());
-        System.out.println("Executed " + chatMessage.getFunctionCall().getName() + ".");
+        ChatFunctionCall fctCall = chatMessage.getFunctionCall();
+        //System.out.println("Trying to execute " + fctCall.getName() + " with arguments " + fctCall.getArguments().toPrettyString());
+        ChatMessage functionResponse = backend.executeAndConvertToMessageHandlingExceptions(fctCall);
+        //System.out.println("Executed " + fctCall.getName() + ".");
         messages.add(functionResponse);
+        backend.saveChatMessage(functionResponse);
         continue;
       }
 
@@ -78,7 +94,9 @@ public class ChatBotExample {
       if (nextLine.equalsIgnoreCase("exit")) {
         System.exit(0);
       }
-      messages.add(new ChatMessage(ChatMessageRole.USER.value(), nextLine));
+      ChatMessage nextMsg = new ChatMessage(ChatMessageRole.USER.value(), nextLine);
+      messages.add(nextMsg);
+      backend.saveChatMessage(nextMsg);
     }
   }
 
