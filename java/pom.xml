@@ -5,8 +5,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.datasqrl</groupId>
-  <artifactId>agent-example</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <artifactId>smartrag</artifactId>
+  <version>0.1-SNAPSHOT</version>
 
   <properties>
     <maven.compiler.source>14</maven.compiler.source>

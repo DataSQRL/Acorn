@@ -3,7 +3,9 @@ package com.datasqrl.ai.api;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import lombok.NonNull;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -21,22 +23,25 @@ public class GraphQLExecutor implements APIExecutor {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private final OkHttpClient client;
   private final String endpoint;
+  private final Optional<String> authHeader;
 
-  public GraphQLExecutor(String endpoint) {
+  private GraphQLExecutor(@NonNull String endpoint, @NonNull Optional<String> authHeader) {
     this.client = new OkHttpClient();
     this.endpoint = endpoint;
+    this.authHeader = authHeader;
+  }
+
+  public GraphQLExecutor(String endpoint, @NonNull String authHeader) {
+    this(endpoint, Optional.of(authHeader));
+  }
+
+  public GraphQLExecutor(String endpoint) {
+    this(endpoint, Optional.empty());
   }
 
   @Override
-  public String executeQuery(String readQuery, JsonNode variables) throws IOException {
-    JsonNode requestBody = objectMapper.createObjectNode()
-        .put("query", readQuery)
-        .set("variables", variables);
-    RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, requestBody.toString());
-    Request request = new Request.Builder()
-        .url(endpoint)
-        .post(body)
-        .build();
+  public String executeQuery(String readQuery, JsonNode arguments) throws IOException {
+    Request request = buildRequest(readQuery, arguments);
 
     // Execute the request
     try (Response response = client.newCall(request).execute()) {
@@ -47,14 +52,7 @@ public class GraphQLExecutor implements APIExecutor {
 
   @Override
   public CompletableFuture<String> executeWrite(String writeQuery, JsonNode arguments) {
-    JsonNode requestBody = objectMapper.createObjectNode()
-        .put("query", writeQuery)
-        .set("variables", arguments);
-    RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, requestBody.toString());
-    Request request = new Request.Builder()
-        .url(endpoint)
-        .post(body)
-        .build();
+    Request request = buildRequest(writeQuery, arguments);
 
     final CompletableFuture<String> future = new CompletableFuture<>();
     client.newCall(request).enqueue(new Callback() {
@@ -70,6 +68,18 @@ public class GraphQLExecutor implements APIExecutor {
       }
     });
     return future;
+  }
+
+  private Request buildRequest(String query, JsonNode arguments) {
+    JsonNode requestBody = objectMapper.createObjectNode()
+        .put("query", query)
+        .set("variables", arguments);
+    RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, requestBody.toString());
+    Request.Builder requestBuilder = new Request.Builder()
+        .url(endpoint)
+        .post(body);
+    authHeader.ifPresent(h -> requestBuilder.addHeader("Authorization", h));
+    return requestBuilder.build();
   }
 
 }

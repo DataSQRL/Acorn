@@ -17,7 +17,8 @@ public class APIChatBackendTest {
   public void readNutshop() throws Exception {
     String currentDirectory = System.getProperty("user.dir");
     System.out.println("Current working directory: " + currentDirectory);
-    APIChatBackend fctExec = APIChatBackend.of(Path.of("../api-examples/nutshop/nutshop-c360.tools.json"), new MockAPIExecutor(), Map.of());
+    APIChatBackend fctExec = APIChatBackend.of(Path.of("../api-examples/nutshop/nutshop-c360.tools.json"),
+        MockAPIExecutor.of("none"), Map.of());
     List<FunctionDefinition> chatFcts = fctExec.getChatFunctions();
     assertEquals(3, chatFcts.size());
     for (FunctionDefinition fct : chatFcts) {

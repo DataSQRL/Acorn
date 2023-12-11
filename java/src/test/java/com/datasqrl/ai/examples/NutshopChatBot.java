@@ -10,6 +10,7 @@ import java.util.Scanner;
 /**
  * An example chatbot for the <a href="">DataSQRL Nutshop</a> that can
  * answer questions about a customer's orders, their spending, and recommend products for them to buy.
+ * This chatbot has memory, i.e. it initializes with past messages.
  *
  * Before you run this chatbot, make sure you have the Nutshop C360 API running.
  * See {@code api-examples/nutshop} for more information.
@@ -26,8 +27,9 @@ public class NutshopChatBot {
     if (args!=null && args.length>0) graphQLEndpoint = args[0];
 
     Scanner scanner = new Scanner(System.in);
-    System.out.print("Enter the Customer ID (integer): ");
+    System.out.print("Enter the Customer ID (1-9): ");
     int customerid = Integer.parseInt(scanner.nextLine());
+    if (customerid<1 || customerid>9) throw new IllegalArgumentException("Invalid customer id: " + customerid);
 
     GraphQLExecutor apiExecutor = new GraphQLExecutor(graphQLEndpoint);
     APIChatBackend backend = APIChatBackend.of(Path.of("../api-examples/nutshop/nutshop-c360.tools.json"), apiExecutor, Map.of("customerid",customerid));

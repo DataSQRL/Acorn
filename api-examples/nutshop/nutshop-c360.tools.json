@@ -56,7 +56,7 @@
           },
           "limit": {
             "type": "integer",
-            "description": "The number of ordres to return"
+            "description": "The number of orders to return"
           }
         },
         "required": ["customerid"]
