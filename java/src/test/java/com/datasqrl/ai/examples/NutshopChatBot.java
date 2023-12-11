@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 /**
- * An example chatbot for the <a href="">DataSQRL Nutshop</a> that can
+ * An example chatbot for the <a href="https://www.datasqrl.com/docs/getting-started/intro/overview/">DataSQRL Nutshop</a> that can
  * answer questions about a customer's orders, their spending, and recommend products for them to buy.
  * This chatbot has memory, i.e. it initializes with past messages.
  *
