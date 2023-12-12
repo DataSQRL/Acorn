@@ -18,10 +18,10 @@ Check out the [examples](api-examples) for some example use cases and how they a
 
 ## How does this compare to RAG?
 
-Currently, the most popular approach for augmenting LLMs with custom data is "Retrieval Augmented Generation". The basic idea behind RAG is to take a user query, retrieve information related to the query (usually by way for a vector embedding and vector search), and the put that information into the context for the LLM.
+Currently, the most popular approach for augmenting LLMs with custom data is "Retrieval Augmented Generation". The basic idea behind RAG is to take a user query, retrieve information related to the query (usually by way of a vector embedding and vector search), and then put that information into the context for the LLM.
 
-In other words, RAG is essentially a guess as to what the LLM might need to generate a good answer and stuffing it into the context. Because it relies on text or vector search, it only works effectively for use cases where the user query can be easily mapped to a good retrieval query.
-And even for use cases where RAG works reasonably well - such as semantic search, it can be very inefficient. For example, if a user asks to "find all information on the 'nightfall' project from last December" RAG may find information on the project but has no way to limit it to the given timeframe. 
+In other words, RAG is essentially a guess as to what the LLM might need to generate a good answer and stuffing it into the context. Because it relies on text or vector search, it only works effectively for use cases where the user question can be easily mapped to a good retrieval query.
+And even for use cases where RAG works reasonably well - such as semantic search - it can be very inefficient. For example, if a user asks to "find all information on the 'nightfall' project from last December" RAG may find information on the project but has no way to limit it to the given timeframe. 
 
 SmartRAG does not suffer from these shortcomings because it relies on the LLM to determine what information it needs and relies on the intelligence of LLMs to translate user queries into efficient and relevant retrieval requests.
 
