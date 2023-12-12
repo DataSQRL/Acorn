@@ -1,4 +1,4 @@
-# SmartRAG
+# SmartRAG 🤖🔌
 
 SmartRAG makes it easy to augment Large Language Models intelligently with custom data provided by an external API.
 
