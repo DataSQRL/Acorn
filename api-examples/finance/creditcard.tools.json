@@ -1,0 +1,50 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "spending_by_week",
+      "description": "Returns the customer spending by week and by category in decreasing order of time, i.e. showing the most recent week first, then the week before that and so forth.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The number of spending records to return. Each week has 28 spending records. To return the spending records for multiple weeks, multiple the number of weeks by 28. For example, to return spending records for 5 week, set the limit to 140."
+          }
+        },
+        "required": ["customerId"]
+      }
+    },
+    "context": ["customerId"],
+    "api": {
+      "query": "query SpendingByWeek($customerId: Int!, $limit:Int = 28) {\n  CustomerSpendingByWeek(customerid: $customerId, limit: $limit) {\n    timeWeek\n    category\n    spending\n  }\n}"
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "transactions",
+      "description": "Returns the most recent credit card transactions for the customer sorted by time decreasing order.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "customerId": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The number of transactions to return"
+          }
+        },
+        "required": ["customerId"]
+      }
+    },
+    "context": ["customerId"],
+    "api": {
+      "query": "query ($customerId: Int!, $limit:Int = 20) {\n  CustomerTransaction(customerid:$customerId, limit:$limit) {\n    transactionId\n    time\n    cardNo\n    amount\n    merchantName\n    category\n  }\n}"
+    }
+  }
+]

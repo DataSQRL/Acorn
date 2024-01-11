@@ -1,0 +1,19 @@
+type Query {
+    CustomerTransaction(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerTransaction!]
+    CustomerSpendingByWeek(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerSpendingByWeek!]
+}
+
+type CustomerTransaction {
+    transactionId: Float!
+    cardNo: String!
+    time: String!
+    amount: Float!
+    merchantName: String!
+    category: String!
+}
+
+type CustomerSpendingByWeek {
+    timeWeek: String!
+    category: String!
+    spending: Float!
+}

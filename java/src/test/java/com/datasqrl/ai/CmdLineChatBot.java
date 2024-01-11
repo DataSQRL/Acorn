@@ -1,6 +1,9 @@
 package com.datasqrl.ai;
 
 import com.datasqrl.ai.backend.APIChatBackend;
+import com.datasqrl.ai.backend.MessageTruncator;
+import com.knuddels.jtokkit.Encodings;
+import com.knuddels.jtokkit.api.ModelType;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
@@ -29,6 +32,7 @@ public class CmdLineChatBot {
 
   OpenAiService service;
   APIChatBackend backend;
+  ChatModel chatModel = ChatModel.GPT35_TURBO;
 
   List<ChatMessage> messages = new ArrayList<>();
 
@@ -52,7 +56,8 @@ public class CmdLineChatBot {
   public void start(String instructionMessage) {
     Scanner scanner = new Scanner(System.in);
     ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), instructionMessage);
-    messages.add(systemMessage);
+    MessageTruncator messageTruncator = new MessageTruncator(chatModel.getMaxInputTokens(), systemMessage,
+        Encodings.newDefaultEncodingRegistry().getEncodingForModel(chatModel.getEncodingModel()));
     messages.addAll(backend.getChatMessages());
 
 
@@ -64,12 +69,12 @@ public class CmdLineChatBot {
     while (true) {
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
-          .model("gpt-3.5-turbo-0613")
-          .messages(messages)
+          .model(chatModel.getOpenAIModel())
+          .messages(messageTruncator.truncateMessages(messages, backend.getChatFunctions()))
           .functions(backend.getChatFunctions())
           .functionCall(ChatCompletionRequest.ChatCompletionRequestFunctionCall.of("auto"))
           .n(1)
-          .maxTokens(512)
+          .maxTokens(chatModel.getCompletionLength())
           .logitBias(new HashMap<>())
           .build();
       Flowable<ChatCompletionChunk> flowable = service.streamChatCompletion(chatCompletionRequest);

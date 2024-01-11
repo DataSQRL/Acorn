@@ -1,0 +1,17 @@
+IMPORT creditcard-data.Merchant;
+IMPORT creditcard-data.Assignment AS CardAssignment;
+IMPORT creditcard-data.Transaction;
+IMPORT time.*;
+
+Merchant :=       DISTINCT Merchant ON merchantId ORDER BY updatedTime DESC;
+CardAssignment := DISTINCT CardAssignment ON cardNo ORDER BY timestamp DESC;
+
+CustomerTransaction := SELECT t.*, m.name AS merchantName, m.category, c.customerid
+                       FROM Transaction t
+                       TEMPORAL JOIN CardAssignment c ON t.cardNo = c.cardNo
+                       TEMPORAL JOIN Merchant m ON t.merchantId = m.merchantid ORDER BY t.time DESC;
+
+CustomerSpendingByWeek := SELECT customerid, endOfWeek(time) as timeWeek, category, SUM(amount) as spending
+                          FROM CustomerTransaction
+                          GROUP BY customerid, timeWeek, category
+                          ORDER BY timeWeek DESC, category ASC;

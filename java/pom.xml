@@ -14,6 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <openai-java.version>0.18.2</openai-java.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
+    <jtokkit.version>0.6.1</jtokkit.version>
   </properties>
 
   <dependencies>
@@ -26,6 +27,11 @@
       <groupId>com.theokanning.openai-gpt3-java</groupId>
       <artifactId>service</artifactId>
       <version>${openai-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.knuddels</groupId>
+      <artifactId>jtokkit</artifactId>
+      <version>${jtokkit.version}</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
