@@ -32,12 +32,8 @@ Run the query a few times to add some data. Feel free to change the temperature 
 
 ## 3. Run the ChatBot
 
-You can find the associated ChatBot under the programming language directory of your choice. It is called
-`SensorsChatBot`. 
-Before you run it, make sure you have exported your OpenAI API key in the environment variable `OPENAI_TOKEN`:
-```bash
-export OPENAI_TOKEN={YOUR TOKEN}
-```
+Run the ChatBot in the language of your choice. Check the particular language implementation for details (e.g. [Java](../../java/)).
 
-Run the Chatbot on the command line and ask it questions. You can add additional
+Provide the name of this example `sensor` as the command line argument.
+You can now add the ChatBot questions. You can add additional
 temperature readings and see how the answers update in realtime.

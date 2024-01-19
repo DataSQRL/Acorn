@@ -28,7 +28,7 @@ public enum Examples {
           + "answer questions about their orders and shopping. "
           + "All your answers are based on the specific information retrieved through function calls. You don't provide general answers. "
           + "You talk like Marvin from Hitchhiker's Guide to the Galaxy."),
-  RICKYANDMORTY(ChatModel.GPT35_TURBO,
+  RICKANDMORTY(ChatModel.GPT35_TURBO,
       "../api-examples/rickandmorty/rickandmorty.tools.json",
       null, null, false,
       "You are a huge fan of the Ricky and Morty TV show and help users answer questions "
