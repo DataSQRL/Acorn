@@ -2,25 +2,53 @@
   {
     "type": "function",
     "function": {
-      "name": "spending_by_week",
-      "description": "Returns the customer spending by week and by category in decreasing order of time, i.e. showing the most recent week first, then the week before that and so forth.",
+      "name": "spending_by_category",
+      "description": "Returns the customer spending by category by week in decreasing order of time, i.e. showing the most recent week first, then the week before that and so forth.",
       "parameters": {
         "type": "object",
         "properties": {
-          "customerId": {
+          "customerid": {
             "type": "integer"
           },
           "limit": {
             "type": "integer",
-            "description": "The number of spending records to return. Each week has 28 spending records. To return the spending records for multiple weeks, multiple the number of weeks by 28. For example, to return spending records for 5 week, set the limit to 140."
+            "description": "The number of spending records to return. Each week has 12 records - one for each spending category. To return the spending records for multiple weeks, multiple the number of weeks by 12. For example, to return spending records for 5 week, set the limit to 60."
           }
         },
-        "required": ["customerId"]
+        "required": ["customerid"]
       }
     },
-    "context": ["customerId"],
+    "context": ["customerid"],
     "api": {
-      "query": "query SpendingByWeek($customerId: Int!, $limit:Int = 28) {\n  CustomerSpendingByWeek(customerid: $customerId, limit: $limit) {\n    timeWeek\n    category\n    spending\n  }\n}"
+      "query": "query SpendingByWeek($customerid: Int!, $limit:Int = 12) {\n  CustomerSpendingByWeek(customerid: $customerid, limit: $limit) {\n    timeWeek\n    category\n    spending\n  }\n}"
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "spending_by_day",
+      "description": "Returns the customer spending by day decreasing order of time",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "customerid": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The number of days to return."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Offsets the start day by this number."
+          }
+        },
+        "required": ["customerid"]
+      }
+    },
+    "context": ["customerid"],
+    "api": {
+      "query": "query SpendingByDay($customerid: Int!, $limit:Int = 30, $offset: Int=0) {\n  CustomerSpendingByDay(customerid: $customerid, limit: $limit, offset:$offset) {\n    timeDay\n    spending\n  }\n}"
     }
   },
   {
@@ -31,7 +59,7 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "customerId": {
+          "customerid": {
             "type": "integer"
           },
           "limit": {
@@ -39,12 +67,46 @@
             "description": "The number of transactions to return"
           }
         },
-        "required": ["customerId"]
+        "required": ["customerid"]
       }
     },
-    "context": ["customerId"],
+    "context": ["customerid"],
     "api": {
-      "query": "query ($customerId: Int!, $limit:Int = 20) {\n  CustomerTransaction(customerid:$customerId, limit:$limit) {\n    transactionId\n    time\n    cardNo\n    amount\n    merchantName\n    category\n  }\n}"
+      "query": "query ($customerid: Int!, $limit:Int = 20) {\n  CustomerTransaction(customerid:$customerid, limit:$limit) {\n    transactionId\n    time\n    cardNo\n    amount\n    merchantName\n    category\n  }\n}"
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "_saveChatMessage",
+      "description": "Saves User Chat Messages",
+      "parameters": {
+        "type": "object",
+        "properties": {
+        },
+        "required": []
+      }
+    },
+    "context": ["customerid"],
+    "api": {
+      "query": "mutation AddChatMsg($role: String!, $content: String!, $name: String, $context: ChatMessageContextInput!) {\n  AddChatMessage(message: {role: $role, content:$content, name: $name, context:$context}) {\n    _source_time\n  }\n}"
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "_getChatMessages",
+      "description": "Retrieves User Chat Messages",
+      "parameters": {
+        "type": "object",
+        "properties": {
+        },
+        "required": []
+      }
+    },
+    "context": ["customerid"],
+    "api": {
+      "query": "query GetChatMessages($customerid: Int!, $limit: Int = 10) {\nmessages: CustomerChatMessage(customerid: $customerid, limit:$limit) {\n  role\n  content\n name\n}\n}"
     }
   }
 ]

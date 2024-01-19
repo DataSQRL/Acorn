@@ -1,0 +1,48 @@
+{
+  "name": "_chart",
+  "description": "Visualizes the provided table of data in the given chart type. Use this function to visually present data to the user.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "table": {
+        "description": "The table of numeric data to visualize as a two-dimensional array of numbers. The first dimension are the rows. Each row must have the same number of columns.",
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "rowLabels": {
+        "description": "The labels for the rows in the table. The length of this array must be equal to the first dimension of the table array.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "columnLabels": {
+        "description": "The labels for the columns in the table. The length of this array must be equal to the second dimension of the table array.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "chartType": {
+        "description": "The type of chart to produce.",
+        "type": "string",
+        "enum": [
+          "pie",
+          "bar",
+          "line",
+          "column"
+        ]
+      },
+      "title": {
+        "description": "The title for the chart.",
+        "type": "string"
+      }
+    },
+    "required": ["table", "rowLabels", "columnLabels", "chartType", "title"]
+  }
+}

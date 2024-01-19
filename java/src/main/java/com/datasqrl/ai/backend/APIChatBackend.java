@@ -13,6 +13,7 @@ import com.theokanning.openai.completion.chat.ChatMessageRole;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,8 +46,6 @@ public class APIChatBackend {
 
   Optional<APIFunctionDefinition> getChatsFct;
 
-  Map<String, Object> context;
-
   APIExecutor apiExecutor;
 
   ObjectMapper mapper;
@@ -61,12 +60,10 @@ public class APIChatBackend {
    *
    * @param configFile Path to a configuration file
    * @param apiExecutor Executor for the API queries
-   * @param context Arbitrary session context that identifies a user or provides contextual information.
    * @return An {@link APIChatBackend} instance
    * @throws IOException if configuration file cannot be read
    */
-  public static APIChatBackend of(@NonNull Path configFile, @NonNull APIExecutor apiExecutor,
-      @NonNull Map<String, Object> context) throws IOException {
+  public static APIChatBackend of(@NonNull Path configFile, @NonNull APIExecutor apiExecutor) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     List<APIFunctionDefinition> functions = mapper.readValue(configFile.toFile(),
         new TypeReference<List<APIFunctionDefinition>>(){});
@@ -75,7 +72,7 @@ public class APIChatBackend {
         .collect(Collectors.toMap(APIFunctionDefinition::getName, Function.identity())),
         functions.stream().filter(f -> f.getName().equalsIgnoreCase(SAVE_CHAT_FUNCTION_NAME)).findFirst(),
         functions.stream().filter(f -> f.getName().equalsIgnoreCase(RETRIEVE_CHAT_FUNCTION_NAME)).findFirst(),
-        context, apiExecutor, mapper);
+        apiExecutor, mapper);
   }
 
   /**
@@ -92,11 +89,12 @@ public class APIChatBackend {
    * Executes the provided {@link ChatFunctionCall}.
    *
    * @param call Function call to execute
+   * @param context Arbitrary session context that identifies a user or provides contextual information.
    * @return The result of the function call as a string.
    */
-  public ChatMessage executeAndConvertToMessageHandlingExceptions(ChatFunctionCall call) {
+  public ChatMessage executeAndConvertToMessageHandlingExceptions(ChatFunctionCall call, @NonNull Map<String, Object> context) {
     try {
-      return new ChatMessage(ChatMessageRole.FUNCTION.value(), execute(call), call.getName());
+      return new ChatMessage(ChatMessageRole.FUNCTION.value(), execute(call, context), call.getName());
     } catch (Exception exception) {
       exception.printStackTrace();
       return convertExceptionToMessage(exception);
@@ -107,9 +105,10 @@ public class APIChatBackend {
    * Saves the {@link ChatMessage} with the configured context asynchronously (i.e. does not block)
    *
    * @param message chat message to save
+   * @param context Arbitrary session context that identifies a user or provides contextual information.
    * @return A future for this asynchronous operation which returns the result as a string.
    */
-  public CompletableFuture<String> saveChatMessage(ChatMessage message) {
+  public CompletableFuture<String> saveChatMessage(ChatMessage message, @NonNull Map<String, Object> context) {
     if (saveChatFct.isEmpty()) return CompletableFuture.completedFuture("Message saving disabled");
     ChatMessageWithContext msgWContext = ChatMessageWithContext.of(message, context);
     JsonNode payload = mapper.valueToTree(msgWContext);
@@ -122,11 +121,14 @@ public class APIChatBackend {
    *
    * Uses the configured context to retrieve user or context specific chat messages.
    *
+   * @param context Arbitrary session context that identifies a user or provides contextual information.
    * @return Saved messages for the provided context
    */
-  public List<ChatMessage> getChatMessages() {
+  public List<AnnotatedChatMessage> getChatMessages(@NonNull Map<String, Object> context, int limit) {
     if (getChatsFct.isEmpty()) return List.of();
-    JsonNode variables = addOrOverrideContext(null, getChatsFct.get());
+    ObjectNode arguments = mapper.createObjectNode();
+    arguments.put("limit", limit);
+    JsonNode variables = addOrOverrideContext(arguments, getChatsFct.get(), context);
     String graphqlQuery = getChatsFct.get().getApi().getQuery();
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -136,11 +138,12 @@ public class APIChatBackend {
       JsonNode root = mapper.readTree(response);
       JsonNode messages = root.path("data").path("messages");
 
-      List<ChatMessage> chatMessages = new ArrayList<>();
+      List<AnnotatedChatMessage> chatMessages = new ArrayList<>();
       for (JsonNode node : messages) {
         ChatMessage chatMessage = mapper.treeToValue(node, ChatMessage.class);
-        chatMessages.add(chatMessage);
+        chatMessages.add(AnnotatedChatMessage.of(chatMessage, node));
       }
+      Collections.reverse(chatMessages); //newest should be last
       return chatMessages;
     } catch (IOException e) {
       e.printStackTrace();
@@ -148,17 +151,17 @@ public class APIChatBackend {
     }
   }
 
-  private String execute(ChatFunctionCall call) throws IOException {
+  private String execute(ChatFunctionCall call, @NonNull Map<String, Object> context) throws IOException {
     APIFunctionDefinition function = functions.get(call.getName());
     if (function == null) throw new IllegalArgumentException("Could not find function: " + call.getName());
 
-    JsonNode variables = addOrOverrideContext(call.getArguments(), function);
+    JsonNode variables = addOrOverrideContext(call.getArguments(), function, context);
     String graphqlQuery = function.getApi().getQuery();
 
     return apiExecutor.executeQuery(graphqlQuery, variables);
   }
 
-  private JsonNode addOrOverrideContext(JsonNode arguments, APIFunctionDefinition function) {
+  private JsonNode addOrOverrideContext(JsonNode arguments, APIFunctionDefinition function, @NonNull Map<String, Object> context) {
     // Create a copy of the original JsonNode to add context
     ObjectNode copyJsonNode;
     if (arguments==null || arguments.isEmpty()) {

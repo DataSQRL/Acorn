@@ -2,6 +2,7 @@ IMPORT creditcard-data.Merchant;
 IMPORT creditcard-data.Assignment AS CardAssignment;
 IMPORT creditcard-data.Transaction;
 IMPORT time.*;
+IMPORT creditcard.AddChatMessage;
 
 Merchant :=       DISTINCT Merchant ON merchantId ORDER BY updatedTime DESC;
 CardAssignment := DISTINCT CardAssignment ON cardNo ORDER BY timestamp DESC;
@@ -15,3 +16,13 @@ CustomerSpendingByWeek := SELECT customerid, endOfWeek(time) as timeWeek, catego
                           FROM CustomerTransaction
                           GROUP BY customerid, timeWeek, category
                           ORDER BY timeWeek DESC, category ASC;
+
+CustomerSpendingByDay := SELECT customerid, endOfDay(time) as timeDay, SUM(amount) as spending
+                         FROM CustomerTransaction
+                         GROUP BY customerid, timeDay
+                         ORDER BY timeDay DESC;
+
+
+CustomerChatMessage := SELECT c.role, c.content, c.name, ctx.customerid, c._source_time AS timestamp,
+                        c._uuid AS uuid
+                       FROM AddChatMessage c JOIN c.context ctx ORDER BY timestamp DESC;

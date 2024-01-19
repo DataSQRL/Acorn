@@ -15,6 +15,7 @@
     <openai-java.version>0.18.2</openai-java.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <jtokkit.version>0.6.1</jtokkit.version>
+    <spring-boot.version>3.2.1</spring-boot.version>
   </properties>
 
   <dependencies>
@@ -44,6 +45,18 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <version>${junit.jupiter.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
   </dependencies>

@@ -1,6 +1,8 @@
 type Query {
     CustomerTransaction(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerTransaction!]
     CustomerSpendingByWeek(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerSpendingByWeek!]
+    CustomerSpendingByDay(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerSpendingByDay!]
+    CustomerChatMessage(customerid: Int!, , limit: Int = 10, offset: Int = 0): [CustomerChatMessage!]
 }
 
 type CustomerTransaction {
@@ -16,4 +18,37 @@ type CustomerSpendingByWeek {
     timeWeek: String!
     category: String!
     spending: Float!
+}
+
+type CustomerSpendingByDay {
+    timeDay: String!
+    spending: Float!
+}
+
+type CustomerChatMessage {
+    role: String!
+    content: String!
+    name: String
+    customerid: Int!
+    timestamp: String!
+    uuid: String!
+}
+
+type Mutation {
+    AddChatMessage(message: ChatMessageInput!): CreatedChatMessage
+}
+
+input ChatMessageInput {
+    role: String!
+    content: String!
+    name: String
+    context: ChatMessageContextInput
+}
+
+input ChatMessageContextInput {
+    customerid: Int
+}
+
+type CreatedChatMessage {
+    _source_time: String!
 }

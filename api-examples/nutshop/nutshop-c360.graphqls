@@ -56,6 +56,7 @@ type CustomerChatMessage {
   name: String
   customerid: Int!
   timestamp: String!
+  uuid: String!
 }
 
 type Mutation {
