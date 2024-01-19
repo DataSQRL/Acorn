@@ -55,7 +55,7 @@ public class APIChatBackend {
    * Constructs a {@link APIChatBackend} from the provided configuration file, {@link APIExecutor},
    * and context.
    *
-   * The format of the configuration file is defined in the <a href="https://github.com/DataSQRL/SmartRAG">Github repository</a>
+   * The format of the configuration file is defined in the <a href="https://github.com/DataSQRL/apiRAG">Github repository</a>
    * and you can find examples underneath the {@code api-examples} directory.
    *
    * @param configFile Path to a configuration file
