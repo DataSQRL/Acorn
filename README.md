@@ -4,7 +4,7 @@ apiRAG makes it easy to augment Large Language Models intelligently with custom 
 
 apiRAG solves the following use cases for Large Language Models (LLM), Generative AI, and ChatBots:
 * Improve the breadth, depth, and accuracy of knowledge to answer user queries intelligently. For example, if you want to connect an LLM to an existing knowledge- or database to look up information as we do in our [Rick and Morty example](api-examples/rickandmorty).
-* Access user specific or access controlled information to provided personalized answers in a secure manner. For example, allow the LLM to answer customer questions about their profile and transaction history as we do in our [Nutshop example](api-examples/nutshop).
+* Access user specific or access controlled information to provided personalized answers in a secure manner. For example, allow the LLM to answer customer questions about their profile and transaction history as we do in our [Credit Card](api-examples/finance) and [Nutshop example](api-examples/nutshop).
 * Include realtime information that updates frequently. For example, have an LLM analyze realtime sensor information as we do in our [Sensors example](api-examples/sensors).
 
 apiRAG has the following benefits:
