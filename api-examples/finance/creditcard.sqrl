@@ -12,16 +12,25 @@ CustomerTransaction := SELECT t.*, m.name AS merchantName, m.category, c.custome
                        TEMPORAL JOIN CardAssignment c ON t.cardNo = c.cardNo
                        TEMPORAL JOIN Merchant m ON t.merchantId = m.merchantid ORDER BY t.time DESC;
 
-CustomerSpendingByWeek := SELECT customerid, endOfWeek(time) as timeWeek, category, SUM(amount) as spending
+SpendingByCategory := SELECT customerid, endOfWeek(time) as timeWeek, category, SUM(amount) as spending
                           FROM CustomerTransaction
                           GROUP BY customerid, timeWeek, category
                           ORDER BY timeWeek DESC, category ASC;
 
-CustomerSpendingByDay := SELECT customerid, endOfDay(time) as timeDay, SUM(amount) as spending
+_SpendingByDay := SELECT customerid, endOfDay(time) as timeDay, SUM(amount) as spending
                          FROM CustomerTransaction
                          GROUP BY customerid, timeDay
                          ORDER BY timeDay DESC;
 
+/* Query Endpoints */
+Transactions(@customerid: BIGINT, @fromTime: TIMESTAMP, @toTime: TIMESTAMP) :=
+    SELECT * FROM CustomerTransaction WHERE customerid = @customerid AND @fromTime <= time AND @toTime > time
+    ORDER BY time DESC LIMIT 10000;
+
+SpendingByDay(@customerid: BIGINT, @fromTime: TIMESTAMP, @toTime: TIMESTAMP) :=
+    SELECT timeDay, spending
+    FROM _SpendingByDay WHERE customerid = @customerid AND @fromTime <= timeDay AND @toTime > timeDay
+    ORDER BY timeDay DESC;
 
 CustomerChatMessage := SELECT c.role, c.content, c.name, ctx.customerid, c._source_time AS timestamp,
                         c._uuid AS uuid

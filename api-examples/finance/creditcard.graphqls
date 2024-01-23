@@ -1,8 +1,10 @@
+scalar DateTime
+
 type Query {
-    CustomerTransaction(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerTransaction!]
-    CustomerSpendingByWeek(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerSpendingByWeek!]
-    CustomerSpendingByDay(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerSpendingByDay!]
-    CustomerChatMessage(customerid: Int!, , limit: Int = 10, offset: Int = 0): [CustomerChatMessage!]
+    Transactions(customerid: Int!, fromTime: DateTime!, toTime: DateTime!): [CustomerTransaction!]
+    SpendingByDay(customerid: Int!, fromTime: DateTime!, toTime: DateTime!): [CustomerSpendingByDay!]
+    SpendingByCategory(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerSpendingByCategory!]
+    CustomerChatMessage(customerid: Int!, limit: Int = 10, offset: Int = 0): [CustomerChatMessage!]
 }
 
 type CustomerTransaction {
@@ -14,7 +16,7 @@ type CustomerTransaction {
     category: String!
 }
 
-type CustomerSpendingByWeek {
+type CustomerSpendingByCategory {
     timeWeek: String!
     category: String!
     spending: Float!

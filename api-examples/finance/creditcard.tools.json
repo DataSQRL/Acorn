@@ -20,59 +20,63 @@
     },
     "context": ["customerid"],
     "api": {
-      "query": "query SpendingByWeek($customerid: Int!, $limit:Int = 12) {\n  CustomerSpendingByWeek(customerid: $customerid, limit: $limit) {\n    timeWeek\n    category\n    spending\n  }\n}"
+      "query": "query SpendingByCategory($customerid: Int!, $limit:Int = 12) {\n  SpendingByCategory(customerid: $customerid, limit: $limit) {\n    timeWeek\n    category\n    spending\n  }\n}"
     }
   },
   {
     "type": "function",
     "function": {
       "name": "spending_by_day",
-      "description": "Returns the customer spending by day decreasing order of time",
+      "description": "Returns the total customer spending by day for the specified time period ordered by time (most recent first). When a particular day does not have any spending, no record is returned for that day.",
       "parameters": {
         "type": "object",
         "properties": {
           "customerid": {
             "type": "integer"
           },
-          "limit": {
-            "type": "integer",
-            "description": "The number of days to return."
+          "fromTime": {
+            "type": "string",
+            "description": "RFC-3339 compliant date time scalar. Returns spending from this time. Use the start of the day only, e.g. `2024-01-19T00:00:00-00:00`."
           },
-          "offset": {
-            "type": "integer",
-            "description": "Offsets the start day by this number."
+          "toTime": {
+            "type": "string",
+            "description": "RFC-3339 compliant date time scalar. Returns spending up to this time. Use the start of the day only, e.g. `2024-01-19T00:00:00-00:00`."
           }
         },
-        "required": ["customerid"]
+        "required": ["customerid","fromTime","toTime"]
       }
     },
     "context": ["customerid"],
     "api": {
-      "query": "query SpendingByDay($customerid: Int!, $limit:Int = 30, $offset: Int=0) {\n  CustomerSpendingByDay(customerid: $customerid, limit: $limit, offset:$offset) {\n    timeDay\n    spending\n  }\n}"
+      "query": "query SpendingByDay($customerid:Int!, $fromTime: DateTime!, $toTime: DateTime!) {\n  SpendingByDay(customerid:$customerid, fromTime: $fromTime, toTime: $toTime) {\n    timeDay\n    spending\n  }\n}"
     }
   },
   {
     "type": "function",
     "function": {
       "name": "transactions",
-      "description": "Returns the most recent credit card transactions for the customer sorted by time decreasing order.",
+      "description": "Returns all credit card transactions within a specified time period ordered by time (most recent first).",
       "parameters": {
         "type": "object",
         "properties": {
           "customerid": {
             "type": "integer"
           },
-          "limit": {
-            "type": "integer",
-            "description": "The number of transactions to return"
+          "fromTime": {
+            "type": "string",
+            "description": "RFC-3339 compliant date time scalar. Returns transactions after this time. Use the start of the day only, e.g. `2024-01-19T00:00:00-00:00`."
+          },
+          "toTime": {
+            "type": "string",
+            "description": "RFC-3339 compliant date time scalar. Returns transactions up to this time. Use the start of the day only, e.g. `2024-01-19T00:00:00-00:00`."
           }
         },
-        "required": ["customerid"]
+        "required": ["customerid","fromTime","toTime"]
       }
     },
     "context": ["customerid"],
     "api": {
-      "query": "query ($customerid: Int!, $limit:Int = 20) {\n  CustomerTransaction(customerid:$customerid, limit:$limit) {\n    transactionId\n    time\n    cardNo\n    amount\n    merchantName\n    category\n  }\n}"
+      "query": "query GetTransactions($customerid:Int!, $fromTime: DateTime!, $toTime: DateTime!) {\n  Transactions(customerid:$customerid, fromTime: $fromTime, toTime: $toTime) {\n    time\n    cardNo\n    amount\n    merchantName\n    category\n  }\n}"
     }
   },
   {
