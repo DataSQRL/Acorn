@@ -2,7 +2,7 @@
 
 apiRAG makes it easy to augment Large Language Models with custom data provided by external APIs.
 
-[![Watch how apiRAG works](img/apiRAG-video.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
+[![Watch how apiRAG works](img/apiRAG-video.jpg)](https://youtu.be/Mx-slh6h42c)
 
 apiRAG solves the following use cases for Large Language Models (LLM), Generative AI, and ChatBots:
 * Improve the breadth, depth, and accuracy of knowledge to answer user queries intelligently. For example, if you want to connect an LLM to an existing knowledge- or database to look up information as we do in our [Rick and Morty example](api-examples/rickandmorty).
