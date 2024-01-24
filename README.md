@@ -1,6 +1,8 @@
 # apiRAG 🤖🔌
 
-apiRAG makes it easy to augment Large Language Models intelligently with custom data provided by an external API.
+apiRAG makes it easy to augment Large Language Models with custom data provided by external APIs.
+
+[![Watch how apiRAG works](img/apiRAG-video.jpg)](https://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE)
 
 apiRAG solves the following use cases for Large Language Models (LLM), Generative AI, and ChatBots:
 * Improve the breadth, depth, and accuracy of knowledge to answer user queries intelligently. For example, if you want to connect an LLM to an existing knowledge- or database to look up information as we do in our [Rick and Morty example](api-examples/rickandmorty).
@@ -8,16 +10,18 @@ apiRAG solves the following use cases for Large Language Models (LLM), Generativ
 * Include realtime information that updates frequently. For example, have an LLM analyze realtime sensor information as we do in our [Sensors example](api-examples/sensors).
 
 apiRAG has the following benefits:
-* On-Demand: It allows the LLM to retrieve the data it needs when it needs it.
-* Efficient: It benefits from the intelligence of the LLM to retrieve exactly the data it needs. 
+* High Quality: Benefits from the intelligence of the LLM to retrieve exactly the needed data.
+* Efficiency: Retrieves only the data the LLM needs when it needs it.
+* (Semi-)Structured Data: Works great with structured and semi-structured data for data analysis and visualization.
 * Simplicity: It's essentially just a mapping layer between LLM function calls and API queries.
-* Modularity: It separates the LLM instrumentation from the data augmentation providing a separation between "frontend" and "backend".
-* Reuse: You can reuse your existing APIs.
+* Modularity: Separates the LLM instrumentation from the data augmentation providing a separation between "frontend" and "backend" and allows you to reuse your existing APIs.
 
-Check out the [examples](api-examples) for some example use cases and how they are implemented with apiRAG. Take a look at the language implementations for how to run the examples:
+To see a demo of apiRAG and how it works exactly, watch this video.
+
+If you want to try out apiRAG yourself, check out the [examples](api-examples) for some example use cases and how they are implemented with apiRAG. Take a look at the language implementations for how to run the examples:
 * [Java](java/)
-* JavaScript (coming soon)
-* Python (coming soon)
+* JavaScript (coming soon - please help!)
+* Python (coming soon - please help!)
 
 ## How does this compare to RAG?
 
@@ -52,4 +56,8 @@ We plan to overcome these limitations soon and are working on the following road
 * Support for open-source and additional LLMs (like Llama2)
 * Support for additional API authentication modes
 
-In addition, we welcome community contributions to the project.
+## Community
+
+[Join our Discord](https://discord.gg/49AnhVY2w9) to ask questions or share your feedback.
+
+We welcome community contributions to the project.

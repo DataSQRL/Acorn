@@ -11,5 +11,6 @@ You can run the examples in one of two ways:
 For either one you need:
 1. To set `OPENAI_TOKEN` as an environment variable that contains your OPENAI API key. In the terminal, run `export OPENAI_TOKEN={YOUR TOKEN}`.
 2. Provide the name of the example you want to run as a command line argument (for the server, provide the argument as `--example=[NAME]`). You can find all example definitions in the [`Examples`](test/java/com/datasqrl/ai/Examples.java) enum. 
+3. For many examples, you need to run the API locally. Check the [api-examples](/api-examples) directory for more information on how to run the APIs.
 
 This is a proof-of-concept implementation and the library has not yet been published to Maven Central. Test coverage is minimal. We are working on it.

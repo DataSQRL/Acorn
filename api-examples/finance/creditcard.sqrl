@@ -1,6 +1,7 @@
 IMPORT creditcard-data.Merchant;
 IMPORT creditcard-data.Assignment AS CardAssignment;
-IMPORT creditcard.AddTransaction AS Transaction TIMESTAMP _source_time AS time;
+IMPORT creditcard-data.Transaction;
+--IMPORT creditcard.AddTransaction AS Transaction TIMESTAMP _source_time AS time;
 IMPORT creditcard.AddChatMessage;
 IMPORT time.*;
 
