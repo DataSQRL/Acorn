@@ -1,7 +1,6 @@
 IMPORT creditcard-data.Merchant;
 IMPORT creditcard-data.Assignment AS CardAssignment;
-IMPORT creditcard-data.Transaction;
---IMPORT creditcard.AddTransaction AS Transaction TIMESTAMP _source_time AS time;
+IMPORT creditcard.AddTransaction AS Transaction TIMESTAMP _source_time AS time;
 IMPORT creditcard.AddChatMessage;
 IMPORT time.*;
 
@@ -13,8 +12,6 @@ CustomerTransaction := SELECT t.transactionId, t.cardNo, t.time, t.amount, m.nam
                        FROM Transaction t
                        TEMPORAL JOIN CardAssignment c ON t.cardNo = c.cardNo
                        TEMPORAL JOIN Merchant m ON t.merchantId = m.merchantid ORDER BY t.time DESC;
-
-EXPORT CustomerTransaction TO print.Transaction;
 
 SpendingByCategory := SELECT customerid, endOfWeek(time) as timeWeek, category, SUM(amount) as spending
                           FROM CustomerTransaction
