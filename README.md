@@ -16,7 +16,7 @@ apiRAG has the following benefits:
 * Simplicity: It's essentially just a mapping layer between LLM function calls and API queries.
 * Modularity: Separates the LLM instrumentation from the data augmentation providing a separation between "frontend" and "backend" and allows you to reuse your existing APIs.
 
-To see a demo of apiRAG and how it works exactly, watch this video.
+To see a demo of apiRAG and how it works exactly, [watch this video]((https://youtu.be/Mx-slh6h42c).
 
 If you want to try out apiRAG yourself, check out the [examples](api-examples) for some example use cases and how they are implemented with apiRAG. Take a look at the language implementations for how to run the examples:
 * [Java](java/)
