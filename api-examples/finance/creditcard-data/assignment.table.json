@@ -7,8 +7,7 @@
   "type" : "source",
   "connector" : {
     "name" : "file",
-    "directoryURI" : "/build/creditcard-files",
-    "monitorIntervalMs" : "0"
+    "directoryURI" : "/build/creditcard-files"
   },
   "canonicalizer" : "system"
 }

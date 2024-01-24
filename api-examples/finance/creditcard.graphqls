@@ -8,7 +8,7 @@ type Query {
 }
 
 type CustomerTransaction {
-    transactionId: Float!
+    transactionId: Int!
     cardNo: String!
     time: String!
     amount: Float!
@@ -36,8 +36,13 @@ type CustomerChatMessage {
     uuid: String!
 }
 
+type Subscription {
+    CustomerTransaction(customerid: Int!): CustomerTransaction
+}
+
 type Mutation {
     AddChatMessage(message: ChatMessageInput!): CreatedChatMessage
+    AddTransaction(tx: TransactionInput!): CreatedTransaction
 }
 
 input ChatMessageInput {
@@ -52,5 +57,17 @@ input ChatMessageContextInput {
 }
 
 type CreatedChatMessage {
+    _source_time: String!
+}
+
+input TransactionInput {
+    transactionId: Int!
+    cardNo: String!
+    amount: Float!
+    merchantId: Int!
+}
+
+type CreatedTransaction {
+    transactionId: Int!
     _source_time: String!
 }
