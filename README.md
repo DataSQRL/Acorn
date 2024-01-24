@@ -34,6 +34,8 @@ apiRAG does not suffer from these shortcomings because it relies on the LLM to d
 
 ## How does apiRAG Work?
 
+![Diagram of how apiRAG executes user requests](img/apiRAG-diagram.png)
+
 At it's core, apiRAG is a configuration format that defines a set of LLM functions and how they map to API queries.
 It extends OpenAI's function call configuration with additional information on how to execute the function against an existing API.
 
