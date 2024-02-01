@@ -1,18 +1,19 @@
 # apiRAG 🤖🔌
 
-apiRAG makes it easy to augment Large Language Models with custom data provided by external APIs.
+apiRAG makes it easy to augment Large Language Models with (semi-)structured data provided by APIs.
 
 [![Watch how apiRAG works](img/apiRAG-video.jpg)](https://youtu.be/Mx-slh6h42c)
 
 apiRAG solves the following use cases for Large Language Models (LLM), Generative AI, and ChatBots:
-* Improve the breadth, depth, and accuracy of knowledge to answer user queries intelligently. For example, if you want to connect an LLM to an existing knowledge- or database to look up information as we do in our [Rick and Morty example](api-examples/rickandmorty).
-* Access user specific or access controlled information to provided personalized answers in a secure manner. For example, allow the LLM to answer customer questions about their profile and transaction history as we do in our [Credit Card](api-examples/finance) and [Nutshop example](api-examples/nutshop).
+* Use structured or semi-structured data for augmentation, e.g. the data you want to pull into the context with RAG is tabular, JSON, or has any other type of internal structure. For example, if you want to augment an LLM with user information as we do in our [Credit Card example](api-examples/finance).
+* Improve the breadth, depth, and accuracy of knowledge to answer user queries intelligently. For example, if you want to connect an LLM to an existing API or database to look up information as we do in our [Rick and Morty example](api-examples/rickandmorty).
+* Access user specific or access controlled information to provided personalized answers in a secure manner. For example, allow the LLM to answer customer questions about their profile and transaction history as we do in our [Nutshop example](api-examples/nutshop).
 * Include realtime information that updates frequently. For example, have an LLM analyze realtime sensor information as we do in our [Sensors example](api-examples/sensors).
 
 apiRAG has the following benefits:
+* (Semi-)Structured Data: Works great with structured and semi-structured data for data analysis and visualization.
 * High Quality: Benefits from the intelligence of the LLM to retrieve exactly the needed data.
 * Efficiency: Retrieves only the data the LLM needs when it needs it.
-* (Semi-)Structured Data: Works great with structured and semi-structured data for data analysis and visualization.
 * Simplicity: It's essentially just a mapping layer between LLM function calls and API queries.
 * Modularity: Separates the LLM instrumentation from the data augmentation providing a separation between "frontend" and "backend" and allows you to reuse your existing APIs.
 
@@ -20,8 +21,8 @@ To see a demo of apiRAG and how it works exactly, [watch this video](https://you
 
 If you want to try out apiRAG yourself, check out the [examples](api-examples) for some example use cases and how they are implemented with apiRAG. Take a look at the language implementations for how to run the examples:
 * [Java](java/)
-* JavaScript (coming soon - please help!)
 * Python (coming soon - please help!)
+* JavaScript (coming soon - please help!)
 
 ## How does this compare to RAG?
 
