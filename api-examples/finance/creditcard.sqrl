@@ -1,8 +1,6 @@
 IMPORT creditcard-data.Merchant;
 IMPORT creditcard-data.Assignment AS CardAssignment;
 IMPORT creditcard-data.Transaction;
---IMPORT creditcard.AddTransaction AS Transaction TIMESTAMP _source_time AS time;
-IMPORT creditcard.AddChatMessage;
 IMPORT time.*;
 
 Merchant :=       DISTINCT Merchant ON merchantId ORDER BY updatedTime DESC;
@@ -33,6 +31,8 @@ SpendingByDay(@customerid: BIGINT, @fromTime: TIMESTAMP, @toTime: TIMESTAMP) :=
     SELECT timeDay, spending
     FROM _SpendingByDay WHERE customerid = @customerid AND @fromTime <= timeDay AND @toTime > timeDay
     ORDER BY timeDay DESC;
+
+IMPORT creditcard.AddChatMessage;
 
 CustomerChatMessage := SELECT c.role, c.content, c.name, ctx.customerid, c._source_time AS timestamp,
                         c._uuid AS uuid
