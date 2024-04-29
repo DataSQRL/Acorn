@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.theokanning.openai.completion.chat.ChatMessage;
-import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Value;
 

@@ -1,8 +1,8 @@
 package com.datasqrl.ai.models.openai;
 
-import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.AbstractChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
+import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;

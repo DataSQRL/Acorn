@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -15,8 +14,8 @@ import lombok.NoArgsConstructor;
 /**
  * Definition of a chat function that can be invoked by the language model.
  *
- * Essentially a copy of {@link com.theokanning.openai.completion.chat.ChatFunctionDynamic}
- * but with the necessary constructors, so it can be deserialized from JSON.
+ * This is essentially a java definition of the json structure OpenAI uses to represent
+ * functions which is used by most LLMs.
  */
 @Data
 @Builder
