@@ -1,6 +1,6 @@
 [
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "ordered_products",
       "description": "Returns products the customer previously purchased decreasing order by most purchased. Use to recommend products for the customer to purchase.",
@@ -20,7 +20,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "spending_by_week",
       "description": "Returns the total spending and savings for the customer by week, ordered by most recent",
@@ -44,7 +44,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "orders",
       "description": "Returns the orders for the customer ordered by most recent",
@@ -68,7 +68,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "_saveChatMessage",
       "description": "Saves User Chat Messages",
@@ -85,7 +85,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "_getChatMessages",
       "description": "Retrieves User Chat Messages",

@@ -1,5 +1,6 @@
 package com.datasqrl.ai;
 
+import com.datasqrl.ai.models.openai.ChatModel;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
