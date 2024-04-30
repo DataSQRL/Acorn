@@ -36,8 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 public class SimpleServer {
 
-  public static final String DEFAULT_GRAPHQL_ENDPOINT = "http://localhost:8888/graphql";
-
   public static void main(String[] args) {
     SpringApplication.run(SimpleServer.class, args);
   }
@@ -58,7 +56,7 @@ public class SimpleServer {
       this.example = Examples.valueOf(exampleName.trim().toUpperCase());
       String openAIToken = System.getenv("OPENAI_TOKEN");
       this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
-      String graphQLEndpoint = DEFAULT_GRAPHQL_ENDPOINT;
+      String graphQLEndpoint = example.getApiURL();
       this.apiExecutor = new GraphQLExecutor(graphQLEndpoint);
       this.backend = FunctionBackend.of(Path.of(example.getConfigFile()), apiExecutor);
       this.systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), example.getSystemPrompt());
@@ -81,6 +79,7 @@ public class SimpleServer {
     }
 
     private Map<String,Object> getContext(String userId) {
+      if (example.getUserIdFieldName()==null) return Map.of();
       return Map.of(example.getUserIdFieldName(), example.getPrepareUserIdFct().apply(
           userId));
     }
@@ -137,7 +136,7 @@ public class SimpleServer {
               System.out.println("Executing " + functionCall.getName() + " with arguments "
                   + functionCall.getArguments().toPrettyString());
               ChatMessage functionResponse = session.executeFunctionCall(functionCall);
-              //System.out.println("Executed " + fctCall.getName() + ".");
+              System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getContent());
               session.addMessage(functionResponse);
             }
           } //TODO: add retry in case of invalid function call

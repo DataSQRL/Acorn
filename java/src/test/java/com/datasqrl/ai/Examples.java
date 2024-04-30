@@ -18,6 +18,7 @@ public enum Examples {
   NUTSHOP(ChatModel.GPT35_TURBO,
       "../api-examples/nutshop/nutshop-c360.tools.json",
       "customerid", (Integer::parseInt), false,
+      "http://localhost:8888/graphql",
       "You are a shopping assistant for an US nut shop that helps customers "
           + "answer questions about their orders and shopping. "
           + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
@@ -25,6 +26,7 @@ public enum Examples {
   SENSOR(ChatModel.GPT35_TURBO,
       "../api-examples/sensors/sensors.tools.json",
       null, null, false,
+      "http://localhost:8888/graphql",
       "You help users retrieve sensor data and analyse it using the available function calls. "
           + "answer questions about their orders and shopping. "
           + "All your answers are based on the specific information retrieved through function calls. You don't provide general answers. "
@@ -32,6 +34,7 @@ public enum Examples {
   RICKANDMORTY(ChatModel.GPT35_TURBO,
       "../api-examples/rickandmorty/rickandmorty.tools.json",
       null, null, false,
+      "https://rickandmortyapi.com/graphql",
       "You are a huge fan of the Ricky and Morty TV show and help users answer questions "
           + "about the show. "
           + "You always try to look up the information a user is asking for via one of the available functions. "
@@ -40,6 +43,7 @@ public enum Examples {
   CREDITCARD(ChatModel.GPT35_TURBO,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), false,
+      "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company called SquirrelBanking."
           + "You answer customer questions about their credit card transaction history and provide information about their spending. "
           + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
@@ -49,6 +53,7 @@ public enum Examples {
   CCVISUAL(ChatModel.GPT4,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), true,
+      "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company who helps answer customer questions about their"
           + "past transactions and spending history. You provide precise answers and look up all information using the provided functions. "
           + "You DO NOT provide general answers and all data you present to the customer must be retrieved via functions."
@@ -63,6 +68,7 @@ public enum Examples {
   String userIdFieldName;
   Function<String,Object> prepareUserIdFct;
   boolean supportCharts;
+  String apiURL;
   String systemPrompt;
 
   public boolean hasUserId() {
@@ -72,5 +78,6 @@ public enum Examples {
   public Map<String,Object> getContext(String userid) {
     return Map.of(userIdFieldName,prepareUserIdFct.apply(userid));
   }
+
 
 }

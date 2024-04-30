@@ -124,13 +124,11 @@ public class CmdLineChatBot {
     }
   }
 
-  public static final String DEFAULT_GRAPHQL_ENDPOINT = "http://localhost:8888/graphql";
-
   public static void main(String... args) throws Exception {
     if (args==null || args.length==0) throw new IllegalArgumentException("Please provide the name of the example you want to run. One of: " + Arrays.toString(Examples.values()));
     Examples example = Examples.valueOf(args[0].trim().toUpperCase());
     String openAIToken = System.getenv("OPENAI_TOKEN");
-    String graphQLEndpoint = DEFAULT_GRAPHQL_ENDPOINT;
+    String graphQLEndpoint = example.getApiURL();
     if (args.length>1) graphQLEndpoint = args[1];
 
     Map<String,Object> context = Map.of();
