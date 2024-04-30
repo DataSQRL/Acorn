@@ -1,6 +1,6 @@
 package com.datasqrl.ai.models.openai;
 
-import com.datasqrl.ai.backend.FunctionAnalyzer;
+import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuddels.jtokkit.Encodings;
@@ -10,7 +10,7 @@ import lombok.SneakyThrows;
 import lombok.Value;
 
 @Value
-public class OpenAITokenCounter implements FunctionAnalyzer {
+public class OpenAITokenCounter implements ModelAnalyzer<ChatMessage> {
 
   Encoding encoding;
 

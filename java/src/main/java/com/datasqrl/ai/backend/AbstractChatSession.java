@@ -30,7 +30,7 @@ public abstract class AbstractChatSession<Message, FunctionCall> {
     return messages.stream().map(this::convertMessage).collect(Collectors.toUnmodifiableList());
   }
 
-  protected ContextWindow<GenericChatMessage> getWindow(int maxTokens, FunctionAnalyzer analyzer) {
+  protected ContextWindow<GenericChatMessage> getWindow(int maxTokens, ModelAnalyzer<Message> analyzer) {
     final AtomicInteger numTokens = new AtomicInteger(0);
     numTokens.addAndGet(systemMessage.getNumTokens());
     ContextWindow.ContextWindowBuilder<GenericChatMessage> builder = ContextWindow.builder();
@@ -44,7 +44,7 @@ public abstract class AbstractChatSession<Message, FunctionCall> {
     ListIterator<GenericChatMessage> listIterator = messages.listIterator(numMessages);
     while (listIterator.hasPrevious()) {
       GenericChatMessage message = listIterator.previous();
-      numTokens.addAndGet(message.getNumTokens());
+      numTokens.addAndGet(message.getNumTokens(msg -> analyzer.countTokens(convertMessage(msg))));
       if (numTokens.get()>maxTokens) break;
       resultMessages.add(message);
       numMessages--;

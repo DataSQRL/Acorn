@@ -32,7 +32,7 @@ public class RuntimeFunctionDefinition {
     return function.getName();
   }
 
-  public int getNumTokens(FunctionAnalyzer analyzer) {
+  public int getNumTokens(ModelAnalyzer analyzer) {
     if (numTokens==null) {
       numTokens = analyzer.countTokens(getChatFunction());
     }

@@ -68,7 +68,11 @@ public class SimpleServer {
         if (url != null) {
           try {
             FunctionDefinition plotFunction = objectMapper.readValue(url, FunctionDefinition.class);
-            this.backend.addFunction(RuntimeFunctionDefinition.builder().type(FunctionType.visualize).function(plotFunction).build());
+            this.backend.addFunction(RuntimeFunctionDefinition.builder()
+                .type(FunctionType.visualize)
+                .function(plotFunction)
+                .context(List.of())
+                .build());
           } catch (IOException e) {
             e.printStackTrace();
           }

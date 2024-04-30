@@ -50,7 +50,7 @@ public class FunctionBackend {
 
   /**
    * Constructs a {@link FunctionBackend} from the provided configuration file, {@link APIExecutor},
-   * and {@link FunctionAnalyzer}.
+   * and {@link ModelAnalyzer}.
    *
    * The format of the configuration file is defined in the <a href="https://github.com/DataSQRL/apiRAG">Github repository</a>
    * and you can find examples underneath the {@code api-examples} directory.
