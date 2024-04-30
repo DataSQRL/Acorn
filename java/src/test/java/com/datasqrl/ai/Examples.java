@@ -44,7 +44,8 @@ public enum Examples {
           + "You answer customer questions about their credit card transaction history and provide information about their spending. "
           + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
           + "If you cannot retrieve the information needed to answer a customer's question, you politely decline to answer. "
-          + "You are incredibly friendly and thorough in your answers and you clearly lay out how you derive your answers step by step."),
+          + "You are incredibly friendly and thorough in your answers and you clearly lay out how you derive your answers step by step."
+          + "Today's date is January 18th, 2024."),
   CCVISUAL(ChatModel.GPT4,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), true,
