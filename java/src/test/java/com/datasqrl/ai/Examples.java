@@ -12,7 +12,6 @@ import lombok.Getter;
  * or {@link CmdLineChatBot}.
  */
 @AllArgsConstructor
-@Getter
 public enum Examples {
 
   NUTSHOP(ChatModel.GPT35_TURBO,
@@ -62,13 +61,17 @@ public enum Examples {
           + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function.");
 
 
-
+  @Getter
   ChatModel model;
+  @Getter
   String configFile;
-  String userIdFieldName;
-  Function<String,Object> prepareUserIdFct;
+  private String userIdFieldName;
+  private Function<String,Object> prepareUserIdFct;
+  @Getter
   boolean supportCharts;
+  @Getter
   String apiURL;
+  @Getter
   String systemPrompt;
 
   public boolean hasUserId() {
@@ -76,7 +79,8 @@ public enum Examples {
   }
 
   public Map<String,Object> getContext(String userid) {
-    return Map.of(userIdFieldName,prepareUserIdFct.apply(userid));
+    if (!hasUserId()) return Map.of();
+    return Map.of(userIdFieldName, prepareUserIdFct.apply(userid));
   }
 
 

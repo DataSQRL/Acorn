@@ -78,19 +78,13 @@ public class SimpleServer {
       }
     }
 
-    private Map<String,Object> getContext(String userId) {
-      if (example.getUserIdFieldName()==null) return Map.of();
-      return Map.of(example.getUserIdFieldName(), example.getPrepareUserIdFct().apply(
-          userId));
-    }
-
     private OpenAIChatSession getSession(Map<String,Object> context) {
       return new OpenAIChatSession(example.getModel(), systemMessage, backend, context);
     }
 
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
-      Map<String,Object> context = getContext(userId);
+      Map<String,Object> context = example.getContext(userId);
       OpenAIChatSession session = getSession(context);
       List<ChatMessage> messages = session.retrieveMessageHistory(50);
       return messages.stream().filter(m -> {
@@ -106,7 +100,7 @@ public class SimpleServer {
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
-      Map<String,Object> context = getContext(message.getUserId());
+      Map<String,Object> context = example.getContext(message.getUserId());
       OpenAIChatSession session = getSession(context);
       int numMsg = session.retrieveMessageHistory(20).size();
       System.out.printf("Retrieved %d messages\n", numMsg);
