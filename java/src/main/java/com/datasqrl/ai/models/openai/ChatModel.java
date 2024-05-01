@@ -9,7 +9,8 @@ import lombok.Getter;
 public enum ChatModel {
 
   GPT35_TURBO("gpt-3.5-turbo-0613", ModelType.GPT_3_5_TURBO, 512),
-  GPT4("gpt-4-0613", ModelType.GPT_4, 512);
+  GPT4("gpt-4-0613", ModelType.GPT_4, 512),
+  LLAMA37B("llama3-8b-8192", ModelType.GPT_4, 512);
 
   final String openAIModel;
   final ModelType encodingModel;

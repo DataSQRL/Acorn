@@ -8,12 +8,20 @@ import lombok.Getter;
 
 /**
  * This enum contains the definitions for the examples from the "api-examples" directory.
- * You can use the enum values to launch a particular example with {@link com.datasqrl.ai.spring.SimpleServer}
+ * You can use the enum values to launch a particular example with {@link com.datasqrl.ai.spring.SimpleServerGroq}
  * or {@link CmdLineChatBot}.
  */
 @AllArgsConstructor
 public enum Examples {
 
+  GROQSHOP(ChatModel.LLAMA37B,
+          "../api-examples/nutshop/nutshop-c360.tools.json",
+          "customerid", (Integer::parseInt), false,
+          "http://localhost:8888/graphql",
+          "You are a shopping assistant for an US nut shop that helps customers "
+                  + "answer questions about their orders and shopping. "
+                  + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
+                  + "You talk like a butler in very formal and over-the-top friendly tone with frequent compliments."),
   NUTSHOP(ChatModel.GPT35_TURBO,
       "../api-examples/nutshop/nutshop-c360.tools.json",
       "customerid", (Integer::parseInt), false,
