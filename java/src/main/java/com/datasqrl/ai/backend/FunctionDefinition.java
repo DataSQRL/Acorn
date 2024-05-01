@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 /**
  * Definition of a chat function that can be invoked by the language model.
  *
- * Essentially a copy of {@link com.theokanning.openai.completion.chat.ChatFunctionDynamic}
- * but with the necessary constructors, so it can be deserialized from JSON.
+ * This is essentially a java definition of the json structure OpenAI uses to represent
+ * functions which is used by most LLMs.
  */
 @Data
 @Builder
@@ -28,6 +28,7 @@ public class FunctionDefinition {
   private String description;
 
   private Parameters parameters;
+
 
   public FunctionDefinition removeContext(Set<String> context) {
     Predicate<String> fieldFilter = getFieldFilter(context);

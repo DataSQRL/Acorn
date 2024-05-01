@@ -1,8 +1,13 @@
 package com.datasqrl.ai.backend;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Data class that defines a function with additional metadata for how
@@ -11,16 +16,29 @@ import lombok.Data;
  * @see FunctionDefinition
  */
 @Data
-public class APIFunctionDefinition {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class RuntimeFunctionDefinition {
 
-  private String type;
+  private FunctionType type;
   private FunctionDefinition function;
   private List<String> context;
   private APIFunctionQuery api;
+  private Function<JsonNode, Object> executable;
+  private Integer numTokens;
 
   public String getName() {
     return function.getName();
   }
+
+  public int getNumTokens(ModelAnalyzer analyzer) {
+    if (numTokens==null) {
+      numTokens = analyzer.countTokens(getChatFunction());
+    }
+    return numTokens;
+  }
+
 
   /**
    *

@@ -1,4 +1,4 @@
-package com.datasqrl.ai;
+package com.datasqrl.ai.models.openai;
 
 import com.knuddels.jtokkit.api.ModelType;
 import lombok.AllArgsConstructor;

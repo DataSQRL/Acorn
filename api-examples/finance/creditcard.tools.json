@@ -1,6 +1,6 @@
 [
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "spending_by_category",
       "description": "Returns the customer spending by category by week in decreasing order of time, i.e. showing the most recent week first, then the week before that and so forth.",
@@ -24,7 +24,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "spending_by_day",
       "description": "Returns the total customer spending by day for the specified time period ordered by time (most recent first). When a particular day does not have any spending, no record is returned for that day.",
@@ -52,7 +52,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "transactions",
       "description": "Returns all credit card transactions within a specified time period ordered by time (most recent first).",
@@ -80,7 +80,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "_saveChatMessage",
       "description": "Saves User Chat Messages",
@@ -97,7 +97,7 @@
     }
   },
   {
-    "type": "function",
+    "type": "graphql",
     "function": {
       "name": "_getChatMessages",
       "description": "Retrieves User Chat Messages",
