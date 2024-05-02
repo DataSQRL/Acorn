@@ -15,7 +15,7 @@ public class OpenAITokenCounter implements ModelAnalyzer<ChatMessage> {
   Encoding encoding;
 
   public int countTokens(ChatMessage message) {
-    int numTokens = countTokens(message.getContent());
+    int numTokens = countTokens(message.getTextContent());
     return numTokens + numTokens/10; //Add a 10% buffer
   }
 

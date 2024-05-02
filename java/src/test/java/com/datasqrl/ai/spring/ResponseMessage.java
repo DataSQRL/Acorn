@@ -1,9 +1,12 @@
 package com.datasqrl.ai.spring;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import java.time.Instant;
+
+import com.theokanning.openai.completion.chat.ChatMessageRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -19,14 +22,17 @@ public class ResponseMessage {
 
 
   public static ResponseMessage of(ChatMessage msg) {
-    ChatFunctionCall functionCall = msg.getFunctionCall();
-    if (functionCall!=null) {
+    ChatFunctionCall functionCall = null;
+    if (ChatMessageRole.valueOf(msg.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT) {
+      functionCall = ((AssistantMessage) msg).getFunctionCall();
+    }
+    if (functionCall != null) {
       System.out.println(functionCall.getArguments());
       return new ResponseMessage(msg.getRole(), null,
           functionCall.getArguments(), "", Instant.now().toString());
     } else {
       return new ResponseMessage(msg.getRole(),
-          msg.getContent(),
+          msg.getTextContent(),
           null,
           "",
           Instant.now().toString()

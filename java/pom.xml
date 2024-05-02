@@ -20,14 +20,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.theokanning.openai-gpt3-java</groupId>
+      <groupId>io.github.lambdua</groupId>
       <artifactId>api</artifactId>
-      <version>${openai-java.version}</version>
+      <version>0.20.0</version>
     </dependency>
     <dependency>
-      <groupId>com.theokanning.openai-gpt3-java</groupId>
+      <groupId>io.github.lambdua</groupId>
       <artifactId>service</artifactId>
-      <version>${openai-java.version}</version>
+      <version>0.20.0</version>
     </dependency>
     <dependency>
       <groupId>com.knuddels</groupId>
