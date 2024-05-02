@@ -5,11 +5,7 @@ import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.models.openai.ChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
-import com.theokanning.openai.completion.chat.ChatCompletionChunk;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatFunctionCall;
-import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.completion.chat.ChatMessageRole;
+import com.theokanning.openai.completion.chat.*;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
 import java.nio.file.Path;
@@ -59,19 +55,19 @@ public class CmdLineChatBot {
    */
   public void start(String instructionMessage, Map<String, Object> context) {
     Scanner scanner = new Scanner(System.in);
-    ChatMessage systemMessage = new ChatMessage(ChatMessageRole.SYSTEM.value(), instructionMessage);
+    ChatMessage systemMessage = new SystemMessage(instructionMessage);
     OpenAIChatSession session = new OpenAIChatSession(chatModel, systemMessage, backend, context);
 
 
     System.out.print("First Query: ");
-    ChatMessage firstMsg = new ChatMessage(ChatMessageRole.USER.value(), scanner.nextLine());
+    ChatMessage firstMsg = new UserMessage(scanner.nextLine());
     session.addMessage(firstMsg);
 
     while (true) {
       ChatCompletionRequest chatCompletionRequest = session.setContext(ChatCompletionRequest
           .builder()
           .model(chatModel.getOpenAIModel()))
-          .functionCall(ChatCompletionRequest.ChatCompletionRequestFunctionCall.of("auto"))
+          .functionCall("auto")
           .n(1)
           .maxTokens(chatModel.getCompletionLength())
           .logitBias(new HashMap<>())
@@ -79,7 +75,7 @@ public class CmdLineChatBot {
       Flowable<ChatCompletionChunk> flowable = service.streamChatCompletion(chatCompletionRequest);
 
       AtomicBoolean isFirst = new AtomicBoolean(true);
-      ChatMessage chatMessage = service.mapStreamToAccumulator(flowable)
+      AssistantMessage chatMessage = service.mapStreamToAccumulator(flowable)
           .doOnNext(accumulator -> {
             if (accumulator.isFunctionCall()) {
               if (isFirst.getAndSet(false)) {
@@ -106,7 +102,7 @@ public class CmdLineChatBot {
         if (fctValid.isValid()) {
           System.out.println("Trying to execute " + fctCall.getName() + " with arguments " + fctCall.getArguments().toPrettyString());
           ChatMessage functionResponse = session.executeFunctionCall(fctCall);
-          System.out.println("Executed " + fctCall.getName() + " with response: " + functionResponse.getContent());
+          System.out.println("Executed " + fctCall.getName() + " with response: " + functionResponse.getTextContent());
           session.addMessage(functionResponse);
         } else {
           session.addMessage(fctValid.getErrorMessage());
@@ -119,7 +115,7 @@ public class CmdLineChatBot {
       if (nextLine.equalsIgnoreCase("exit")) {
         System.exit(0);
       }
-      ChatMessage nextMsg = new ChatMessage(ChatMessageRole.USER.value(), nextLine);
+      ChatMessage nextMsg = new UserMessage(nextLine);
       session.addMessage(nextMsg);
     }
   }
