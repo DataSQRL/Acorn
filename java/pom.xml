@@ -12,7 +12,7 @@
     <maven.compiler.source>14</maven.compiler.source>
     <maven.compiler.target>14</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <openai-java.version>0.18.2</openai-java.version>
+    <openai-java.version>0.20.0</openai-java.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <jtokkit.version>0.6.1</jtokkit.version>
     <spring-boot.version>3.2.1</spring-boot.version>
@@ -22,12 +22,12 @@
     <dependency>
       <groupId>io.github.lambdua</groupId>
       <artifactId>api</artifactId>
-      <version>0.20.0</version>
+      <version>${openai-java.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.lambdua</groupId>
       <artifactId>service</artifactId>
-      <version>0.20.0</version>
+      <version>${openai-java.version}</version>
     </dependency>
     <dependency>
       <groupId>com.knuddels</groupId>
