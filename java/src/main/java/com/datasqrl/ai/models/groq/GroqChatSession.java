@@ -1,4 +1,4 @@
-package com.datasqrl.ai.models.openai;
+package com.datasqrl.ai.models.groq;
 
 import com.datasqrl.ai.backend.AbstractChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
@@ -20,17 +20,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class OpenAIChatSession extends AbstractChatSession<ChatMessage, ChatFunctionCall> {
+public class GroqChatSession extends AbstractChatSession<ChatMessage, ChatFunctionCall> {
 
   ChatModel chatModel;
-  OpenAITokenCounter tokenCounter;
+  GroqTokenCounter tokenCounter;
 
-  public OpenAIChatSession(ChatModel model, ChatMessage systemMessage,
-                           FunctionBackend backend,
-                           Map<String, Object> sessionContext) {
+  public GroqChatSession(ChatModel model, ChatMessage systemMessage,
+                         FunctionBackend backend,
+                         Map<String, Object> sessionContext) {
     super(backend, sessionContext, null);
     this.chatModel = model;
-    this.tokenCounter = OpenAITokenCounter.of(model);
+    this.tokenCounter = GroqTokenCounter.of(model);
     this.systemMessage = convertMessage(systemMessage);
   }
 
