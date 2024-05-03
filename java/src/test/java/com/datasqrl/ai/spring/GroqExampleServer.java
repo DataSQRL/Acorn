@@ -2,7 +2,11 @@ package com.datasqrl.ai.spring;
 
 import com.datasqrl.ai.Examples;
 import com.datasqrl.ai.api.GraphQLExecutor;
-import com.datasqrl.ai.backend.*;
+import com.datasqrl.ai.backend.FunctionBackend;
+import com.datasqrl.ai.backend.FunctionDefinition;
+import com.datasqrl.ai.backend.FunctionType;
+import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.client.OpenAiApi;

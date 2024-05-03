@@ -5,7 +5,15 @@ import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.GenericChatMessage;
-import com.theokanning.openai.completion.chat.*;
+import com.theokanning.openai.completion.chat.AssistantMessage;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatFunctionCall;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
+import com.theokanning.openai.completion.chat.FunctionMessage;
+import com.theokanning.openai.completion.chat.SystemMessage;
+import com.theokanning.openai.completion.chat.ToolMessage;
+import com.theokanning.openai.completion.chat.UserMessage;
 
 import java.time.Instant;
 import java.util.Map;
