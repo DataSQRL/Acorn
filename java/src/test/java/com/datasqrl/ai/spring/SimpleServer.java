@@ -35,15 +35,15 @@ import static com.theokanning.openai.service.OpenAiService.defaultClient;
 import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 
 @SpringBootApplication
-public class GroqExampleServer {
+public class SimpleServer {
 
   public static void main(String[] args) {
-    SpringApplication.run(GroqExampleServer.class, args);
+    SpringApplication.run(SimpleServer.class, args);
   }
 
   @CrossOrigin(origins = "*")
   @RestController
-  public static class GrowExampleController {
+  public static class MessageController {
 
     private final Examples example;
     OpenAiService service;
@@ -53,7 +53,7 @@ public class GroqExampleServer {
 
 
 
-    public GrowExampleController(@Value("${example:nutshop}") String exampleName) throws IOException {
+    public MessageController(@Value("${example:nutshop}") String exampleName) throws IOException {
       this.example = Examples.valueOf(exampleName.trim().toUpperCase());
       this.service = this.getService();
       String graphQLEndpoint = example.getApiURL();
@@ -62,7 +62,7 @@ public class GroqExampleServer {
       this.systemMessage = new SystemMessage(example.getSystemPrompt());
       if (example.isSupportCharts()) {
         ObjectMapper objectMapper = new ObjectMapper();
-        URL url = GroqExampleServer.class.getClassLoader().getResource("plotfunction.json");
+        URL url = SimpleServer.class.getClassLoader().getResource("plotfunction.json");
         if (url != null) {
           try {
             FunctionDefinition plotFunction = objectMapper.readValue(url, FunctionDefinition.class);

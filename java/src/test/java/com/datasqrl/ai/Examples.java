@@ -4,13 +4,13 @@ import com.datasqrl.ai.models.openai.ChatModel;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.datasqrl.ai.spring.GroqExampleServer;
+import com.datasqrl.ai.spring.SimpleServer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
  * This enum contains the definitions for the examples from the "api-examples" directory.
- * You can use the enum values to launch a particular example with {@link GroqExampleServer}
+ * You can use the enum values to launch a particular example with {@link SimpleServer}
  * or {@link CmdLineChatBot}.
  */
 @AllArgsConstructor
