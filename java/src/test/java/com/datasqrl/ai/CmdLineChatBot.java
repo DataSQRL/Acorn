@@ -70,9 +70,11 @@ public class CmdLineChatBot {
     session.addMessage(firstMsg);
 
     while (true) {
-      ChatCompletionRequest chatCompletionRequest = session.setContext(ChatCompletionRequest
+      ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
-          .model(chatModel.getOpenAIModel()))
+          .model(chatModel.getModelName())
+          .messages(session.getMessages())
+          .functions(session.getFunctions())
           .functionCall("auto")
           .n(1)
           .maxTokens(chatModel.getCompletionLength())
