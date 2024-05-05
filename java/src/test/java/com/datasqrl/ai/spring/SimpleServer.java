@@ -1,8 +1,10 @@
 package com.datasqrl.ai.spring;
 
 import com.datasqrl.ai.Examples;
+import com.datasqrl.ai.ModelProvider;
 import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.*;
+import com.datasqrl.ai.models.groq.GroqChatSession;
 import com.datasqrl.ai.models.openai.ChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -115,7 +117,11 @@ public class SimpleServer {
     }
 
     private AbstractChatSession<ChatMessage, ChatFunctionCall> getSession(Map<String,Object> context) {
-      return new OpenAIChatSession((ChatModel) example.getModel(), systemMessage, backend, context);
+      if (example.getProvider() == ModelProvider.OPENAI) {
+        return new OpenAIChatSession((ChatModel) example.getModel(), systemMessage, backend, context);
+      } else {
+        return new GroqChatSession((com.datasqrl.ai.models.groq.ChatModel) example.getModel(), systemMessage, backend, context);
+      }
     }
 
     @GetMapping("/messages")
