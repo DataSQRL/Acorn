@@ -20,6 +20,9 @@ public class GroqTokenCounter implements ModelAnalyzer<ChatMessage> {
   }
 
   private int countTokens(String message) {
+    if (message == null) {
+      return 0;
+    }
     return tokenizer.encode(message).getTokens().length;
   }
 
