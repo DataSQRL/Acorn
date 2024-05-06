@@ -148,7 +148,7 @@ public class SimpleServer {
       session.addMessage(chatMessage);
 
       while (true) {
-        System.out.println("Calling Groq with model " + example.getModel().getModelName());
+        System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
         ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
             .builder()
             .model(example.getModel().getModelName())
