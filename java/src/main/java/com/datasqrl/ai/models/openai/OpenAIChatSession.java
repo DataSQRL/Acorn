@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 
 public class OpenAIChatSession extends AbstractChatSession<ChatMessage, ChatFunctionCall> {
 
-  ChatModel chatModel;
+  OpenAiChatModel chatModel;
   OpenAITokenCounter tokenCounter;
 
-  public OpenAIChatSession(ChatModel model, ChatMessage systemMessage,
+  public OpenAIChatSession(OpenAiChatModel model, ChatMessage systemMessage,
                            FunctionBackend backend,
                            Map<String, Object> sessionContext) {
     super(backend, sessionContext, null);

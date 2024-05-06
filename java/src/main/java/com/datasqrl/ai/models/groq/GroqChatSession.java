@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 
 public class GroqChatSession extends AbstractChatSession<ChatMessage, ChatFunctionCall> {
 
-  ChatModel chatModel;
+  GroqChatModel chatModel;
   GroqTokenCounter tokenCounter;
 
-  public GroqChatSession(ChatModel model, ChatMessage systemMessage,
+  public GroqChatSession(GroqChatModel model, ChatMessage systemMessage,
                          FunctionBackend backend,
                          Map<String, Object> sessionContext) {
     super(backend, sessionContext, null);

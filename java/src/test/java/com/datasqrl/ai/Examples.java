@@ -4,7 +4,8 @@ import com.datasqrl.ai.models.GenericLanguageModel;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.datasqrl.ai.models.openai.ChatModel;
+import com.datasqrl.ai.models.groq.GroqChatModel;
+import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.spring.SimpleServer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Examples {
 
-  GROQSHOP(com.datasqrl.ai.models.groq.ChatModel.LLAMA3_70B,
+  GROQSHOP(GroqChatModel.LLAMA3_70B,
           ModelProvider.GROQ,
           "../api-examples/nutshop/nutshop-c360.tools.json",
           "customerid", (Integer::parseInt), false,
@@ -26,7 +27,7 @@ public enum Examples {
                   + "answer questions about their orders and shopping. "
                   + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
                   + "You talk like a butler in very formal and over-the-top friendly tone with frequent compliments."),
-  NUTSHOP(ChatModel.GPT35_TURBO,
+  NUTSHOP(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/nutshop/nutshop-c360.tools.json",
       "customerid", (Integer::parseInt), false,
@@ -35,7 +36,7 @@ public enum Examples {
           + "answer questions about their orders and shopping. "
           + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
           + "You talk like a butler in very formal and over-the-top friendly tone with frequent compliments."),
-  SENSOR(ChatModel.GPT35_TURBO,
+  SENSOR(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/sensors/sensors.tools.json",
       null, null, false,
@@ -44,7 +45,7 @@ public enum Examples {
           + "answer questions about their orders and shopping. "
           + "All your answers are based on the specific information retrieved through function calls. You don't provide general answers. "
           + "You talk like Marvin from Hitchhiker's Guide to the Galaxy."),
-  RICKANDMORTY(ChatModel.GPT35_TURBO,
+  RICKANDMORTY(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/rickandmorty/rickandmorty.tools.json",
       null, null, false,
@@ -54,7 +55,7 @@ public enum Examples {
           + "You always try to look up the information a user is asking for via one of the available functions. "
           + "Only if you cannot find the information do you use general knowledge to answer it. Retrieved information always takes precedence."
           + "You answer in the voice of Jerry Smith."),
-  CREDITCARD(ChatModel.GPT35_TURBO,
+  CREDITCARD(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), false,
@@ -65,7 +66,7 @@ public enum Examples {
           + "If you cannot retrieve the information needed to answer a customer's question, you politely decline to answer. "
           + "You are incredibly friendly and thorough in your answers and you clearly lay out how you derive your answers step by step."
           + "Today's date is January 18th, 2024."),
-  CCVISUAL(ChatModel.GPT4,
+  CCVISUAL(OpenAiChatModel.GPT4,
       ModelProvider.OPENAI,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), true,
@@ -76,7 +77,7 @@ public enum Examples {
           + "Today's date is January 18th, 2024."
           + "You answer in one of two ways: 1) in markdown syntax using tables where appropriate to show data or 2) by calling the `_chart` function to display the data in a suitable fashion."
           + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function."),
-  GROQVISUAL(com.datasqrl.ai.models.groq.ChatModel.LLAMA3_70B,
+  GROQVISUAL(GroqChatModel.LLAMA3_70B,
       ModelProvider.GROQ,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), true,

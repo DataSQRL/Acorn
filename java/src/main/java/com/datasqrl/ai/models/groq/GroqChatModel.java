@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum ChatModel implements GenericLanguageModel {
+public enum GroqChatModel implements GenericLanguageModel {
 
 //  Tokenizers are not openly downloadable for these models yet, as they need a HuggingFace Access Token.
 //  In the next release of ai.djl.huggingface, the Hugging Face access token is read from the local environment.

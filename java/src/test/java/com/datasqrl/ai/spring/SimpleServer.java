@@ -4,8 +4,10 @@ import com.datasqrl.ai.Examples;
 import com.datasqrl.ai.ModelProvider;
 import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.*;
+import com.datasqrl.ai.models.bedrock.BedrockRequestBody;
+import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.datasqrl.ai.models.groq.GroqChatSession;
-import com.datasqrl.ai.models.openai.ChatModel;
+import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.client.OpenAiApi;
@@ -20,6 +22,7 @@ import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,9 +35,16 @@ import org.springframework.web.bind.annotation.RestController;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
+import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
+import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
@@ -64,7 +74,6 @@ public class SimpleServer {
     ChatMessage systemMessage;
 
 
-
     public MessageController(@Value("${example:nutshop}") String exampleName) throws IOException {
       this.example = Examples.valueOf(exampleName.trim().toUpperCase());
       this.service = this.getService();
@@ -79,10 +88,10 @@ public class SimpleServer {
           try {
             FunctionDefinition plotFunction = objectMapper.readValue(url, FunctionDefinition.class);
             this.backend.addFunction(RuntimeFunctionDefinition.builder()
-                    .type(FunctionType.visualize)
-                    .function(plotFunction)
-                    .context(List.of())
-                    .build());
+                .type(FunctionType.visualize)
+                .function(plotFunction)
+                .context(List.of())
+                .build());
           } catch (IOException e) {
             e.printStackTrace();
           }
@@ -90,9 +99,42 @@ public class SimpleServer {
       }
     }
 
-//    Think of extracting this into a Utils class
+    //    Think of extracting this into a Utils class
     private OpenAiService getService() {
-      return switch(this.example.getProvider()) {
+      String modelId = "anthropic.claude-v2";
+      String prompt = "How do I write AWS Bedrock code to access Llama3?";
+      EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
+      try (BedrockRuntimeClient bedrockClient = BedrockRuntimeClient.builder()
+          .region(Region.US_WEST_2)
+          .credentialsProvider(credentialsProvider)
+          .build()) {
+        String bedrockBody = BedrockRequestBody.builder()
+            .withModelId(modelId)
+            .withPrompt(prompt)
+            .withInferenceParameter("max_tokens_to_sample", 2048)
+            .withInferenceParameter("temperature", 0.3)
+            .withInferenceParameter("top_k", 250)
+            .withInferenceParameter("top_p", 1)
+            .build();
+
+        InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
+            .modelId(modelId)
+            .body(SdkBytes.fromString(bedrockBody, Charset.defaultCharset()))
+            .build();
+
+        InvokeModelResponse invokeModelResponse = bedrockClient.invokeModel(invokeModelRequest);
+        JSONObject responseAsJson = new JSONObject(invokeModelResponse.body().asUtf8String());
+
+        System.out.println("🤖 Response: ");
+        System.out.println(responseAsJson
+            .getString("completion"));
+
+      } catch (Exception e) {
+        System.out.println("AWS Bedrock Exception:\n" + e);
+
+      }
+
+      return switch (this.example.getProvider()) {
         case OPENAI -> {
           String openAIToken = System.getenv("OPENAI_TOKEN");
           yield new OpenAiService(openAIToken, Duration.ofSeconds(60));
@@ -113,20 +155,21 @@ public class SimpleServer {
               .build();
           yield new OpenAiService(retrofit.create(OpenAiApi.class));
         }
+        case BEDROCK -> null;
       };
     }
 
-    private AbstractChatSession<ChatMessage, ChatFunctionCall> getSession(Map<String,Object> context) {
+    private AbstractChatSession<ChatMessage, ChatFunctionCall> getSession(Map<String, Object> context) {
       if (example.getProvider() == ModelProvider.OPENAI) {
-        return new OpenAIChatSession((ChatModel) example.getModel(), systemMessage, backend, context);
+        return new OpenAIChatSession((OpenAiChatModel) example.getModel(), systemMessage, backend, context);
       } else {
-        return new GroqChatSession((com.datasqrl.ai.models.groq.ChatModel) example.getModel(), systemMessage, backend, context);
+        return new GroqChatSession((GroqChatModel) example.getModel(), systemMessage, backend, context);
       }
     }
 
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
-      Map<String,Object> context = example.getContext(userId);
+      Map<String, Object> context = example.getContext(userId);
       AbstractChatSession<ChatMessage, ChatFunctionCall> session = getSession(context);
       List<ChatMessage> messages = session.retrieveMessageHistory(50);
       return messages.stream().filter(m -> {
@@ -140,7 +183,7 @@ public class SimpleServer {
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
-      Map<String,Object> context = example.getContext(message.getUserId());
+      Map<String, Object> context = example.getContext(message.getUserId());
       AbstractChatSession<ChatMessage, ChatFunctionCall> session = getSession(context);
       int numMsg = session.retrieveMessageHistory(20).size();
       System.out.printf("Retrieved %d messages\n", numMsg);

@@ -32,7 +32,7 @@ public class OpenAITokenCounter implements ModelAnalyzer<ChatMessage> {
     return countTokens(jsonString);
   }
 
-  public static OpenAITokenCounter of(ChatModel model) {
+  public static OpenAITokenCounter of(OpenAiChatModel model) {
     return new OpenAITokenCounter(Encodings.newDefaultEncodingRegistry().getEncodingForModel(model.getEncodingModel()));
   }
 }
