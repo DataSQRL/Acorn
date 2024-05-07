@@ -4,11 +4,11 @@ import com.datasqrl.ai.Examples;
 import com.datasqrl.ai.ModelProvider;
 import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.*;
-import com.datasqrl.ai.models.bedrock.BedrockRequestBody;
 import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.datasqrl.ai.models.groq.GroqChatSession;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.client.OpenAiApi;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -20,6 +20,7 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
+import lombok.SneakyThrows;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import org.json.JSONObject;
@@ -44,9 +45,9 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,62 @@ public class SimpleServer {
     FunctionBackend backend;
     ChatMessage systemMessage;
 
+    private String createLlama3SystemPrompt(String prompt, Collection<RuntimeFunctionDefinition> functions) {
+      ObjectMapper objectMapper = new ObjectMapper();
+      String functionText = functions.stream()
+          .map(f ->
+              objectMapper.createObjectNode()
+                  .put("type", "function")
+                  .set("function", objectMapper.valueToTree(f.getFunction()))
+          )
+          .map(value -> {
+            try {
+              return objectMapper.writeValueAsString(value);
+            } catch (JsonProcessingException e) {
+              throw new RuntimeException(e);
+            }
+          })
+          .collect(Collectors.joining("\n\n"));
 
+      String text = "<|begin_of_text|>\n"
+          + "<|start_header_id|>system<|end_header_id|>\n"
+          + prompt + "\n"
+          + functionText + "\n"
+          + "<|eot_id|>\n";
+      return text;
+    }
+
+    private String createLlama3UserMessage(String content) {
+      return "<|start_header_id|>user<|end_header_id|>\n"
+          + content + "\n"
+          + "<|eot_id|>\n";
+    }
+
+    private String createLlama3AssistantMessage(String content) {
+      return "<|start_header_id|>assistant<|end_header_id|>\n"
+          + content + "\n"
+          + "<|eot_id|>\n";
+    }
+
+    private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt) {
+      JSONObject request = new JSONObject()
+          .put("prompt", prompt)
+          .put("max_gen_len", 512)
+          .put("temperature", 0.1F)
+          .put("top_p", 0.5F);
+
+      System.out.println("Bedrock Request: " + request.toString());
+      System.out.println("Prompt: " + prompt);
+      InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
+          .modelId(modelId)
+          .body(SdkBytes.fromUtf8String(request.toString()))
+          .build();
+
+      InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
+      return new JSONObject(invokeModelResponse.body().asUtf8String());
+    }
+
+    @SneakyThrows
     public MessageController(@Value("${example:nutshop}") String exampleName) throws IOException {
       this.example = Examples.valueOf(exampleName.trim().toUpperCase());
       this.service = this.getService();
@@ -97,43 +153,29 @@ public class SimpleServer {
           }
         }
       }
+//      String modelId = "meta.llama3-70b-instruct-v1:0";
+//      String userMessage = "Plot my expenses in January";
+//      EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
+//      try (BedrockRuntimeClient bedrockClient = BedrockRuntimeClient.builder()
+//          .region(Region.US_WEST_2)
+//          .credentialsProvider(credentialsProvider)
+//          .build()) {
+//        String prompt = createLlama3SystemPrompt(example.getSystemPrompt(), backend.getFunctions().values())
+//            + createLlama3UserMessage(userMessage)
+//            + createLlama3AssistantMessage("{\"function\": \"transactions\", \"arguments\": {\"customerid\": 123456, \"fromTime\": \"2024-01-01T00:00:00-00:00\", \"toTime\": \"2024-01-31T23:59:59-00:00\"}}")
+//            + createLlama3UserMessage(userMessage);
+//        JSONObject responseAsJson = promptBedrock(bedrockClient, modelId, prompt);
+//
+//        System.out.println("🤖Bedrock Response: ");
+//        System.out.println(responseAsJson.get("generation"));
+//        System.out.println(responseAsJson);
+//      } catch (Exception e) {
+//        System.out.println("AWS Bedrock Exception:\n" + e);
+//      }
     }
 
     //    Think of extracting this into a Utils class
     private OpenAiService getService() {
-      String modelId = "anthropic.claude-v2";
-      String prompt = "How do I write AWS Bedrock code to access Llama3?";
-      EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
-      try (BedrockRuntimeClient bedrockClient = BedrockRuntimeClient.builder()
-          .region(Region.US_WEST_2)
-          .credentialsProvider(credentialsProvider)
-          .build()) {
-        String bedrockBody = BedrockRequestBody.builder()
-            .withModelId(modelId)
-            .withPrompt(prompt)
-            .withInferenceParameter("max_tokens_to_sample", 2048)
-            .withInferenceParameter("temperature", 0.3)
-            .withInferenceParameter("top_k", 250)
-            .withInferenceParameter("top_p", 1)
-            .build();
-
-        InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
-            .modelId(modelId)
-            .body(SdkBytes.fromString(bedrockBody, Charset.defaultCharset()))
-            .build();
-
-        InvokeModelResponse invokeModelResponse = bedrockClient.invokeModel(invokeModelRequest);
-        JSONObject responseAsJson = new JSONObject(invokeModelResponse.body().asUtf8String());
-
-        System.out.println("🤖 Response: ");
-        System.out.println(responseAsJson
-            .getString("completion"));
-
-      } catch (Exception e) {
-        System.out.println("AWS Bedrock Exception:\n" + e);
-
-      }
-
       return switch (this.example.getProvider()) {
         case OPENAI -> {
           String openAIToken = System.getenv("OPENAI_TOKEN");

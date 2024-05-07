@@ -1,6 +1,7 @@
 package com.datasqrl.ai;
 
 import com.datasqrl.ai.models.GenericLanguageModel;
+
 import java.util.Map;
 import java.util.function.Function;
 
@@ -19,14 +20,14 @@ import lombok.Getter;
 public enum Examples {
 
   GROQSHOP(GroqChatModel.LLAMA3_70B,
-          ModelProvider.GROQ,
-          "../api-examples/nutshop/nutshop-c360.tools.json",
-          "customerid", (Integer::parseInt), false,
-          "http://localhost:8888/graphql",
-          "You are a shopping assistant for an US nut shop that helps customers "
-                  + "answer questions about their orders and shopping. "
-                  + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
-                  + "You talk like a butler in very formal and over-the-top friendly tone with frequent compliments."),
+      ModelProvider.GROQ,
+      "../api-examples/nutshop/nutshop-c360.tools.json",
+      "customerid", (Integer::parseInt), false,
+      "http://localhost:8888/graphql",
+      "You are a shopping assistant for an US nut shop that helps customers "
+          + "answer questions about their orders and shopping. "
+          + "All your answers are based on the specific information retrieved about a customer. You don't provide general answers. "
+          + "You talk like a butler in very formal and over-the-top friendly tone with frequent compliments."),
   NUTSHOP(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/nutshop/nutshop-c360.tools.json",
@@ -77,17 +78,32 @@ public enum Examples {
           + "Today's date is January 18th, 2024."
           + "You answer in one of two ways: 1) in markdown syntax using tables where appropriate to show data or 2) by calling the `_chart` function to display the data in a suitable fashion."
           + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function."),
-  GROQVISUAL(GroqChatModel.LLAMA3_70B,
-      ModelProvider.GROQ,
+  BEDROCK(GroqChatModel.LLAMA3_70B,
+      ModelProvider.BEDROCK,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), true,
       "http://localhost:8888/graphql",
-      "You are a helpful customer service representative for a credit card company who helps answer customer questions about their"
-          + "past transactions and spending history. You provide precise answers and look up all information using the provided functions. "
-          + "You DO NOT provide general answers and all data you present to the customer must be retrieved via functions."
-          + "Today's date is January 18th, 2024."
-          + "You answer in one of two ways: 1) in markdown syntax using tables where appropriate to show data or 2) by calling the `_chart` function to display the data in a suitable fashion."
-          + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function.");
+      "You are a helpful customer service representative for a credit card company who helps answer customer questions about their "
+          + "past transactions and spending history. Today's date is January 18th, 2024. "
+          + "You provide precise answers and use functions to look up information. "
+          + "You DO NOT provide general answers and only give an answer after you retrieved all the data you need via functions. "
+          + "Only invoke one function at a time and wait for the results before invoking another function."
+          + "When you have worked out your answer, you answer the user question in one of two ways: "
+          + "1) in markdown syntax using tables where appropriate to show data or "
+          + "2) by calling the `_chart` function to display the data in a suitable fashion. "
+          + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function. "
+          + "You should only call the `_chart` function when you already have the data to display in the chart."
+          + "To call a function, respond only with a JSON object of the following format: "
+          + "{function\": \"$FUNCTION_NAME\","
+          + "  \"parameters\": {"
+          + "  \"$PARAMETER_NAME1\": \"$PARAMETER_VALUE1\","
+          + "  \"$PARAMETER_NAME2\": \"$PARAMETER_VALUE2\","
+          + "  ..."
+          + "}\n"
+//          + "You will get a function result from the user in the following format: "
+//          +""
+          + "Here are the functions you can use:"
+  );
 
 
   @Getter
@@ -97,7 +113,7 @@ public enum Examples {
   @Getter
   String configFile;
   private String userIdFieldName;
-  private Function<String,Object> prepareUserIdFct;
+  private Function<String, Object> prepareUserIdFct;
   @Getter
   boolean supportCharts;
   @Getter
@@ -106,10 +122,10 @@ public enum Examples {
   String systemPrompt;
 
   public boolean hasUserId() {
-    return userIdFieldName!=null;
+    return userIdFieldName != null;
   }
 
-  public Map<String,Object> getContext(String userid) {
+  public Map<String, Object> getContext(String userid) {
     if (!hasUserId()) return Map.of();
     return Map.of(userIdFieldName, prepareUserIdFct.apply(userid));
   }
