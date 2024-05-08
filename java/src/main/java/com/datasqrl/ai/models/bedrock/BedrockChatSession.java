@@ -1,11 +1,8 @@
 package com.datasqrl.ai.models.bedrock;
 
-import com.datasqrl.ai.backend.AbstractChatSession;
-import com.datasqrl.ai.backend.ChatSessionComponents;
-import com.datasqrl.ai.backend.ContextWindow;
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.backend.GenericChatMessage;
+import com.datasqrl.ai.backend.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.Map;
@@ -16,7 +13,8 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
   BedrockChatModel chatModel;
   BedrockTokenCounter tokenCounter;
 
-  public BedrockChatSession(BedrockChatModel model, BedrockChatMessage systemMessage,
+  public BedrockChatSession(BedrockChatModel model,
+                            BedrockChatMessage systemMessage,
                             FunctionBackend backend,
                             Map<String, Object> sessionContext) {
     super(backend, sessionContext, null);
@@ -70,12 +68,11 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
     };
   }
 
-
   @Override
   protected GenericChatMessage convertMessage(BedrockChatMessage msg) {
     BedrockFunctionCall fctCall = null;
     if (msg.getRole() == BedrockChatRole.ASSISTANT) {
-      fctCall = getFunctionCallFromMessage(msg);
+      fctCall = msg.getFunctionCall();
     }
     return GenericChatMessage.builder()
         .role(msg.getRole().getRole())
@@ -87,16 +84,24 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
         .build();
   }
 
-  private BedrockFunctionCall getFunctionCallFromMessage(BedrockChatMessage msg) {
-    BedrockFunctionCall functionCall = null;
-    String textContent = msg.getTextContent();
-    if (textContent.contains("{\"function\":")) {
-      int start = textContent.indexOf("{\"function\":");
-      int end = textContent.lastIndexOf("{");
-      String jsonContent = textContent.substring(start, end);
-      System.out.println(jsonContent);
-    }
-    return functionCall;
+  public String createSystemMessage(String prompt) {
+    ContextWindow<GenericChatMessage> context = getWindow(chatModel.getMaxInputTokens(), tokenCounter);
+    ObjectMapper objectMapper = new ObjectMapper();
+    String functionText = context.getFunctions().stream()
+        .map(f ->
+            objectMapper.createObjectNode()
+                .put("type", "function")
+                .set("function", objectMapper.valueToTree(f))
+        )
+        .map(value -> {
+          try {
+            return objectMapper.writeValueAsString(value);
+          } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        })
+        .collect(Collectors.joining("\n\n"));
+    return prompt + "\n" + functionText + "\n";
   }
 
   private static String functionCall2String(BedrockFunctionCall fctCall) {
