@@ -1,38 +1,40 @@
-package com.datasqrl.ai.models.openai;
+package com.datasqrl.ai.models.groq;
 
-import com.datasqrl.ai.backend.ModelAnalyzer;
+import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
 import com.datasqrl.ai.backend.FunctionDefinition;
+import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.knuddels.jtokkit.Encodings;
-import com.knuddels.jtokkit.api.Encoding;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;
 import lombok.Value;
 
 @Value
-public class OpenAITokenCounter implements ModelAnalyzer<ChatMessage> {
+public class GroqTokenCounter implements ModelAnalyzer<ChatMessage> {
 
-  Encoding encoding;
+  HuggingFaceTokenizer tokenizer;
 
+  @Override
   public int countTokens(ChatMessage message) {
     int numTokens = countTokens(message.getTextContent());
     return numTokens + numTokens / 10; //Add a 10% buffer
   }
 
   private int countTokens(String message) {
-    return encoding.countTokens(message);
+    if (message == null) {
+      return 0;
+    }
+    return tokenizer.encode(message).getTokens().length;
   }
 
-
-  @Override
   @SneakyThrows
+  @Override
   public int countTokens(FunctionDefinition function) {
     ObjectMapper mapper = new ObjectMapper();
     String jsonString = mapper.writeValueAsString(function);
     return countTokens(jsonString);
   }
 
-  public static OpenAITokenCounter of(ChatModel model) {
-    return new OpenAITokenCounter(Encodings.newDefaultEncodingRegistry().getEncodingForModel(model.getEncodingModel()));
+  public static GroqTokenCounter of(ChatModel model) {
+    return new GroqTokenCounter(HuggingFaceTokenizer.newInstance(model.tokenizerName));
   }
 }
