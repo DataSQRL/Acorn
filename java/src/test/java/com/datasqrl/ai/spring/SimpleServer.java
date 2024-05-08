@@ -10,8 +10,6 @@ import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.datasqrl.ai.models.groq.GroqChatSession;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.client.OpenAiApi;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -50,7 +48,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -282,12 +279,53 @@ public class SimpleServer {
           ChatSessionComponents<BedrockChatMessage> sessionComponents = session.getSessionComponents();
           String prompt = sessionComponents.getMessages().stream()
               .map(value -> {
-                return this.formatter.formatMessage(value);
+                return this.formatter.encodeMessage(value);
               })
               .collect(Collectors.joining("\n"));
           JSONObject responseAsJson = promptBedrock(client, example.getModel().getModelName(), prompt, example.getModel().getCompletionLength());
+          BedrockChatMessage responseMessage = (BedrockChatMessage) formatter.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
+          session.addMessage(responseMessage);
+          BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
+          if (functionCall != null) {
+            FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
+            if (fctValid.isValid()) {
+              if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
+                return ResponseMessage.of(responseMessage);
+              } else {
+                System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
+                    + functionCall.getArguments().toPrettyString());
+                BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall);
+                System.out.println("Executed " + functionCall.getFunctionName() + " with results: " + functionResponse.getTextContent());
+                session.addMessage(functionResponse);
+              }
+            } //TODO: add retry in case of invalid function call
+          } else {
+            //The text answer
+            return ResponseMessage.of(responseMessage);
+          }
+        }
 
+      } else {
+        AbstractChatSession<ChatMessage, ChatFunctionCall> session = getSession(context);
+        int numMsg = session.retrieveMessageHistory(20).size();
+        System.out.printf("Retrieved %d messages\n", numMsg);
+        ChatMessage chatMessage = new UserMessage(message.getContent());
+        session.addMessage(chatMessage);
 
+        while (true) {
+          System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
+          ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
+          ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+              .builder()
+              .model(example.getModel().getModelName())
+              .messages(sessionComponents.getMessages())
+              .functions(sessionComponents.getFunctions())
+              .functionCall("auto")
+              .n(1)
+              .maxTokens(example.getModel().getCompletionLength())
+              .logitBias(new HashMap<>())
+              .build();
+          AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
           session.addMessage(responseMessage);
 
           ChatFunctionCall functionCall = responseMessage.getFunctionCall();
@@ -308,49 +346,8 @@ public class SimpleServer {
             //The text answer
             return ResponseMessage.of(responseMessage);
           }
-        } else{
-          AbstractChatSession<ChatMessage, ChatFunctionCall> session = getSession(context);
-          int numMsg = session.retrieveMessageHistory(20).size();
-          System.out.printf("Retrieved %d messages\n", numMsg);
-          ChatMessage chatMessage = new UserMessage(message.getContent());
-          session.addMessage(chatMessage);
-
-          while (true) {
-            System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
-            ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
-            ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
-                .builder()
-                .model(example.getModel().getModelName())
-                .messages(sessionComponents.getMessages())
-                .functions(sessionComponents.getFunctions())
-                .functionCall("auto")
-                .n(1)
-                .maxTokens(example.getModel().getCompletionLength())
-                .logitBias(new HashMap<>())
-                .build();
-            AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
-            session.addMessage(responseMessage);
-
-            ChatFunctionCall functionCall = responseMessage.getFunctionCall();
-            if (functionCall != null) {
-              FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
-              if (fctValid.isValid()) {
-                if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-                  return ResponseMessage.of(responseMessage);
-                } else {
-                  System.out.println("Executing " + functionCall.getName() + " with arguments "
-                      + functionCall.getArguments().toPrettyString());
-                  FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall);
-                  System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
-                  session.addMessage(functionResponse);
-                }
-              } //TODO: add retry in case of invalid function call
-            } else {
-              //The text answer
-              return ResponseMessage.of(responseMessage);
-            }
-          }
         }
       }
     }
   }
+}

@@ -5,6 +5,7 @@ import com.datasqrl.ai.models.GenericLanguageModel;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.datasqrl.ai.models.bedrock.BedrockChatModel;
 import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.spring.SimpleServer;
@@ -89,7 +90,7 @@ public enum Examples {
           + "Today's date is January 18th, 2024."
           + "You answer in one of two ways: 1) in markdown syntax using tables where appropriate to show data or 2) by calling the `_chart` function to display the data in a suitable fashion."
           + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function."),
-  BEDROCK(GroqChatModel.LLAMA3_70B,
+  BEDROCK(BedrockChatModel.LLAMA3_70B,
       ModelProvider.BEDROCK,
       "../api-examples/finance/creditcard.tools.json",
       "customerid", (Integer::parseInt), true,

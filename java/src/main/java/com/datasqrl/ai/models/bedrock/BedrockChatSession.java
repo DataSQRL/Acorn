@@ -48,7 +48,7 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
   @Override
   public BedrockChatMessage executeFunctionCall(BedrockFunctionCall chatFunctionCall) {
     try {
-      return new BedrockChatMessage(BedrockChatRole.USER,
+      return new BedrockChatMessage(BedrockChatRole.FUNCTION,
           backend.executeFunctionCall(chatFunctionCall.getFunctionName(), chatFunctionCall.getArguments(), sessionContext),
           chatFunctionCall.getFunctionName());
     } catch (Exception e) {
@@ -85,9 +85,10 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
   }
 
   private BedrockChatMessage combineSystemPromptAndFunctions(String prompt) {
-    ContextWindow<GenericChatMessage> context = getWindow(chatModel.getMaxInputTokens(), tokenCounter);
     ObjectMapper objectMapper = new ObjectMapper();
-    String functionText = context.getFunctions().stream()
+//    Note: This approach does not take into account the context window for the system prompt
+    String functionText = this.backend.getFunctions().values().stream()
+        .map(RuntimeFunctionDefinition::getChatFunction)
         .map(f ->
             objectMapper.createObjectNode()
                 .put("type", "function")
@@ -100,7 +101,7 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
             throw new RuntimeException(e);
           }
         })
-        .collect(Collectors.joining("\n\n"));
+        .collect(Collectors.joining("\n"));
     return new BedrockChatMessage(BedrockChatRole.SYSTEM, prompt + "\n" + functionText + "\n", "");
   }
 
