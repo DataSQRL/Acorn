@@ -101,12 +101,12 @@ public class SimpleServer {
           String groqApiKey = System.getenv("GROQ_API_KEY");
           ObjectMapper mapper = defaultObjectMapper();
           HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-          logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+          logging.setLevel(HttpLoggingInterceptor.Level.NONE); // Change to .BODY to see the request body
           OkHttpClient client = defaultClient(groqApiKey, Duration.ofSeconds(60))
               .newBuilder()
               .addInterceptor(logging)
               .build();
-          Retrofit retrofit = new Retrofit.Builder().baseUrl(GROQ_URL) // Retrofit automatically cuts the 'openai/' part of this baseURL for the service requests :(
+          Retrofit retrofit = new Retrofit.Builder().baseUrl(GROQ_URL)
               .client(client)
               .addConverterFactory(JacksonConverterFactory.create(mapper))
               .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
