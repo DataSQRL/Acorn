@@ -149,11 +149,12 @@ public class SimpleServer {
 
       while (true) {
         System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
+        ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
         ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
             .builder()
             .model(example.getModel().getModelName())
-            .messages(session.getMessages())
-            .functions(session.getFunctions())
+            .messages(sessionComponents.getMessages())
+            .functions(sessionComponents.getFunctions())
             .functionCall("auto")
             .n(1)
             .maxTokens(example.getModel().getCompletionLength())
