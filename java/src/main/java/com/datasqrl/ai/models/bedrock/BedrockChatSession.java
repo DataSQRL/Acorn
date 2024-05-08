@@ -20,7 +20,7 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
     super(backend, sessionContext, null);
     this.chatModel = model;
     this.tokenCounter = BedrockTokenCounter.of(model);
-    this.systemMessage = convertMessage(systemMessage);
+    this.systemMessage = convertMessage(combineSystemPromptAndFunctions(systemMessage.getTextContent()));
   }
 
   @Override
@@ -84,7 +84,7 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
         .build();
   }
 
-  public String createSystemMessage(String prompt) {
+  private BedrockChatMessage combineSystemPromptAndFunctions(String prompt) {
     ContextWindow<GenericChatMessage> context = getWindow(chatModel.getMaxInputTokens(), tokenCounter);
     ObjectMapper objectMapper = new ObjectMapper();
     String functionText = context.getFunctions().stream()
@@ -101,7 +101,7 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
           }
         })
         .collect(Collectors.joining("\n\n"));
-    return prompt + "\n" + functionText + "\n";
+    return new BedrockChatMessage(BedrockChatRole.SYSTEM, prompt + "\n" + functionText + "\n", "");
   }
 
   private static String functionCall2String(BedrockFunctionCall fctCall) {
