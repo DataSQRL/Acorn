@@ -1,6 +1,7 @@
 package com.datasqrl.ai;
 
 import com.datasqrl.ai.api.GraphQLExecutor;
+import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
@@ -70,11 +71,12 @@ public class CmdLineChatBot {
     session.addMessage(firstMsg);
 
     while (true) {
+      ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(chatModel.getModelName())
-          .messages(session.getMessages())
-          .functions(session.getFunctions())
+          .messages(sessionComponents.getMessages())
+          .functions(sessionComponents.getFunctions())
           .functionCall("auto")
           .n(1)
           .maxTokens(chatModel.getCompletionLength())

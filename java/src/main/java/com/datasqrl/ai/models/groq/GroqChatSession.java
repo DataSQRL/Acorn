@@ -1,11 +1,6 @@
 package com.datasqrl.ai.models.groq;
 
-import com.datasqrl.ai.backend.AbstractChatSession;
-import com.datasqrl.ai.backend.ContextWindow;
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.backend.GenericChatMessage;
+import com.datasqrl.ai.backend.*;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -34,15 +29,11 @@ public class GroqChatSession extends AbstractChatSession<ChatMessage, ChatFuncti
     this.systemMessage = convertMessage(systemMessage);
   }
 
-  public List<ChatMessage> getMessages() {
+  @Override
+  public ChatSessionComponents<ChatMessage> getSessionComponents() {
     ContextWindow<GenericChatMessage> context = getWindow(chatModel.getMaxInputTokens(), tokenCounter);
-    return context.getMessages().stream().map(this::convertMessage).collect(
-        Collectors.toUnmodifiableList());
-  }
-
-  public List<FunctionDefinition> getFunctions() {
-    ContextWindow<GenericChatMessage> context = getWindow(chatModel.getMaxInputTokens(), tokenCounter);
-    return context.getFunctions();
+    return new ChatSessionComponents<>(context.getMessages().stream().map(this::convertMessage).collect(
+        Collectors.toUnmodifiableList()), context.getFunctions());
   }
 
   private FunctionMessage convertExceptionToMessage(Exception exception) {

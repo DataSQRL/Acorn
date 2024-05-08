@@ -61,9 +61,7 @@ public abstract class AbstractChatSession<Message, FunctionCall> {
 
   public abstract Message executeFunctionCall(FunctionCall call);
 
-  public abstract List<Message> getMessages();
-
-  public abstract List<FunctionDefinition> getFunctions();
+  public abstract ChatSessionComponents<Message> getSessionComponents();
 
   protected abstract Message convertMessage(GenericChatMessage message);
 
