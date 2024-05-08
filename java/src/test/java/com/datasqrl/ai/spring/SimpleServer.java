@@ -153,25 +153,36 @@ public class SimpleServer {
           }
         }
       }
-//      String modelId = "meta.llama3-70b-instruct-v1:0";
-//      String userMessage = "Plot my expenses in January";
-//      EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
-//      try (BedrockRuntimeClient bedrockClient = BedrockRuntimeClient.builder()
-//          .region(Region.US_WEST_2)
-//          .credentialsProvider(credentialsProvider)
-//          .build()) {
+      String modelId = "meta.llama3-70b-instruct-v1:0";
+      String userMessage = "Plot my expenses in January";
+      EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
+      try (BedrockRuntimeClient bedrockClient = BedrockRuntimeClient.builder()
+          .region(Region.US_WEST_2)
+          .credentialsProvider(credentialsProvider)
+          .build()) {
+        String prompt = createLlama3SystemPrompt(example.getSystemPrompt(), backend.getFunctions().values())
+            + createLlama3UserMessage(userMessage);
 //        String prompt = createLlama3SystemPrompt(example.getSystemPrompt(), backend.getFunctions().values())
 //            + createLlama3UserMessage(userMessage)
 //            + createLlama3AssistantMessage("{\"function\": \"transactions\", \"arguments\": {\"customerid\": 123456, \"fromTime\": \"2024-01-01T00:00:00-00:00\", \"toTime\": \"2024-01-31T23:59:59-00:00\"}}")
 //            + createLlama3UserMessage(userMessage);
-//        JSONObject responseAsJson = promptBedrock(bedrockClient, modelId, prompt);
-//
-//        System.out.println("🤖Bedrock Response: ");
-//        System.out.println(responseAsJson.get("generation"));
-//        System.out.println(responseAsJson);
-//      } catch (Exception e) {
-//        System.out.println("AWS Bedrock Exception:\n" + e);
-//      }
+        JSONObject responseAsJson = promptBedrock(bedrockClient, modelId, prompt);
+        System.out.println("🤖Bedrock Response: ");
+        System.out.println(responseAsJson);
+        System.out.println(responseAsJson.get("generation"));
+        String textContent = responseAsJson.get("generation").toString();
+        if (textContent.contains("{\"function\":")) {
+          int start = textContent.indexOf("{\"function\":");
+          int end = textContent.lastIndexOf("{");
+          String jsonContent = textContent.substring(start, end);
+          System.out.println("Function call detected: " + jsonContent);
+        } else {
+          System.out.println("No Function call detected.");
+
+        }
+      } catch (Exception e) {
+        System.out.println("AWS Bedrock Exception:\n" + e);
+      }
     }
 
     //    Think of extracting this into a Utils class
