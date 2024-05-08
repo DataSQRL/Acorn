@@ -78,6 +78,17 @@ public enum Examples {
           + "Today's date is January 18th, 2024."
           + "You answer in one of two ways: 1) in markdown syntax using tables where appropriate to show data or 2) by calling the `_chart` function to display the data in a suitable fashion."
           + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function."),
+  GROQVISUAL(GroqChatModel.LLAMA3_70B,
+      ModelProvider.GROQ,
+      "../api-examples/finance/creditcard.tools.json",
+      "customerid", (Integer::parseInt), true,
+      "http://localhost:8888/graphql",
+      "You are a helpful customer service representative for a credit card company who helps answer customer questions about their"
+          + "past transactions and spending history. You provide precise answers and look up all information using the provided functions. "
+          + "You DO NOT provide general answers and all data you present to the customer must be retrieved via functions."
+          + "Today's date is January 18th, 2024."
+          + "You answer in one of two ways: 1) in markdown syntax using tables where appropriate to show data or 2) by calling the `_chart` function to display the data in a suitable fashion."
+          + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function."),
   BEDROCK(GroqChatModel.LLAMA3_70B,
       ModelProvider.BEDROCK,
       "../api-examples/finance/creditcard.tools.json",
