@@ -80,12 +80,10 @@ public class SimpleServer {
           .put("prompt", prompt)
           .put("max_gen_len", maxTokens)
           .put("temperature", 0F);
-
       InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
           .modelId(modelId)
           .body(SdkBytes.fromUtf8String(request.toString()))
           .build();
-
       InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
       JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
       System.out.println("🤖Bedrock Response:\n" + jsonObject);
@@ -199,87 +197,96 @@ public class SimpleServer {
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
-      Map<String, Object> context = example.getContext(message.getUserId());
       if (example.getProvider() == ModelProvider.BEDROCK) {
-        BedrockChatSession session = (BedrockChatSession) getSession(context);
-        int numMsg = session.retrieveMessageHistory(20).size();
-        System.out.printf("Retrieved %d messages\n", numMsg);
-        BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message.getContent(), "");
-        session.addMessage(chatMessage);
-
-        while (true) {
-          ChatSessionComponents<BedrockChatMessage> sessionComponents = session.getSessionComponents();
-          String prompt = sessionComponents.getMessages().stream()
-              .map(value -> {
-                return this.encoder.encodeMessage(value);
-              })
-              .collect(Collectors.joining("\n"));
-          System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
-//          System.out.println(" and prompt:\n" + prompt);
-          JSONObject responseAsJson = promptBedrock(client, example.getModel().getModelName(), prompt, example.getModel().getCompletionLength());
-          BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
-          session.addMessage(responseMessage);
-          BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
-          if (functionCall != null) {
-            FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
-            if (fctValid.isValid()) {
-              if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-                return ResponseMessage.of(responseMessage);
-              } else {
-                System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
-                    + functionCall.getArguments().toPrettyString());
-                BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall);
-                System.out.println("Executed " + functionCall.getFunctionName() + " with results: " + functionResponse.getTextContent());
-                session.addMessage(functionResponse);
-              }
-            } //TODO: add retry in case of invalid function call
-          } else {
-            //The text answer
-            return ResponseMessage.of(responseMessage);
-          }
-        }
-
+        return this.respondToBedrockMessage(message);
       } else {
-        AbstractChatSession<ChatMessage, ChatFunctionCall> session = getSession(context);
-        int numMsg = session.retrieveMessageHistory(20).size();
-        System.out.printf("Retrieved %d messages\n", numMsg);
-        ChatMessage chatMessage = new UserMessage(message.getContent());
-        session.addMessage(chatMessage);
+        return this.respondToOpenAiApiMessage(message);
 
-        while (true) {
-          System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
-          ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
-          ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
-              .builder()
-              .model(example.getModel().getModelName())
-              .messages(sessionComponents.getMessages())
-              .functions(sessionComponents.getFunctions())
-              .functionCall("auto")
-              .n(1)
-              .maxTokens(example.getModel().getCompletionLength())
-              .logitBias(new HashMap<>())
-              .build();
-          AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
-          session.addMessage(responseMessage);
+      }
+    }
 
-          ChatFunctionCall functionCall = responseMessage.getFunctionCall();
-          if (functionCall != null) {
-            FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
-            if (fctValid.isValid()) {
-              if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-                return ResponseMessage.of(responseMessage);
-              } else {
-                System.out.println("Executing " + functionCall.getName() + " with arguments "
-                    + functionCall.getArguments().toPrettyString());
-                FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall);
-                System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
-                session.addMessage(functionResponse);
-              }
-            } //TODO: add retry in case of invalid function call
-          } else {
-            //The text answer
-            return ResponseMessage.of(responseMessage);
-          }
+    private ResponseMessage respondToOpenAiApiMessage(InputMessage message) {
+      Map<String, Object> context = example.getContext(message.getUserId());
+      AbstractChatSession<ChatMessage, ChatFunctionCall> session = getSession(context);
+      int numMsg = session.retrieveMessageHistory(20).size();
+      System.out.printf("Retrieved %d messages\n", numMsg);
+      ChatMessage chatMessage = new UserMessage(message.getContent());
+      session.addMessage(chatMessage);
+
+      while (true) {
+        System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
+        ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
+        ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+            .builder()
+            .model(example.getModel().getModelName())
+            .messages(sessionComponents.getMessages())
+            .functions(sessionComponents.getFunctions())
+            .functionCall("auto")
+            .n(1)
+            .maxTokens(example.getModel().getCompletionLength())
+            .logitBias(new HashMap<>())
+            .build();
+        AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
+        session.addMessage(responseMessage);
+
+        ChatFunctionCall functionCall = responseMessage.getFunctionCall();
+        if (functionCall != null) {
+          FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
+          if (fctValid.isValid()) {
+            if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
+              return ResponseMessage.of(responseMessage);
+            } else {
+              System.out.println("Executing " + functionCall.getName() + " with arguments "
+                  + functionCall.getArguments().toPrettyString());
+              FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall);
+              System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
+              session.addMessage(functionResponse);
+            }
+          } //TODO: add retry in case of invalid function call
+        } else {
+          //The text answer
+          return ResponseMessage.of(responseMessage);
+        }
+      }
+    }
+
+    private ResponseMessage respondToBedrockMessage(InputMessage message) {
+      Map<String, Object> context = example.getContext(message.getUserId());
+      BedrockChatSession session = (BedrockChatSession) getSession(context);
+      int numMsg = session.retrieveMessageHistory(20).size();
+      System.out.printf("Retrieved %d messages\n", numMsg);
+      BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message.getContent(), "");
+      session.addMessage(chatMessage);
+
+      while (true) {
+        ChatSessionComponents<BedrockChatMessage> sessionComponents = session.getSessionComponents();
+        String prompt = sessionComponents.getMessages().stream()
+            .map(value -> {
+              return this.encoder.encodeMessage(value);
+            })
+            .collect(Collectors.joining("\n"));
+        System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
+//          System.out.println(" and prompt:\n" + prompt);
+        JSONObject responseAsJson = promptBedrock(client, example.getModel().getModelName(), prompt, example.getModel().getCompletionLength());
+        BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
+        session.addMessage(responseMessage);
+        BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
+        if (functionCall != null) {
+          FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
+          if (fctValid.isValid()) {
+            if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
+              return ResponseMessage.of(responseMessage);
+            } else {
+              System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
+                  + functionCall.getArguments().toPrettyString());
+              BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall);
+              System.out.println("Executed " + functionCall.getFunctionName() + " with results: " + functionResponse.getTextContent());
+              session.addMessage(functionResponse);
+            }
+          } //TODO: add retry in case of invalid function call
+        } else {
+          //The text answer
+          return ResponseMessage.of(responseMessage);
         }
       }
     }

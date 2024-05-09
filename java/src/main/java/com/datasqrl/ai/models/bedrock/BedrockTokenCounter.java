@@ -9,6 +9,8 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+// Added `BedrockTokenCounter` in order to keep the class separation, although it's the same as the `GroqTokenCounter`.
+// Think of merging these two into a `HuggingFaceTokenCounter` in the future
 @Value
 public class BedrockTokenCounter implements ModelAnalyzer<BedrockChatMessage> {
 
