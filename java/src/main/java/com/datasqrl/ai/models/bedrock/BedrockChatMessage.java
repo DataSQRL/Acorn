@@ -15,20 +15,18 @@ public class BedrockChatMessage {
   public BedrockFunctionCall getFunctionCall() {
     BedrockFunctionCall functionCall = null;
     if (textContent.contains("{\"function\":")) {
-      System.out.println("Message has function call");
       int start = textContent.indexOf("{\"function\":");
       int end = textContent.lastIndexOf("}") + 1;
       String jsonContent = textContent.substring(start, end);
-      System.out.println("JsonString:\n" + jsonContent);
       if (!jsonContent.isEmpty()) {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(jsonContent);
         if (jsonNode != null) {
-          functionCall = new BedrockFunctionCall(jsonNode.findValue("function").toString(), jsonNode.findValue("parameters"));
+          functionCall = new BedrockFunctionCall(jsonNode.get("function").asText(), jsonNode.get("parameters"));
         }
       }
     }
-    System.out.println(functionCall);
+    System.out.println("Message function call is: " + functionCall);
     return functionCall;
   }
 }

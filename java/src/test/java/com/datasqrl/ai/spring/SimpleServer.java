@@ -4,7 +4,7 @@ import com.datasqrl.ai.Examples;
 import com.datasqrl.ai.ModelProvider;
 import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.*;
-import com.datasqrl.ai.models.ChatMessageFormatter;
+import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.datasqrl.ai.models.bedrock.*;
 import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.datasqrl.ai.models.groq.GroqChatSession;
@@ -73,51 +73,7 @@ public class SimpleServer {
     GraphQLExecutor apiExecutor;
     FunctionBackend backend;
     BedrockRuntimeClient client;
-    ChatMessageFormatter formatter;
-
-//    private String createLlama3SystemPrompt(String prompt, Collection<RuntimeFunctionDefinition> functions) {
-//      ObjectMapper objectMapper = new ObjectMapper();
-//      String functionText = functions.stream()
-//          .map(f ->
-//              objectMapper.createObjectNode()
-//                  .put("type", "function")
-//                  .set("function", objectMapper.valueToTree(f.getFunction()))
-//          )
-//          .map(value -> {
-//            try {
-//              return objectMapper.writeValueAsString(value);
-//            } catch (JsonProcessingException e) {
-//              throw new RuntimeException(e);
-//            }
-//          })
-//          .collect(Collectors.joining("\n\n"));
-//
-//      String text = "<|begin_of_text|>\n"
-//          + "<|start_header_id|>system<|end_header_id|>\n"
-//          + prompt + "\n"
-//          + functionText + "\n"
-//          + "<|eot_id|>\n";
-//      return text;
-//    }
-//
-//    private String createLlama3UserMessage(String content) {
-//      return "<|start_header_id|>user<|end_header_id|>\n"
-//          + content + "\n"
-//          + "<|eot_id|>\n";
-//    }
-//
-//    private String createLlama3FunctionMessage(String content) {
-//      return "<|start_header_id|>function<|end_header_id|>\n"
-//          + content + "\n"
-//          + "<|eot_id|>\n";
-//    }
-//
-//
-//    private String createLlama3AssistantMessage(String content) {
-//      return "<|start_header_id|>assistant<|end_header_id|>\n"
-//          + content + "\n"
-//          + "<|eot_id|>\n";
-//    }
+    ChatMessageEncoder encoder;
 
     private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens) {
       JSONObject request = new JSONObject()
@@ -126,7 +82,6 @@ public class SimpleServer {
           .put("temperature", 0.1F);
 
       System.out.println("Bedrock Request: " + request.toString());
-      System.out.println("Prompt: " + prompt);
       InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
           .modelId(modelId)
           .body(SdkBytes.fromUtf8String(request.toString()))
@@ -162,28 +117,7 @@ public class SimpleServer {
           }
         }
       }
-//        JSONObject responseAsJson = promptBedrock(bedrockClient, modelId, prompt);
-//        System.out.println("🤖Bedrock Response: ");
-//        System.out.println(responseAsJson);
-//        System.out.println(responseAsJson.get("generation"));
-//        String textContent = responseAsJson.get("generation").toString();
-//        if (textContent.contains("{\"function\":")) {
-//          int start = textContent.indexOf("{\"function\":");
-//          int end = textContent.lastIndexOf("}");
-//          String jsonContent = textContent.substring(start, end + 1);
-//          ObjectMapper mapper = new ObjectMapper();
-//          JsonNode jsonNode = mapper.readTree(jsonContent);
-//          System.out.println("Function call detected: " + jsonNode);
-//        } else {
-//          System.out.println("No Function call detected.");
-//
-//        }
-//      } catch (Exception e) {
-//        System.out.println("AWS Bedrock Exception:\n" + e);
-//      }
     }
-
-    //    Think of extracting this into a Utils class
 
     private void setService() {
       switch (this.example.getProvider()) {
@@ -218,11 +152,11 @@ public class SimpleServer {
     }
 
     private void setFormatter() {
-      this.formatter = switch (example.getProvider()) {
+      this.encoder = switch (example.getProvider()) {
         case OPENAI, GROQ -> null;
         case BEDROCK -> {
           if (example.getModel() == BedrockChatModel.LLAMA3_70B || example.getModel() == BedrockChatModel.LLAMA3_7B) {
-            yield new Llama3MessageFormatter();
+            yield new Llama3MessageEncoder();
           } else {
             yield null;
           }
@@ -275,15 +209,15 @@ public class SimpleServer {
         session.addMessage(chatMessage);
 
         while (true) {
-          System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
           ChatSessionComponents<BedrockChatMessage> sessionComponents = session.getSessionComponents();
           String prompt = sessionComponents.getMessages().stream()
               .map(value -> {
-                return this.formatter.encodeMessage(value);
+                return this.encoder.encodeMessage(value);
               })
               .collect(Collectors.joining("\n"));
+          System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName() + "and prompt:\n" + prompt);
           JSONObject responseAsJson = promptBedrock(client, example.getModel().getModelName(), prompt, example.getModel().getCompletionLength());
-          BedrockChatMessage responseMessage = (BedrockChatMessage) formatter.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
+          BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
           session.addMessage(responseMessage);
           BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
           if (functionCall != null) {

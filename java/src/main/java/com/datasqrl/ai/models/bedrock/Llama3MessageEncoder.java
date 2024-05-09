@@ -1,10 +1,10 @@
 package com.datasqrl.ai.models.bedrock;
 
-import com.datasqrl.ai.models.ChatMessageFormatter;
+import com.datasqrl.ai.models.ChatMessageEncoder;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class Llama3MessageFormatter implements ChatMessageFormatter<BedrockChatMessage> {
+public class Llama3MessageEncoder implements ChatMessageEncoder<BedrockChatMessage> {
 
   public String encodeMessage(BedrockChatMessage message) {
     return switch (message.getRole()) {
@@ -19,7 +19,7 @@ public class Llama3MessageFormatter implements ChatMessageFormatter<BedrockChatM
           + "<|eot_id|>";
       case SYSTEM -> "<|begin_of_text|>\n"
           + "<|start_header_id|>system<|end_header_id|>\n"
-          + message.getTextContent() + "\n"
+          + message.getTextContent()
           + "<|eot_id|>";
     };
   }
@@ -33,7 +33,7 @@ public class Llama3MessageFormatter implements ChatMessageFormatter<BedrockChatM
       int startContent = endRole + 17;
       String role = text.substring(startRole, endRole);
       String content = text.substring(startContent);
-      String cleanText = content.replace("<|eot_id|>", "");
+      String cleanText = content.replace("<|eot_id|>", "").trim();
       BedrockChatMessage message = new BedrockChatMessage(BedrockChatRole.valueOf(role.toUpperCase()), cleanText, "");
       System.out.println("Message was decoded:\n" + message);
       return message;
