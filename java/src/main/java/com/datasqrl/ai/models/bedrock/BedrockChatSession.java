@@ -84,7 +84,7 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
         .build();
   }
 
-  private BedrockChatMessage combineSystemPromptAndFunctions(String prompt) {
+  private BedrockChatMessage combineSystemPromptAndFunctions(String systemPrompt) {
     ObjectMapper objectMapper = new ObjectMapper();
 //    Note: This approach does not take into account the context window for the system prompt
     String functionText = this.backend.getFunctions().values().stream()
@@ -102,11 +102,14 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
           }
         })
         .collect(Collectors.joining("\n"));
-    return new BedrockChatMessage(BedrockChatRole.SYSTEM, prompt + "\n" + functionText + "\n", "");
+    return new BedrockChatMessage(BedrockChatRole.SYSTEM, systemPrompt + "\n" + functionText + "\n", "");
   }
 
   private static String functionCall2String(BedrockFunctionCall fctCall) {
-    return fctCall.getFunctionName() + "@" + fctCall.getArguments().toPrettyString();
+    return "{"
+        + "\"function\": \"" + fctCall.getFunctionName() + "\", "
+        + "\"parameters\": " + fctCall.getArguments().toString()
+        + "}";
   }
 
 }
