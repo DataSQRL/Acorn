@@ -26,7 +26,7 @@ public class BedrockChatMessage {
         }
       }
     }
-    System.out.println("Message function call is: " + functionCall);
+//    System.out.println("Message function call is: " + functionCall);
     return functionCall;
   }
 }

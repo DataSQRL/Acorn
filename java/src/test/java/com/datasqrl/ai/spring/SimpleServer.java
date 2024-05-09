@@ -81,7 +81,6 @@ public class SimpleServer {
           .put("max_gen_len", maxTokens)
           .put("temperature", 0.1F);
 
-      System.out.println("Bedrock Request: " + request.toString());
       InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
           .modelId(modelId)
           .body(SdkBytes.fromUtf8String(request.toString()))
@@ -215,7 +214,8 @@ public class SimpleServer {
                 return this.encoder.encodeMessage(value);
               })
               .collect(Collectors.joining("\n"));
-          System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName() + "and prompt:\n" + prompt);
+          System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
+//          System.out.println(" and prompt:\n" + prompt);
           JSONObject responseAsJson = promptBedrock(client, example.getModel().getModelName(), prompt, example.getModel().getCompletionLength());
           BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
           session.addMessage(responseMessage);

@@ -35,10 +35,10 @@ public class Llama3MessageEncoder implements ChatMessageEncoder<BedrockChatMessa
       String content = text.substring(startContent);
       String cleanText = content.replace("<|eot_id|>", "").trim();
       BedrockChatMessage message = new BedrockChatMessage(BedrockChatRole.valueOf(role.toUpperCase()), cleanText, "");
-      System.out.println("Message was decoded:\n" + message);
+//      System.out.println("Message was decoded:\n" + message);
       return message;
     } else {
-      System.out.println("Message can't be decoded:\n" + text);
+//      System.out.println("Message can't be decoded:\n" + text);
     }
     if (roleHint != null) {
       return new BedrockChatMessage(BedrockChatRole.valueOf(roleHint.toUpperCase()), text, "");
