@@ -79,7 +79,7 @@ public class SimpleServer {
       JSONObject request = new JSONObject()
           .put("prompt", prompt)
           .put("max_gen_len", maxTokens)
-          .put("temperature", 0.1F);
+          .put("temperature", 0F);
 
       InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
           .modelId(modelId)
