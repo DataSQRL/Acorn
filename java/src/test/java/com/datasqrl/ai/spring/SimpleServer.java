@@ -11,6 +11,7 @@ import com.datasqrl.ai.models.groq.GroqChatSession;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
 import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -236,6 +237,34 @@ public class SimpleServer {
       }
     }
 
+    private ChatFunctionCall getFunctionCallFromGroqError(String errorText) {
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode json = mapper.readTree(errorText);
+        JsonNode failedGeneration = json.get("error").get("failed_generation");
+        String cleanText = failedGeneration.asText().replace("`", "");
+        json = mapper.readTree(cleanText);
+        JsonNode toolJson = json.get("tool_calls").get(0);
+        return new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
+      } catch (JsonProcessingException e) {
+        e.printStackTrace();
+        return null;
+      }
+    }
+
+    private ChatFunctionCall getFunctionCallFromText(String text) {
+      if (isValidJson(text)) {
+        try {
+          ObjectMapper mapper = new ObjectMapper();
+          JsonNode json = mapper.readTree(text);
+          return new ChatFunctionCall(json.get("function").asText(), json.get("parameters"));
+        } catch (JsonProcessingException e) {
+          e.printStackTrace();
+        }
+      }
+      return null;
+    }
+
     // Workaround for groq API bug that throws 400 on some function calls
     class MyInterceptor implements Interceptor {
       @NotNull
@@ -247,20 +276,11 @@ public class SimpleServer {
         int code = response.code();
 
         if (code == 400 && body != null && body.contentType() != null && body.contentType().subtype() != null && body.contentType().subtype().toLowerCase().equals("json")) {
-          BufferedSource source = body.source();
-          source.request(Long.MAX_VALUE); // Buffer the entire body.
-          Buffer buffer = source.buffer();
-          Charset charset = body.contentType().charset(Charset.forName("UTF-8"));
-          // Clone the existing buffer is they can only read once so we still want to pass the original one to the chain.
-          String jsonText = buffer.clone().readString(charset);
-          ObjectMapper mapper = new ObjectMapper();
-          JsonNode json = mapper.readTree(jsonText);
-          JsonNode failedGeneration = json.get("error").get("failed_generation");
-          String cleanText = failedGeneration.asText().replace("`", "");
-          json = mapper.readTree(cleanText);
-          JsonNode toolJson = json.get("tool_calls").get(0);
-          errorFunctionCall = new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
-          System.out.println("!!!Extracted function call from 400");
+          String jsonText = body.source().toString();
+          errorFunctionCall = getFunctionCallFromGroqError(jsonText);
+          if (errorFunctionCall != null) {
+            System.out.println("!!!Extracted function call from 400");
+          }
         }
         return response;
       }
@@ -301,24 +321,18 @@ public class SimpleServer {
             throw e;
           }
         }
-
         System.out.println("Response:\n" + responseMessage);
         String res = responseMessage.getTextContent();
         // Workaround for openai4j who doesn't recognize some function calls
         if (res != null) {
           String responseText = res.trim();
           if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
-            if (isValidJson(responseText)) {
-              ObjectMapper mapper = new ObjectMapper();
-              JsonNode json = mapper.readTree(responseText);
-              ChatFunctionCall functionCall = new ChatFunctionCall(json.get("function").asText(), json.get("parameters"));
-              responseMessage = new AssistantMessage("", "", null, functionCall);
-              System.out.println("!!!Remapped content to function call");
-            }
+            ChatFunctionCall functionCall = getFunctionCallFromText(responseText);
+            responseMessage = new AssistantMessage("", "", null, functionCall);
+            System.out.println("!!!Remapped content to function call");
           }
         }
         session.addMessage(responseMessage);
-
         ChatFunctionCall functionCall = responseMessage.getFunctionCall();
         if (functionCall != null) {
           FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
