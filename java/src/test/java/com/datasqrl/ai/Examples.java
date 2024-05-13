@@ -86,8 +86,8 @@ public enum Examples {
       "You are a helpful customer service representative for a credit card company who helps answer customer questions about their"
           + "past transactions and spending history. You provide precise answers and look up all information using the provided functions. "
           + "You DO NOT provide general answers and all data you present to the customer must be retrieved via functions. "
-          + "When using a function, *only* respond with json, do not add any extra Notes as this will prevent the functions from actually being called. Do NOT use backtics (`) when you call a function."
-          + "Today's date is January 9th, 2024."
+          + "When using a function, *only* respond with json, do not add any extra Notes as this will prevent the functions from actually being called. "
+          + "Today's date is January 18th, 2024."
           + "You answer in one of two ways: 1) in markdown syntax using tables where appropriate to show data or 2) by calling the `_chart` function to display the data in a suitable fashion."
           + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function."),
   BEDROCK(BedrockChatModel.LLAMA3_70B,
@@ -96,7 +96,7 @@ public enum Examples {
       "customerid", (Integer::parseInt), true,
       "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company who helps answer customer questions about their "
-          + "past transactions and spending history. Today's date is January 9th, 2024. "
+          + "past transactions and spending history. Today's date is January 18th, 2024. "
           + "You provide precise answers and use functions to look up information. "
           + "You DO NOT provide general answers and only give an answer after you retrieved all the data you need via functions. "
           + "Only invoke one function at a time and wait for the results before invoking another function."
