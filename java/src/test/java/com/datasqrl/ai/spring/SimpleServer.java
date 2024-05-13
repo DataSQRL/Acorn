@@ -247,6 +247,7 @@ public class SimpleServer {
         JsonNode toolJson = json.get("tool_calls").get(0);
         return new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
       } catch (JsonProcessingException e) {
+        System.out.println("Could not parse groq error:\n" + errorText);
         e.printStackTrace();
         return null;
       }
@@ -259,6 +260,7 @@ public class SimpleServer {
           JsonNode json = mapper.readTree(text);
           return new ChatFunctionCall(json.get("function").asText(), json.get("parameters"));
         } catch (JsonProcessingException e) {
+          System.out.println("Could not parse text function call:\n" + text);
           e.printStackTrace();
         }
       }
@@ -274,9 +276,13 @@ public class SimpleServer {
         Response response = chain.proceed(request);
         ResponseBody body = response.body();
         int code = response.code();
-
         if (code == 400 && body != null && body.contentType() != null && body.contentType().subtype() != null && body.contentType().subtype().toLowerCase().equals("json")) {
-          String jsonText = body.source().toString();
+          BufferedSource source = body.source();
+          source.request(Long.MAX_VALUE); // Buffer the entire body.
+          Buffer buffer = source.buffer();
+          Charset charset = body.contentType().charset(Charset.forName("UTF-8"));
+          // Clone the existing buffer is they can only read once so we still want to pass the original one to the chain.
+          String jsonText = buffer.clone().readString(charset);
           errorFunctionCall = getFunctionCallFromGroqError(jsonText);
           if (errorFunctionCall != null) {
             System.out.println("!!!Extracted function call from 400");
