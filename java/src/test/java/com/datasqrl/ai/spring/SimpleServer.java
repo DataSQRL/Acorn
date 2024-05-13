@@ -26,6 +26,9 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
+import io.github.amithkoujalgi.ollama4j.core.OllamaAPI;
+import io.github.amithkoujalgi.ollama4j.core.models.Model;
+import io.github.amithkoujalgi.ollama4j.core.types.OllamaModelType;
 import lombok.SneakyThrows;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -111,6 +114,17 @@ public class SimpleServer {
 
     @SneakyThrows
     public MessageController(@Value("${example:nutshop}") String exampleName) throws IOException {
+
+      String host = "http://localhost:11434/";
+
+      OllamaAPI ollamaAPI = new OllamaAPI(host);
+      ollamaAPI.setVerbose(true);
+
+      List<Model> models = ollamaAPI.listModels();
+
+      System.out.println("Ollama Models: " + models);
+
+
       this.example = Examples.valueOf(exampleName.trim().toUpperCase());
       this.setService();
       this.setFormatter();
