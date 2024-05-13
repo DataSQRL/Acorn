@@ -10,7 +10,11 @@ import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.datasqrl.ai.models.groq.GroqChatSession;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.theokanning.openai.OpenAiHttpException;
 import com.theokanning.openai.client.OpenAiApi;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
@@ -22,8 +26,15 @@ import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import lombok.SneakyThrows;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
+import okio.Buffer;
+import okio.BufferedSource;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -46,6 +57,7 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.HashMap;
@@ -60,7 +72,11 @@ import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 public class SimpleServer {
 
   public static void main(String[] args) {
-    SpringApplication.run(SimpleServer.class, args);
+    try {
+      SpringApplication.run(SimpleServer.class, args);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @CrossOrigin(origins = "*")
@@ -74,6 +90,8 @@ public class SimpleServer {
     FunctionBackend backend;
     BedrockRuntimeClient client;
     ChatMessageEncoder encoder;
+
+    ChatFunctionCall errorFunctionCall = null;
 
     private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens) {
       JSONObject request = new JSONObject()
@@ -130,6 +148,7 @@ public class SimpleServer {
           OkHttpClient client = defaultClient(groqApiKey, Duration.ofSeconds(60))
               .newBuilder()
               .addInterceptor(logging)
+              .addInterceptor(new MyInterceptor())
               .build();
           Retrofit retrofit = new Retrofit.Builder().baseUrl(GROQ_URL)
               .client(client)
@@ -172,6 +191,17 @@ public class SimpleServer {
       };
     }
 
+    public boolean isValidJson(String json) {
+      ObjectMapper mapper = new ObjectMapper()
+          .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+      try {
+        mapper.readTree(json);
+      } catch (JacksonException e) {
+        return false;
+      }
+      return true;
+    }
+
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
       Map<String, Object> context = example.getContext(userId);
@@ -197,6 +227,7 @@ public class SimpleServer {
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
+      System.out.println("\nUser #" + message.getUserId() + ": " + message.getContent());
       if (example.getProvider() == ModelProvider.BEDROCK) {
         return this.respondToBedrockMessage(message);
       } else {
@@ -205,6 +236,39 @@ public class SimpleServer {
       }
     }
 
+    // Workaround for groq API bug that throws 400 on some function calls
+    class MyInterceptor implements Interceptor {
+      @NotNull
+      @Override
+      public Response intercept(Chain chain) throws IOException {
+        Request request = chain.request();
+        Response response = chain.proceed(request);
+        ResponseBody body = response.body();
+        int code = response.code();
+
+        if (code == 400 && body != null && body.contentType() != null && body.contentType().subtype() != null && body.contentType().subtype().toLowerCase().equals("json")) {
+          BufferedSource source = body.source();
+          source.request(Long.MAX_VALUE); // Buffer the entire body.
+          Buffer buffer = source.buffer();
+          Charset charset = body.contentType().charset(Charset.forName("UTF-8"));
+          // Clone the existing buffer is they can only read once so we still want to pass the original one to the chain.
+          String jsonText = buffer.clone().readString(charset);
+          ObjectMapper mapper = new ObjectMapper();
+          JsonNode json = mapper.readTree(jsonText);
+          JsonNode failedGeneration = json.get("error").get("failed_generation");
+          System.out.println(failedGeneration.toPrettyString());
+          String cleanText = failedGeneration.asText().replace("`", "");
+          System.out.println(cleanText);
+          json = mapper.readTree(cleanText);
+          JsonNode toolJson = json.get("tool_calls").get(0);
+          errorFunctionCall = new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
+          System.out.println("!!!Extracted function call from 400");
+        }
+        return response;
+      }
+    }
+
+    @SneakyThrows
     private ResponseMessage respondToOpenAiApiMessage(InputMessage message) {
       Map<String, Object> context = example.getContext(message.getUserId());
       AbstractChatSession<ChatMessage, ChatFunctionCall> session = getSession(context);
@@ -223,10 +287,38 @@ public class SimpleServer {
             .functions(sessionComponents.getFunctions())
             .functionCall("auto")
             .n(1)
+            .temperature(0.2)
             .maxTokens(example.getModel().getCompletionLength())
             .logitBias(new HashMap<>())
             .build();
-        AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
+        AssistantMessage responseMessage = new AssistantMessage();
+        try {
+          responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
+        } catch (OpenAiHttpException e) {
+          // Workaround for groq API bug that throws 400 on some function calls
+          if (e.statusCode == 400 && errorFunctionCall != null) {
+            responseMessage = new AssistantMessage("", "", null, errorFunctionCall);
+            errorFunctionCall = null;
+          } else {
+            throw e;
+          }
+        }
+
+        System.out.println("Response:\n" + responseMessage);
+        String res = responseMessage.getTextContent();
+        // Workaround for openai4j who doesn't recognize some function calls
+        if (res != null) {
+          String responseText = res.trim();
+          if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
+            if (isValidJson(responseText)) {
+              ObjectMapper mapper = new ObjectMapper();
+              JsonNode json = mapper.readTree(responseText);
+              ChatFunctionCall functionCall = new ChatFunctionCall(json.get("function").asText(), json.get("parameters"));
+              responseMessage = new AssistantMessage("", "", null, functionCall);
+              System.out.println("!!!Remapped content to function call");
+            }
+          }
+        }
         session.addMessage(responseMessage);
 
         ChatFunctionCall functionCall = responseMessage.getFunctionCall();
@@ -266,7 +358,7 @@ public class SimpleServer {
             })
             .collect(Collectors.joining("\n"));
         System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
-//          System.out.println(" and prompt:\n" + prompt);
+        // System.out.println(" and prompt:\n" + prompt);
         JSONObject responseAsJson = promptBedrock(client, example.getModel().getModelName(), prompt, example.getModel().getCompletionLength());
         BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
         session.addMessage(responseMessage);
