@@ -97,7 +97,10 @@ public class GroqChatSession extends AbstractChatSession<ChatMessage, ChatFuncti
   }
 
   private static String functionCall2String(ChatFunctionCall fctCall) {
-    return fctCall.getName() + "@" + fctCall.getArguments().toPrettyString();
+    return "{"
+        + "\"function\": \"" + fctCall.getName() + "\", "
+        + "\"parameters\": " + fctCall.getArguments().toString()
+        + "}";
   }
 
 }
