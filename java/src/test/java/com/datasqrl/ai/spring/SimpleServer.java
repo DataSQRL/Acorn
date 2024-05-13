@@ -376,7 +376,6 @@ public class SimpleServer {
             })
             .collect(Collectors.joining("\n"));
         System.out.println("Calling " + example.getProvider() + " with model " + example.getModel().getModelName());
-        // System.out.println(" and prompt:\n" + prompt);
         JSONObject responseAsJson = promptBedrock(client, example.getModel().getModelName(), prompt, example.getModel().getCompletionLength());
         BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
         session.addMessage(responseMessage);
