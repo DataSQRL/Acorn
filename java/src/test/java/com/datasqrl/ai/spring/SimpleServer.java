@@ -256,9 +256,7 @@ public class SimpleServer {
           ObjectMapper mapper = new ObjectMapper();
           JsonNode json = mapper.readTree(jsonText);
           JsonNode failedGeneration = json.get("error").get("failed_generation");
-          System.out.println(failedGeneration.toPrettyString());
           String cleanText = failedGeneration.asText().replace("`", "");
-          System.out.println(cleanText);
           json = mapper.readTree(cleanText);
           JsonNode toolJson = json.get("tool_calls").get(0);
           errorFunctionCall = new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
