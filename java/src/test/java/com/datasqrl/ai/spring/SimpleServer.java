@@ -3,13 +3,24 @@ package com.datasqrl.ai.spring;
 import com.datasqrl.ai.Examples;
 import com.datasqrl.ai.ModelProvider;
 import com.datasqrl.ai.api.GraphQLExecutor;
-import com.datasqrl.ai.backend.*;
+import com.datasqrl.ai.backend.AbstractChatSession;
+import com.datasqrl.ai.backend.ChatSessionComponents;
+import com.datasqrl.ai.backend.FunctionBackend;
+import com.datasqrl.ai.backend.FunctionDefinition;
+import com.datasqrl.ai.backend.FunctionType;
+import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatMessageEncoder;
-import com.datasqrl.ai.models.bedrock.*;
+import com.datasqrl.ai.models.bedrock.BedrockChatMessage;
+import com.datasqrl.ai.models.bedrock.BedrockChatModel;
+import com.datasqrl.ai.models.bedrock.BedrockChatRole;
+import com.datasqrl.ai.models.bedrock.BedrockChatSession;
+import com.datasqrl.ai.models.bedrock.BedrockFunctionCall;
+import com.datasqrl.ai.models.bedrock.Llama3MessageEncoder;
 import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.datasqrl.ai.models.groq.GroqChatSession;
-import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
+import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -27,8 +38,13 @@ import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.github.amithkoujalgi.ollama4j.core.OllamaAPI;
-import io.github.amithkoujalgi.ollama4j.core.models.Model;
-import io.github.amithkoujalgi.ollama4j.core.types.OllamaModelType;
+import io.github.amithkoujalgi.ollama4j.core.OllamaStreamHandler;
+import io.github.amithkoujalgi.ollama4j.core.models.chat.OllamaChatMessageRole;
+import io.github.amithkoujalgi.ollama4j.core.models.chat.OllamaChatRequestBuilder;
+import io.github.amithkoujalgi.ollama4j.core.models.chat.OllamaChatRequestModel;
+import io.github.amithkoujalgi.ollama4j.core.models.chat.OllamaChatResult;
+import io.github.amithkoujalgi.ollama4j.core.utils.Options;
+import io.github.amithkoujalgi.ollama4j.core.utils.OptionsBuilder;
 import lombok.SneakyThrows;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -46,6 +62,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -114,18 +131,40 @@ public class SimpleServer {
 
     @SneakyThrows
     public MessageController(@Value("${example:nutshop}") String exampleName) throws IOException {
+      this.example = Examples.valueOf(exampleName.trim().toUpperCase());
 
       String host = "http://localhost:11434/";
-
+      String model = "llama3";
       OllamaAPI ollamaAPI = new OllamaAPI(host);
+      ollamaAPI.setRequestTimeoutSeconds(600);
       ollamaAPI.setVerbose(true);
+      OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(model);
+      Options options =
+          new OptionsBuilder()
+              .setTemperature(0.2f)
+              .setNumCtx(example.getModel().getCompletionLength())
+              .setTopK(1)
+              .setTopP(0.9F)
+              .build();
+      OllamaChatRequestModel requestModel = builder.withMessage(OllamaChatMessageRole.SYSTEM, example.getSystemPrompt())
+          .withMessage(OllamaChatMessageRole.USER, "What can you help me with?")
+          .withOptions(options)
+          .build();
+      System.out.println("Ollama request: " + requestModel.toString());
+      OllamaStreamHandler streamHandler = System.out::println;
+      OllamaChatResult chatResult = ollamaAPI.chat(requestModel);
+//      OllamaChatResult chatResult = ollamaAPI.chat(requestModel, streamHandler);
+      System.out.println("Ollama answer: " + chatResult.getHttpStatusCode() + " in seconds: " + chatResult.getResponseTime() + ":\n" + chatResult.getResponse());
 
-      List<Model> models = ollamaAPI.listModels();
+      requestModel = builder.withMessage(OllamaChatMessageRole.USER, "And what is the second largest city?")
+          .build();
 
-      System.out.println("Ollama Models: " + models);
+      chatResult = ollamaAPI.chat(requestModel);
+//      chatResult = ollamaAPI.chat(requestModel, streamHandler);
 
+      System.out.println("Ollama request: " + requestModel.toString());
+      System.out.println("Ollama answer: " + chatResult.getHttpStatusCode() + "in seconds: " + chatResult.getResponseTime() + ":\n" + chatResult.getResponse());
 
-      this.example = Examples.valueOf(exampleName.trim().toUpperCase());
       this.setService();
       this.setFormatter();
       String graphQLEndpoint = example.getApiURL();
