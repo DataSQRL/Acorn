@@ -1,0 +1,108 @@
+package com.datasqrl.ai.models.bedrock;
+
+import com.datasqrl.ai.backend.ChatSessionComponents;
+import com.datasqrl.ai.backend.FunctionBackend;
+import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.models.ChatMessageEncoder;
+import com.datasqrl.ai.spring.ChatClientProvider;
+import com.datasqrl.ai.spring.InputMessage;
+import com.datasqrl.ai.spring.ResponseMessage;
+import org.json.JSONObject;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
+import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
+import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class BedrockChatProvider implements ChatClientProvider {
+
+  private final BedrockChatModel model;
+  private final FunctionBackend backend;
+  private final BedrockRuntimeClient client;
+  private final ChatMessageEncoder encoder;
+  private final BedrockChatMessage systemPrompt;
+
+  public BedrockChatProvider(BedrockChatModel model, String systemPrompt, FunctionBackend backend) {
+    this.model = model;
+    this.backend = backend;
+    this.systemPrompt = new BedrockChatMessage(BedrockChatRole.SYSTEM, systemPrompt, "");
+    EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
+    this.client = BedrockRuntimeClient.builder()
+        .region(Region.US_WEST_2)
+        .credentialsProvider(credentialsProvider)
+        .build();
+    this.encoder = switch (model) {
+      case LLAMA3_70B, LLAMA3_8B -> new Llama3MessageEncoder();
+    };
+  }
+
+  @Override
+  public List<ResponseMessage> getChatHistory(Map<String, Object> context) {
+    BedrockChatSession session = new BedrockChatSession(model, systemPrompt, backend, context);
+    List<BedrockChatMessage> messages = session.retrieveMessageHistory(50);
+    return messages.stream().filter(m -> switch (m.getRole()) {
+      case USER, ASSISTANT -> true;
+      default -> false;
+    }).map(ResponseMessage::of).collect(Collectors.toUnmodifiableList());
+  }
+
+  @Override
+  public ResponseMessage chat(InputMessage message, Map<String, Object> context) {
+    BedrockChatSession session = new BedrockChatSession(model, systemPrompt, backend, context);
+    int numMsg = session.retrieveMessageHistory(20).size();
+    System.out.printf("Retrieved %d messages\n", numMsg);
+    BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message.getContent(), "");
+    session.addMessage(chatMessage);
+
+    while (true) {
+      ChatSessionComponents<BedrockChatMessage> sessionComponents = session.getSessionComponents();
+      String prompt = sessionComponents.getMessages().stream()
+          .map(value -> {
+            return this.encoder.encodeMessage(value);
+          })
+          .collect(Collectors.joining("\n"));
+      System.out.println("Calling Bedrock with model " + model.getModelName());
+      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
+      BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
+      session.addMessage(responseMessage);
+      BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
+      if (functionCall != null) {
+        FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
+        if (fctValid.isValid()) {
+          if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
+            return ResponseMessage.of(responseMessage);
+          } else {
+            System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
+                + functionCall.getArguments().toPrettyString());
+            BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall);
+            System.out.println("Executed " + functionCall.getFunctionName() + " with results: " + functionResponse.getTextContent());
+            session.addMessage(functionResponse);
+          }
+        } //TODO: add retry in case of invalid function call
+      } else {
+        //The text answer
+        return ResponseMessage.of(responseMessage);
+      }
+    }
+  }
+
+  private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens) {
+    JSONObject request = new JSONObject()
+        .put("prompt", prompt)
+        .put("max_gen_len", maxTokens)
+        .put("temperature", 0F);
+    InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
+        .modelId(modelId)
+        .body(SdkBytes.fromUtf8String(request.toString()))
+        .build();
+    InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
+    JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
+    System.out.println("🤖Bedrock Response:\n" + jsonObject);
+    return jsonObject;
+  }
+}
