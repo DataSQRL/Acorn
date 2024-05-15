@@ -18,7 +18,6 @@ public class BedrockChatMessage {
       int start = textContent.indexOf("{\"function\":");
       int end = textContent.lastIndexOf("}") + 1;
       String jsonContent = textContent.substring(start, end);
-      System.out.println("JsonString:\n" + jsonContent);
       if (!jsonContent.isEmpty()) {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(jsonContent);
