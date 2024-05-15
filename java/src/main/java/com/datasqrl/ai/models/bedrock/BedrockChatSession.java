@@ -13,6 +13,19 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
   BedrockChatModel chatModel;
   BedrockTokenCounter tokenCounter;
 
+  private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with a JSON object of the following format: "
+      + "{\"function\": \"$FUNCTION_NAME\","
+      + "  \"parameters\": {"
+      + "  \"$PARAMETER_NAME1\": \"$PARAMETER_VALUE1\","
+      + "  \"$PARAMETER_NAME2\": \"$PARAMETER_VALUE2\","
+      + "  ..."
+      + "}. "
+      + "You will get a function response from the user in the following format: "
+      + "{\"function_response\" : \"$FUNCTION_NAME\","
+      + "  \"data\": { \"$RESULT_TYPE\": [$RESULTS] }"
+      + "}\n"
+      + "Here are the functions you can use:";
+
   public BedrockChatSession(BedrockChatModel model,
                             BedrockChatMessage systemMessage,
                             FunctionBackend backend,
@@ -87,7 +100,8 @@ public class BedrockChatSession extends AbstractChatSession<BedrockChatMessage, 
   private BedrockChatMessage combineSystemPromptAndFunctions(String systemPrompt) {
     ObjectMapper objectMapper = new ObjectMapper();
 //    Note: This approach does not take into account the context window for the system prompt
-    String functionText = this.backend.getFunctions().values().stream()
+    String functionText = this.FUNCTION_CALLING_PROMPT
+        + this.backend.getFunctions().values().stream()
         .map(RuntimeFunctionDefinition::getChatFunction)
         .map(f ->
             objectMapper.createObjectNode()

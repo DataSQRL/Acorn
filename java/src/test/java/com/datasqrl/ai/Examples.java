@@ -104,20 +104,7 @@ public enum Examples {
           + "1) in markdown syntax using tables where appropriate to show data or "
           + "2) by calling the `_chart` function to display the data in a suitable fashion. "
           + "Whenever you are returning multiple data points, you should use option 2) and call the `_chart` function. "
-          + "You should only call the `_chart` function when you already have the data to display in the chart."
-          + "To call a function, respond only with a JSON object of the following format: "
-          + "{\"function\": \"$FUNCTION_NAME\","
-          + "  \"parameters\": {"
-          + "  \"$PARAMETER_NAME1\": \"$PARAMETER_VALUE1\","
-          + "  \"$PARAMETER_NAME2\": \"$PARAMETER_VALUE2\","
-          + "  ..."
-          + "}\n"
-          + "You will get a function response from the user in the following format: "
-          + "{\"function_response\" : \"$FUNCTION_NAME\","
-          + "  \"data\": { \"$RESULT_TYPE\": [$RESULTS] }"
-          + "}\n"
-          + "Here are the functions you can use:"
-  );
+          + "You should only call the `_chart` function when you already have the data to display in the chart.");
 
 
   @Getter
