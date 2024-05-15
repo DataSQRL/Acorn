@@ -1,20 +1,23 @@
-package com.datasqrl.ai.models.groq;
+package com.datasqrl.ai.models.bedrock;
 
 import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.ModelAnalyzer;
+import com.datasqrl.ai.models.groq.GroqChatModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+// Added `BedrockTokenCounter` in order to keep the class separation, although it's the same as the `GroqTokenCounter`.
+// Think of merging these two into a `HuggingFaceTokenCounter` in the future
 @Value
-public class GroqTokenCounter implements ModelAnalyzer<ChatMessage> {
+public class BedrockTokenCounter implements ModelAnalyzer<BedrockChatMessage> {
 
   HuggingFaceTokenizer tokenizer;
 
   @Override
-  public int countTokens(ChatMessage message) {
+  public int countTokens(BedrockChatMessage message) {
     int numTokens = countTokens(message.getTextContent());
     return numTokens + numTokens / 10; //Add a 10% buffer
   }
@@ -34,7 +37,7 @@ public class GroqTokenCounter implements ModelAnalyzer<ChatMessage> {
     return countTokens(jsonString);
   }
 
-  public static GroqTokenCounter of(GroqChatModel model) {
-    return new GroqTokenCounter(HuggingFaceTokenizer.newInstance(model.tokenizerName));
+  public static BedrockTokenCounter of(BedrockChatModel model) {
+    return new BedrockTokenCounter(HuggingFaceTokenizer.newInstance(model.tokenizerName));
   }
 }

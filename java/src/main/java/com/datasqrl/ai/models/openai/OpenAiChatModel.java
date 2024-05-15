@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum ChatModel implements GenericLanguageModel {
+public enum OpenAiChatModel implements GenericLanguageModel {
 
   GPT35_TURBO("gpt-3.5-turbo-0613", ModelType.GPT_3_5_TURBO, 512),
   GPT4("gpt-4-0613", ModelType.GPT_4, 512);

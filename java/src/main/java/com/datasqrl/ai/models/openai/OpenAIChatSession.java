@@ -1,6 +1,11 @@
 package com.datasqrl.ai.models.openai;
 
-import com.datasqrl.ai.backend.*;
+import com.datasqrl.ai.backend.AbstractChatSession;
+import com.datasqrl.ai.backend.ChatSessionComponents;
+import com.datasqrl.ai.backend.ContextWindow;
+import com.datasqrl.ai.backend.FunctionBackend;
+import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.backend.GenericChatMessage;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -11,16 +16,15 @@ import com.theokanning.openai.completion.chat.ToolMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OpenAIChatSession extends AbstractChatSession<ChatMessage, ChatFunctionCall> {
 
-  ChatModel chatModel;
+  OpenAiChatModel chatModel;
   OpenAITokenCounter tokenCounter;
 
-  public OpenAIChatSession(ChatModel model, ChatMessage systemMessage,
+  public OpenAIChatSession(OpenAiChatModel model, ChatMessage systemMessage,
                            FunctionBackend backend,
                            Map<String, Object> sessionContext) {
     super(backend, sessionContext, null);

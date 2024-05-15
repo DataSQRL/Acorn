@@ -4,7 +4,7 @@ import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.models.openai.ChatModel;
+import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
@@ -41,7 +41,7 @@ public class CmdLineChatBot {
 
   OpenAiService service;
   FunctionBackend backend;
-  ChatModel chatModel = ChatModel.GPT35_TURBO;
+  OpenAiChatModel chatModel = OpenAiChatModel.GPT35_TURBO;
 
   /**
    * Initializes a command line chat bot
