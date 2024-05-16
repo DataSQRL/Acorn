@@ -3,10 +3,12 @@ package com.datasqrl.ai.models.bedrock;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.datasqrl.ai.spring.ChatClientProvider;
-import com.datasqrl.ai.spring.InputMessage;
 import com.datasqrl.ai.spring.ResponseMessage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
@@ -27,10 +29,23 @@ public class BedrockChatProvider implements ChatClientProvider {
   private final ChatMessageEncoder encoder;
   private final BedrockChatMessage systemPrompt;
 
+  private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with a JSON object of the following format: "
+      + "{\"function\": \"$FUNCTION_NAME\","
+      + "  \"parameters\": {"
+      + "  \"$PARAMETER_NAME1\": \"$PARAMETER_VALUE1\","
+      + "  \"$PARAMETER_NAME2\": \"$PARAMETER_VALUE2\","
+      + "  ..."
+      + "}. "
+      + "You will get a function response from the user in the following format: "
+      + "{\"function_response\" : \"$FUNCTION_NAME\","
+      + "  \"data\": { \"$RESULT_TYPE\": [$RESULTS] }"
+      + "}\n"
+      + "Here are the functions you can use:";
+
   public BedrockChatProvider(BedrockChatModel model, String systemPrompt, FunctionBackend backend) {
     this.model = model;
     this.backend = backend;
-    this.systemPrompt = new BedrockChatMessage(BedrockChatRole.SYSTEM, systemPrompt, "");
+    this.systemPrompt = combineSystemPromptAndFunctions(systemPrompt);
     EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
     this.client = BedrockRuntimeClient.builder()
         .region(Region.US_WEST_2)
@@ -89,6 +104,28 @@ public class BedrockChatProvider implements ChatClientProvider {
         return ResponseMessage.of(responseMessage);
       }
     }
+  }
+
+  private BedrockChatMessage combineSystemPromptAndFunctions(String systemPrompt) {
+    ObjectMapper objectMapper = new ObjectMapper();
+//    Note: This approach does not take into account the context window for the system prompt
+    String functionText = this.FUNCTION_CALLING_PROMPT
+        + this.backend.getFunctions().values().stream()
+        .map(RuntimeFunctionDefinition::getChatFunction)
+        .map(f ->
+            objectMapper.createObjectNode()
+                .put("type", "function")
+                .set("function", objectMapper.valueToTree(f))
+        )
+        .map(value -> {
+          try {
+            return objectMapper.writeValueAsString(value);
+          } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        })
+        .collect(Collectors.joining("\n"));
+    return new BedrockChatMessage(BedrockChatRole.SYSTEM, systemPrompt + "\n" + functionText + "\n", "");
   }
 
   private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens) {
