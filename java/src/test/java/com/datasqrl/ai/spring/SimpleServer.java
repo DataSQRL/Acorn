@@ -91,7 +91,7 @@ public class SimpleServer {
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
       System.out.println("\nUser #" + message.getUserId() + ": " + message.getContent());
       Map<String, Object> context = example.getContext(message.getUserId());
-      return chatClientProvider.chat(message, context);
+      return chatClientProvider.chat(message.getContent(), context);
     }
   }
 }

@@ -7,5 +7,5 @@ public interface ChatClientProvider {
 
   List<ResponseMessage> getChatHistory(Map<String, Object> context);
 
-  ResponseMessage chat(InputMessage message, Map<String, Object> context);
+  ResponseMessage chat(String message, Map<String, Object> context);
 }

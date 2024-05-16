@@ -45,11 +45,11 @@ public class OpenAiChatProvider implements ChatClientProvider {
   }
 
   @Override
-  public ResponseMessage chat(InputMessage message, Map<String, Object> context) {
+  public ResponseMessage chat(String message, Map<String, Object> context) {
     OpenAIChatSession session = new OpenAIChatSession(model, systemPrompt, backend, context);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
-    ChatMessage chatMessage = new UserMessage(message.getContent());
+    ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);
 
     while (true) {

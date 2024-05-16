@@ -52,11 +52,11 @@ public class BedrockChatProvider implements ChatClientProvider {
   }
 
   @Override
-  public ResponseMessage chat(InputMessage message, Map<String, Object> context) {
+  public ResponseMessage chat(String message, Map<String, Object> context) {
     BedrockChatSession session = new BedrockChatSession(model, systemPrompt, backend, context);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
-    BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message.getContent(), "");
+    BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
     session.addMessage(chatMessage);
 
     while (true) {
