@@ -4,29 +4,9 @@
   "parameters": {
     "type": "object",
     "properties": {
-      "table": {
-        "description": "The table of numeric data to visualize as a two-dimensional array of numbers. The first dimension are the rows. Each row must have the same number of columns.",
-        "type": "array",
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          }
-        }
-      },
-      "rowLabels": {
-        "description": "The labels for the rows in the table. The length of this array must be equal to the first dimension of the table array.",
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      },
-      "columnLabels": {
-        "description": "The labels for the columns in the table. The length of this array must be equal to the second dimension of the table array.",
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
+      "title": {
+        "description": "The title for the chart.",
+        "type": "string"
       },
       "chartType": {
         "description": "The type of chart to produce.",
@@ -38,11 +18,31 @@
           "column"
         ]
       },
-      "title": {
-        "description": "The title for the chart.",
+      "rowLabels": {
+        "description": "The labels for the rows in the table. The length of this array must be equal to dimension of the table array.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "columnLabels": {
+        "description": "The label for the data series in the table.",
         "type": "string"
+      },
+      "table": {
+        "description": "The series of numeric data values to visualize. The length of this array must be equal to dimension of the rowLabels array.",
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
       }
     },
-    "required": ["table", "rowLabels", "columnLabels", "chartType", "title"]
+    "required": [
+      "table",
+      "rowLabels",
+      "columnLabels",
+      "chartType",
+      "title"
+    ]
   }
 }

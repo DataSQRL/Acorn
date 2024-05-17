@@ -3,33 +3,43 @@ function createChart(table, rowLabels, columnLabels, chartType, title, colorPale
   var canvas = document.createElement('canvas');
   $('#chatBox').append(canvas);
   let indexAxis = 'x';
-  if (chartType=='bar') {
+  if (chartType == 'bar') {
     indexAxis = 'y';
-  } else if (chartType=='column') {
+  } else if (chartType == 'column') {
     chartType = 'bar';
   }
 
-  let rowColors = table.length>1;
+  let rowColors = table.length > 1;
   console.log()
   // Prepare the dataset
-  var datasets = table.map((row, rowIndex) => {
-    return {
-      label: rowLabels[rowIndex],
-      data: row,
+  // var datasets = table.map((row, rowIndex) => {
+  //   return {
+  //     label: rowLabels[rowIndex],
+  //     data: row,
+  //     fill: false,
+  //     backgroundColor: rowColors ? colorPalette[rowIndex % colorPalette.length] : getColors(colorPalette, row.length),
+  //     borderColor: 'rgba(0,0,0,1)',
+  //     borderWidth: 1,
+  //     tension: 0.1 // This is for line chart
+  //   };
+  // });
+  var datasets = [
+    {
+      label: columnLabels,
+      data: table.map((row, rowIndex) => row),
       fill: false,
-      backgroundColor: rowColors ? colorPalette[rowIndex%colorPalette.length] : getColors(colorPalette, row.length),
+      backgroundColor: rowColors ? table.map((row, rowIndex) => colorPalette[rowIndex % colorPalette.length]) : getColors(colorPalette, row.length),
       borderColor: 'rgba(0,0,0,1)',
       borderWidth: 1,
       tension: 0.1 // This is for line chart
-    };
-  });
-
+    }
+  ];
   // Create the chart
   var ctx = canvas.getContext('2d');
   var chart = new Chart(ctx, {
     type: chartType,
     data: {
-      labels: columnLabels,
+      labels: rowLabels,
       datasets: datasets
     },
     options: {
@@ -37,7 +47,7 @@ function createChart(table, rowLabels, columnLabels, chartType, title, colorPale
       responsive: true,
       plugins: {
         legend: {
-          display: rowColors,
+          display: chartType == 'pie',
           position: 'top'
         },
         title: {
@@ -93,7 +103,7 @@ let colorPalette = [ // Tableau 20
 function chartData(chart) {
   let transpose = chart.table.length > chart.table[0].length;
   console.log(transpose);
-  let table, rowLabels,columnLabels;
+  let table, rowLabels, columnLabels;
   if (transpose) {
     table = chart.table[0].map((_, colIndex) => chart.table.map(row => row[colIndex]));
     rowLabels = chart.columnLabels;
