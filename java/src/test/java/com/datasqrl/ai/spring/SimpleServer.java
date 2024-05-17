@@ -47,7 +47,6 @@ public class SimpleServer {
 
     private final Examples example;
     private ChatClientProvider chatClientProvider;
-    public static final String GROQ_URL = "https://api.groq.com/openai/v1/";
     GraphQLExecutor apiExecutor;
     FunctionBackend backend;
 
