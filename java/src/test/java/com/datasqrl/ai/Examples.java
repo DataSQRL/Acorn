@@ -22,7 +22,7 @@ public enum Examples {
   GROQSHOP(GroqChatModel.LLAMA3_70B,
       ModelProvider.GROQ,
       "../api-examples/nutshop/nutshop-c360.tools.json",
-      "customerid", (Integer::parseInt), false,
+      "customerid", (Integer::parseInt), PlotFunction.none,
       "http://localhost:8888/graphql",
       "You are a shopping assistant for an US nut shop that helps customers "
           + "answer questions about their orders and shopping. "
@@ -31,7 +31,7 @@ public enum Examples {
   NUTSHOP(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/nutshop/nutshop-c360.tools.json",
-      "customerid", (Integer::parseInt), false,
+      "customerid", (Integer::parseInt), PlotFunction.none,
       "http://localhost:8888/graphql",
       "You are a shopping assistant for an US nut shop that helps customers "
           + "answer questions about their orders and shopping. "
@@ -40,7 +40,7 @@ public enum Examples {
   SENSOR(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/sensors/sensors.tools.json",
-      null, null, false,
+      null, null, PlotFunction.none,
       "http://localhost:8888/graphql",
       "You help users retrieve sensor data and analyse it using the available function calls. "
           + "answer questions about their orders and shopping. "
@@ -49,7 +49,7 @@ public enum Examples {
   RICKANDMORTY(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/rickandmorty/rickandmorty.tools.json",
-      null, null, false,
+      null, null, PlotFunction.none,
       "https://rickandmortyapi.com/graphql",
       "You are a huge fan of the Ricky and Morty TV show and help users answer questions "
           + "about the show. "
@@ -59,7 +59,7 @@ public enum Examples {
   CREDITCARD(OpenAiChatModel.GPT35_TURBO,
       ModelProvider.OPENAI,
       "../api-examples/finance/creditcard.tools.json",
-      "customerid", (Integer::parseInt), false,
+      "customerid", (Integer::parseInt), PlotFunction.none,
       "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company called SquirrelBanking."
           + "You answer customer questions about their credit card transaction history and provide information about their spending. "
@@ -70,7 +70,7 @@ public enum Examples {
   CCVISUAL(OpenAiChatModel.GPT4,
       ModelProvider.OPENAI,
       "../api-examples/finance/creditcard.tools.json",
-      "customerid", (Integer::parseInt), true,
+      "customerid", (Integer::parseInt), PlotFunction.oneD,
       "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company who helps answer customer questions about their"
           + "past transactions and spending history. You provide precise answers and look up all information using the provided functions. "
@@ -81,7 +81,7 @@ public enum Examples {
   GROQVISUAL(GroqChatModel.LLAMA3_70B,
       ModelProvider.GROQ,
       "../api-examples/finance/creditcard.tools.json",
-      "customerid", (Integer::parseInt), true,
+      "customerid", (Integer::parseInt), PlotFunction.oneD,
       "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company who helps answer customer questions about their"
           + "past transactions and spending history. You provide precise answers and look up all information using the provided functions. "
@@ -93,7 +93,7 @@ public enum Examples {
   BEDROCK(BedrockChatModel.LLAMA3_70B,
       ModelProvider.BEDROCK,
       "../api-examples/finance/creditcard.tools.json",
-      "customerid", (Integer::parseInt), true,
+      "customerid", (Integer::parseInt), PlotFunction.oneD,
       "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company who helps answer customer questions about their "
           + "past transactions and spending history. Today's date is January 18th, 2024. "
@@ -116,7 +116,7 @@ public enum Examples {
   private String userIdFieldName;
   private Function<String, Object> prepareUserIdFct;
   @Getter
-  boolean supportCharts;
+  PlotFunction plotFunction;
   @Getter
   String apiURL;
   @Getter
