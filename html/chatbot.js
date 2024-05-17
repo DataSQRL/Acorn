@@ -91,17 +91,24 @@ let colorPalette = [ // Tableau 20
 ];
 
 function chartData(chart) {
-  let transpose = chart.table.length > chart.table[0].length;
-  console.log(transpose);
-  let table, rowLabels,columnLabels;
-  if (transpose) {
-    table = chart.table[0].map((_, colIndex) => chart.table.map(row => row[colIndex]));
-    rowLabels = chart.columnLabels;
-    columnLabels = chart.rowLabels;
+  let table, rowLabels, columnLabels;
+  if (chart.values) {
+    table = [chart.values];
+    columnLabels = chart.labels;
+    rowLabels = [chart.title];
   } else {
-    table = chart.table;
-    rowLabels = chart.rowLabels;
-    columnLabels = chart.columnLabels;
+    let transpose = chart.table.length > chart.table[0].length;
+    console.log(transpose);
+    if (transpose) {
+      table = chart.table[0].map(
+          (_, colIndex) => chart.table.map(row => row[colIndex]));
+      rowLabels = chart.columnLabels;
+      columnLabels = chart.rowLabels;
+    } else {
+      table = chart.table;
+      rowLabels = chart.rowLabels;
+      columnLabels = chart.columnLabels;
+    }
   }
   createChart(table, rowLabels, columnLabels, chart.chartType, chart.title, colorPalette);
 }

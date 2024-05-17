@@ -59,7 +59,7 @@ public class SimpleServer {
       this.backend = FunctionBackend.of(Path.of(example.getConfigFile()), apiExecutor);
       if (example.isSupportCharts()) {
         ObjectMapper objectMapper = new ObjectMapper();
-        URL url = SimpleServer.class.getClassLoader().getResource("plotfunction.json");
+        URL url = SimpleServer.class.getClassLoader().getResource("plotfunction1d.json");
         if (url != null) {
           try {
             FunctionDefinition plotFunction = objectMapper.readValue(url, FunctionDefinition.class);
