@@ -96,7 +96,7 @@ public enum Examples {
       "customerid", (Integer::parseInt), PlotFunction.oneD,
       "http://localhost:8888/graphql",
       "You are a helpful customer service representative for a credit card company who helps answer customer questions about their "
-          + "past transactions and spending history. Today's date is January 10th, 2024. "
+          + "past transactions and spending history. Today's date is January 18th, 2024. "
           + "You provide precise answers and use functions to look up information. "
           + "You DO NOT provide general answers and only give an answer after you retrieved all the data you need via functions. "
           + "Only invoke one function at a time and wait for the results before invoking another function."
