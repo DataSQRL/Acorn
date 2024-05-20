@@ -29,7 +29,7 @@ public class BedrockChatProvider implements ChatClientProvider {
   private final ChatMessageEncoder encoder;
   private final BedrockChatMessage systemPrompt;
 
-  private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with a JSON object of the following format: "
+  private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with JSON text in the following format: "
       + "{\"function\": \"$FUNCTION_NAME\","
       + "  \"parameters\": {"
       + "  \"$PARAMETER_NAME1\": \"$PARAMETER_VALUE1\","

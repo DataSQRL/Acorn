@@ -1,0 +1,38 @@
+{
+  "name": "data_visualization",
+  "description": "Visualizes the provided table of data in the given chart type. Use this function to visually present data to the user.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "values": {
+        "description": "Numeric data to visualize.",
+        "type": "array",
+        "items": {
+          "type": "number"
+        }
+      },
+      "labels": {
+        "description": "The labels for the values. The length of this array must be equal to the length of the values array.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "chartType": {
+        "description": "The type of chart to produce.",
+        "type": "string",
+        "enum": [
+          "pie",
+          "bar",
+          "line",
+          "column"
+        ]
+      },
+      "title": {
+        "description": "The title for the chart.",
+        "type": "string"
+      }
+    },
+    "required": ["table", "rowLabels", "columnLabels", "chartType", "title"]
+  }
+}

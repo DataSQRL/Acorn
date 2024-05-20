@@ -47,7 +47,6 @@ public class SimpleServer {
 
     private final Examples example;
     private ChatClientProvider chatClientProvider;
-    public static final String GROQ_URL = "https://api.groq.com/openai/v1/";
     GraphQLExecutor apiExecutor;
     FunctionBackend backend;
 
@@ -57,9 +56,9 @@ public class SimpleServer {
       String graphQLEndpoint = example.getApiURL();
       this.apiExecutor = new GraphQLExecutor(graphQLEndpoint);
       this.backend = FunctionBackend.of(Path.of(example.getConfigFile()), apiExecutor);
-      if (example.isSupportCharts()) {
+      if (example.getPlotFunction().isPresent()) {
         ObjectMapper objectMapper = new ObjectMapper();
-        URL url = SimpleServer.class.getClassLoader().getResource("plotfunction.json");
+        URL url = SimpleServer.class.getClassLoader().getResource(example.getPlotFunction().getResourceFile());
         if (url != null) {
           try {
             FunctionDefinition plotFunction = objectMapper.readValue(url, FunctionDefinition.class);
