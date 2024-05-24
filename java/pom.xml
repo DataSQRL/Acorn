@@ -21,7 +21,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <lombok.version>1.18.24</lombok.version>
-    <jackson.version>2.12.3</jackson.version>
+    <jackson.version>2.17.1</jackson.version>
     <huggingface.version>0.27.0</huggingface.version>
   </properties>
 
