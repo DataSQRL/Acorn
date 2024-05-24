@@ -7,38 +7,30 @@
   <groupId>com.datasqrl</groupId>
   <artifactId>apirag</artifactId>
   <version>0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <modules>
+    <module>apirag-core</module>
+    <module>apirag-openai</module>
+    <module>apirag-bedrock</module>
+    <module>apirag-server</module>
+  </modules>
 
   <properties>
-    <maven.compiler.source>14</maven.compiler.source>
-    <maven.compiler.target>14</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <openai-java.version>0.20.0</openai-java.version>
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <jtokkit.version>0.6.1</jtokkit.version>
-    <spring-boot.version>3.2.1</spring-boot.version>
-    <aws.bedrock.version>2.25.45</aws.bedrock.version>
+    <lombok.version>1.18.24</lombok.version>
+    <jackson.version>2.12.3</jackson.version>
+    <huggingface.version>0.27.0</huggingface.version>
   </properties>
 
   <dependencies>
-    <dependency>
-      <groupId>io.github.lambdua</groupId>
-      <artifactId>api</artifactId>
-      <version>${openai-java.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.lambdua</groupId>
-      <artifactId>service</artifactId>
-      <version>${openai-java.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.knuddels</groupId>
-      <artifactId>jtokkit</artifactId>
-      <version>${jtokkit.version}</version>
-    </dependency>
+    <!-- General Dependencies -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.24</version>
+      <version>${lombok.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -48,42 +40,68 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-      <version>${spring-boot.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-starter-logging</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>logging-interceptor</artifactId>
-      <version>4.12.0</version>
-    </dependency>
-    <dependency>
-      <groupId>ai.djl.huggingface</groupId>
-      <artifactId>tokenizers</artifactId>
-      <version>0.27.0</version>
-    </dependency>
-    <dependency>
-      <groupId>software.amazon.awssdk</groupId>
-      <artifactId>bedrock</artifactId>
-      <version>${aws.bedrock.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>software.amazon.awssdk</groupId>
-      <artifactId>bedrockruntime</artifactId>
-      <version>${aws.bedrock.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20240303</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.6.2</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
+              <mainClass>com.datasqrl.cmd.GenerateCommand</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.datasqrl.cmd.GenerateCommand</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
