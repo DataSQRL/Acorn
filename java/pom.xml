@@ -11,6 +11,7 @@
   <modules>
     <module>apirag-core</module>
     <module>apirag-openai</module>
+    <module>apirag-groq</module>
     <module>apirag-bedrock</module>
     <module>apirag-server</module>
   </modules>
