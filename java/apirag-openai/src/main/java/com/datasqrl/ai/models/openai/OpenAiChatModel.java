@@ -20,4 +20,8 @@ public enum OpenAiChatModel implements GenericLanguageModel {
     return encodingModel.getMaxContextLength() - completionLength;
   }
 
+  @Override
+  public int getContextWindowLength() {
+    return encodingModel.getMaxContextLength();
+  }
 }

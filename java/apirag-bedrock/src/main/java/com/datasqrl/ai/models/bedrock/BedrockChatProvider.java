@@ -25,7 +25,7 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
   private final BedrockChatModel model;
   private final FunctionBackend backend;
   private final BedrockRuntimeClient client;
-  private final ChatMessageEncoder encoder;
+  private final ChatMessageEncoder<BedrockChatMessage> encoder;
   private final BedrockChatMessage systemPrompt;
 
   private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with JSON text in the following format: "
@@ -62,7 +62,7 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
     return messages.stream().filter(m -> switch (m.getRole()) {
       case USER, ASSISTANT -> true;
       default -> false;
-    }).collect(Collectors.toUnmodifiableList());
+    }).toList();
   }
 
   @Override
@@ -76,12 +76,10 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
     while (true) {
       ChatSessionComponents<BedrockChatMessage> sessionComponents = session.getSessionComponents();
       String prompt = sessionComponents.getMessages().stream()
-          .map(value -> {
-            return this.encoder.encodeMessage(value);
-          })
+          .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
       System.out.println("Calling Bedrock with model " + model.getModelName());
-      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
+      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getContextWindowLength());
       BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
       session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();

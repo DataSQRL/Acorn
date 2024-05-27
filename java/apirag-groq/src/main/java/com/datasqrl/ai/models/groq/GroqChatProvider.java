@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +107,7 @@ public class GroqChatProvider implements ChatClientProvider<ChatMessage> {
           .functionCall("auto")
           .n(1)
           .temperature(0.2)
-          .maxTokens(model.getCompletionLength())
+          .maxTokens(model.getContextWindowLength())
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;

@@ -6,7 +6,7 @@ import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.config.ApplicationConfiguration;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
-import com.datasqrl.ai.models.openai.OpenAIChatSession;
+import com.datasqrl.ai.models.openai.OpenAIModelBindings;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
@@ -65,7 +65,7 @@ public class CmdLineChatBot {
   public void start(String instructionMessage, Map<String, Object> context) {
     Scanner scanner = new Scanner(System.in);
     ChatMessage systemMessage = new SystemMessage(instructionMessage);
-    OpenAIChatSession session = new OpenAIChatSession(chatModel, systemMessage, backend, context);
+    OpenAIModelBindings session = new OpenAIModelBindings(chatModel, systemMessage);
 
 
     System.out.print("First Query: ");
@@ -81,7 +81,7 @@ public class CmdLineChatBot {
           .functions(sessionComponents.getFunctions())
           .functionCall("auto")
           .n(1)
-          .maxTokens(chatModel.getCompletionLength())
+          .maxTokens(chatModel.getContextWindowLength())
           .logitBias(new HashMap<>())
           .build();
       Flowable<ChatCompletionChunk> flowable = service.streamChatCompletion(chatCompletionRequest);
