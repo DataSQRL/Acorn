@@ -5,7 +5,7 @@ import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.models.ResponseMessage;
-import com.datasqrl.ai.models.openai.OpenAiChatProvider;
+import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,9 +37,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.theokanning.openai.service.OpenAiService.defaultClient;
@@ -75,7 +77,6 @@ public class GroqChatProvider implements ChatClientProvider {
     this.service = new OpenAiService(retrofit.create(OpenAiApi.class));
   }
 
-
   @Override
   public List<ResponseMessage> getChatHistory(Map<String, Object> context) {
     GroqChatSession session = new GroqChatSession(model, systemPrompt, backend, context);
@@ -86,7 +87,7 @@ public class GroqChatProvider implements ChatClientProvider {
         case USER, ASSISTANT -> true;
         default -> false;
       };
-    }).map(OpenAiChatProvider::toResponse).collect(Collectors.toUnmodifiableList());
+    }).map(GroqChatProvider::toResponse).collect(Collectors.toUnmodifiableList());
   }
 
   @Override
@@ -129,7 +130,7 @@ public class GroqChatProvider implements ChatClientProvider {
       if (res != null) {
         String responseText = res.trim();
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
-          ChatFunctionCall functionCall = OpenAiChatProvider.getFunctionCallFromText(responseText).orElse(null);
+          ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
           responseMessage = new AssistantMessage("", "", null, functionCall);
           System.out.println("!!!Remapped content to function call");
         }
@@ -139,8 +140,8 @@ public class GroqChatProvider implements ChatClientProvider {
       if (functionCall != null) {
         FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
-          if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-            return OpenAiChatProvider.toResponse(responseMessage);
+          if (fctValid.isPassthrough()) { // return as is - evaluated on frontend
+            return toResponse(responseMessage);
           } else {
             System.out.println("Executing " + functionCall.getName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
@@ -148,10 +149,10 @@ public class GroqChatProvider implements ChatClientProvider {
             System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
-        } //TODO: add retry in case of invalid function call
+        } // TODO: add retry in case of invalid function call
       } else {
-        //The text answer
-        return OpenAiChatProvider.toResponse(responseMessage);
+        // The text answer
+        return toResponse(responseMessage);
       }
     }
   }
@@ -165,12 +166,14 @@ public class GroqChatProvider implements ChatClientProvider {
       Response response = chain.proceed(request);
       ResponseBody body = response.body();
       int code = response.code();
-      if (code == 400 && body != null && body.contentType() != null && body.contentType().subtype() != null && body.contentType().subtype().toLowerCase().equals("json")) {
+      if (code == 400 && body != null && body.contentType() != null && body.contentType().subtype() != null
+          && body.contentType().subtype().toLowerCase().equals("json")) {
         BufferedSource source = body.source();
         source.request(Long.MAX_VALUE); // Buffer the entire body.
         Buffer buffer = source.buffer();
         Charset charset = body.contentType().charset(StandardCharsets.UTF_8);
-        // Clone the existing buffer is they can only read once so we still want to pass the original one to the chain.
+        // Clone the existing buffer is they can only read once so we still want to pass
+        // the original one to the chain.
         String jsonText = buffer.clone().readString(charset);
         errorFunctionCall = getFunctionCallFromGroqError(jsonText);
         if (errorFunctionCall != null) {
@@ -197,5 +200,26 @@ public class GroqChatProvider implements ChatClientProvider {
     }
   }
 
+  public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
+    return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+  }
 
+  public static ResponseMessage toResponse(ChatMessage msg) {
+    ChatFunctionCall functionCall = null;
+    if (ChatMessageRole.valueOf(msg.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT) {
+      functionCall = ((AssistantMessage) msg).getFunctionCall();
+    }
+    if (functionCall != null) {
+      System.out.println(functionCall.getArguments());
+      return new ResponseMessage(msg.getRole(), null,
+          functionCall.getArguments(), "", Instant.now().toString());
+    } else {
+      return new ResponseMessage(msg.getRole(),
+          msg.getTextContent(),
+          null,
+          "",
+          Instant.now().toString()
+      );
+    }
+  }
 }

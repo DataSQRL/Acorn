@@ -14,5 +14,4 @@ public class ResponseMessage {
   private String uuid;
   private String timestamp;
 
-
 }
