@@ -7,7 +7,12 @@ import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.ModelBindings;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.util.JsonUtil;
-import com.theokanning.openai.completion.chat.*;
+import com.theokanning.openai.completion.chat.AssistantMessage;
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatFunctionCall;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.FunctionMessage;
+import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 
 import java.time.Duration;
@@ -15,18 +20,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class OpenAiChatProvider implements ChatClientProvider<ChatMessage, ChatFunctionCall> {
+public class OpenAiChatProvider implements ChatClientProvider<ChatMessage> {
 
   private final OpenAiChatModel model;
   private final FunctionBackend backend;
   private final OpenAiService service;
-  private final SystemMessage systemPrompt;
+  private final String systemPrompt;
   private final ModelBindings<ChatMessage> bindings;
 
   public OpenAiChatProvider(OpenAiChatModel model, String systemPrompt, FunctionBackend backend) {
     this.model = model;
     this.backend = backend;
-    this.systemPrompt = new SystemMessage(systemPrompt);
+    this.systemPrompt = systemPrompt;
     String openAIToken = System.getenv("OPENAI_TOKEN");
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
     this.bindings = new OpenAIModelBindings(model);
@@ -35,7 +40,7 @@ public class OpenAiChatProvider implements ChatClientProvider<ChatMessage, ChatF
 
   @Override
   public ChatMessage chat(String message, Map<String, Object> context) {
-    ChatSession<ChatMessage, ChatFunctionCall> session = getCurrentSession(context);
+    ChatSession<ChatMessage> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     ChatMessage chatMessage = new UserMessage(message);
@@ -106,11 +111,6 @@ public class OpenAiChatProvider implements ChatClientProvider<ChatMessage, ChatF
     } catch (Exception e) {
       return convertExceptionToMessage(e);
     }
-  }
-
-  @Override
-  public ChatSession<ChatMessage, ChatFunctionCall> getCurrentSession(Map<String, Object> context) {
-    return new ChatSession<>(model, backend, context, bindings.convertMessage(systemPrompt, context), bindings);
   }
 
   private FunctionMessage convertExceptionToMessage(Exception exception) {

@@ -7,4 +7,6 @@ public interface ModelBindings<Message> {
   GenericChatMessage convertMessage(Message message, Map<String, Object> sessionContext);
   boolean isUserOrAssistantMessage(Message message);
   ModelAnalyzer<Message> getTokenizer();
+  int getModelCompletionLength();
+  GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext);
 }

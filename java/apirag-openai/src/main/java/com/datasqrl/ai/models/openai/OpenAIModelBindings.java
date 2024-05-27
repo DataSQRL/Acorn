@@ -18,9 +18,11 @@ import java.util.Map;
 public class OpenAIModelBindings implements ModelBindings<ChatMessage> {
 
   OpenAITokenCounter tokenCounter;
+  private final OpenAiChatModel model;
 
   public OpenAIModelBindings(OpenAiChatModel model) {
     this.tokenCounter = OpenAITokenCounter.of(model);
+    this.model = model;
   }
 
 
@@ -63,6 +65,16 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage> {
   @Override
   public ModelAnalyzer<ChatMessage> getTokenizer() {
     return tokenCounter;
+  }
+
+  @Override
+  public int getModelCompletionLength() {
+    return model.getContextWindowLength() - model.getCompletionLength();
+  }
+
+  @Override
+  public GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext) {
+    return convertMessage(new SystemMessage(systemMessage), sessionContext);
   }
 
   private static String functionCall2String(ChatFunctionCall fctCall) {

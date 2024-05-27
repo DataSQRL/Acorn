@@ -4,6 +4,7 @@ import com.datasqrl.ai.PlotFunction;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.FunctionType;
+import com.datasqrl.ai.backend.ModelBindings;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.config.ApplicationConfiguration;
 import com.datasqrl.ai.models.ChatClientProvider;
