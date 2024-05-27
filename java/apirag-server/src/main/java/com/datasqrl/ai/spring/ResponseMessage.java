@@ -1,4 +1,4 @@
-package com.datasqrl.ai.models;
+package com.datasqrl.ai.spring;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;

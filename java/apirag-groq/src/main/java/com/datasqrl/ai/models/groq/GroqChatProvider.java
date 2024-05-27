@@ -4,7 +4,6 @@ import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.models.ChatClientProvider;
-import com.datasqrl.ai.models.ResponseMessage;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,7 +46,7 @@ import java.util.stream.Collectors;
 import static com.theokanning.openai.service.OpenAiService.defaultClient;
 import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 
-public class GroqChatProvider implements ChatClientProvider {
+public class GroqChatProvider implements ChatClientProvider<ChatMessage> {
 
   private final FunctionBackend backend;
   private final OpenAiService service;
@@ -78,7 +77,7 @@ public class GroqChatProvider implements ChatClientProvider {
   }
 
   @Override
-  public List<ResponseMessage> getChatHistory(Map<String, Object> context) {
+  public List<ChatMessage> getChatHistory(Map<String, Object> context) {
     GroqChatSession session = new GroqChatSession(model, systemPrompt, backend, context);
     List<ChatMessage> messages = session.retrieveMessageHistory(50);
     return messages.stream().filter(m -> {
@@ -87,11 +86,11 @@ public class GroqChatProvider implements ChatClientProvider {
         case USER, ASSISTANT -> true;
         default -> false;
       };
-    }).map(GroqChatProvider::toResponse).collect(Collectors.toUnmodifiableList());
+    }).collect(Collectors.toUnmodifiableList());
   }
 
   @Override
-  public ResponseMessage chat(String message, Map<String, Object> context) {
+  public ChatMessage chat(String message, Map<String, Object> context) {
     GroqChatSession session = new GroqChatSession(model, systemPrompt, backend, context);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
@@ -141,7 +140,7 @@ public class GroqChatProvider implements ChatClientProvider {
         FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { // return as is - evaluated on frontend
-            return toResponse(responseMessage);
+            return responseMessage;
           } else {
             System.out.println("Executing " + functionCall.getName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
@@ -152,7 +151,7 @@ public class GroqChatProvider implements ChatClientProvider {
         } // TODO: add retry in case of invalid function call
       } else {
         // The text answer
-        return toResponse(responseMessage);
+        return responseMessage;
       }
     }
   }
@@ -202,24 +201,5 @@ public class GroqChatProvider implements ChatClientProvider {
 
   public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
     return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
-  }
-
-  public static ResponseMessage toResponse(ChatMessage msg) {
-    ChatFunctionCall functionCall = null;
-    if (ChatMessageRole.valueOf(msg.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT) {
-      functionCall = ((AssistantMessage) msg).getFunctionCall();
-    }
-    if (functionCall != null) {
-      System.out.println(functionCall.getArguments());
-      return new ResponseMessage(msg.getRole(), null,
-          functionCall.getArguments(), "", Instant.now().toString());
-    } else {
-      return new ResponseMessage(msg.getRole(),
-          msg.getTextContent(),
-          null,
-          "",
-          Instant.now().toString()
-      );
-    }
   }
 }

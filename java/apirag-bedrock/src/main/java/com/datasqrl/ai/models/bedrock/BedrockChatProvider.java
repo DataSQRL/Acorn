@@ -6,10 +6,8 @@ import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.datasqrl.ai.models.ChatClientProvider;
-import com.datasqrl.ai.models.ResponseMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
 import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
@@ -22,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class BedrockChatProvider implements ChatClientProvider {
+public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessage> {
 
   private final BedrockChatModel model;
   private final FunctionBackend backend;
@@ -58,17 +56,17 @@ public class BedrockChatProvider implements ChatClientProvider {
   }
 
   @Override
-  public List<ResponseMessage> getChatHistory(Map<String, Object> context) {
+  public List<BedrockChatMessage> getChatHistory(Map<String, Object> context) {
     BedrockChatSession session = new BedrockChatSession(model, systemPrompt, backend, context);
     List<BedrockChatMessage> messages = session.retrieveMessageHistory(50);
     return messages.stream().filter(m -> switch (m.getRole()) {
       case USER, ASSISTANT -> true;
       default -> false;
-    }).map(BedrockChatProvider::toResponse).collect(Collectors.toUnmodifiableList());
+    }).collect(Collectors.toUnmodifiableList());
   }
 
   @Override
-  public ResponseMessage chat(String message, Map<String, Object> context) {
+  public BedrockChatMessage chat(String message, Map<String, Object> context) {
     BedrockChatSession session = new BedrockChatSession(model, systemPrompt, backend, context);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
@@ -91,7 +89,7 @@ public class BedrockChatProvider implements ChatClientProvider {
         FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-            return toResponse(responseMessage);
+            return responseMessage;
           } else {
             System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
@@ -102,7 +100,7 @@ public class BedrockChatProvider implements ChatClientProvider {
         } //TODO: add retry in case of invalid function call
       } else {
         //The text answer
-        return toResponse(responseMessage);
+        return responseMessage;
       }
     }
   }
@@ -142,24 +140,5 @@ public class BedrockChatProvider implements ChatClientProvider {
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
     System.out.println("🤖Bedrock Response:\n" + jsonObject);
     return jsonObject;
-  }
-
-  public static ResponseMessage toResponse(BedrockChatMessage msg) {
-    BedrockFunctionCall functionCall = null;
-    if (msg.getRole() == BedrockChatRole.ASSISTANT) {
-      functionCall = msg.getFunctionCall();
-    }
-    if (functionCall != null) {
-      System.out.println(functionCall.getArguments());
-      return new ResponseMessage(msg.getRole().getRole(), null,
-          functionCall.getArguments(), "", Instant.now().toString());
-    } else {
-      return new ResponseMessage(msg.getRole().getRole(),
-          msg.getTextContent(),
-          null,
-          "",
-          Instant.now().toString()
-      );
-    }
   }
 }

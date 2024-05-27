@@ -7,7 +7,7 @@ import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.FunctionType;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatClientProvider;
-import com.datasqrl.ai.models.ResponseMessage;
+import com.datasqrl.ai.models.bedrock.BedrockChatMessage;
 import com.datasqrl.ai.models.bedrock.BedrockChatModel;
 import com.datasqrl.ai.models.bedrock.BedrockChatProvider;
 import com.datasqrl.ai.models.groq.GroqChatModel;
@@ -15,6 +15,7 @@ import com.datasqrl.ai.models.groq.GroqChatProvider;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAiChatProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -85,14 +86,20 @@ public class SimpleServer {
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
       Map<String, Object> context = example.getContext(userId);
-      return chatClientProvider.getChatHistory(context);
+      return switch (example.getProvider()) {
+        case OPENAI, GROQ -> chatClientProvider.getChatHistory(context).stream().map(msg -> ProviderMessageMapper.toResponse((ChatMessage) msg)).toList();
+        case BEDROCK -> chatClientProvider.getChatHistory(context).stream().map(msg -> ProviderMessageMapper.toResponse((BedrockChatMessage) msg)).toList();
+      };
     }
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
       System.out.println("\nUser #" + message.getUserId() + ": " + message.getContent());
       Map<String, Object> context = example.getContext(message.getUserId());
-      return chatClientProvider.chat(message.getContent(), context);
+      return switch (example.getProvider()) {
+        case OPENAI, GROQ -> ProviderMessageMapper.toResponse((ChatMessage) chatClientProvider.chat(message.getContent(), context));
+        case BEDROCK -> ProviderMessageMapper.toResponse((BedrockChatMessage) chatClientProvider.chat(message.getContent(), context));
+      };
     }
   }
 }
