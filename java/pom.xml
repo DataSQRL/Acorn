@@ -24,6 +24,9 @@
     <lombok.version>1.18.24</lombok.version>
     <jackson.version>2.17.1</jackson.version>
     <huggingface.version>0.27.0</huggingface.version>
+    <autservice.version>1.1.1</autservice.version>
+    <commons-config.version>2.10.1</commons-config.version>
+    <commons-beanutil.version>1.9.4</commons-beanutil.version>
   </properties>
 
   <dependencies>
@@ -33,6 +36,21 @@
       <artifactId>lombok</artifactId>
       <version>${lombok.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-configuration2</artifactId>
+      <version>${commons-config.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>${commons-beanutil.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.auto.service</groupId>
+      <artifactId>auto-service</artifactId>
+      <version>${autservice.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

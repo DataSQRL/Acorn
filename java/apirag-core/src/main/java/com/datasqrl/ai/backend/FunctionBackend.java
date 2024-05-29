@@ -55,14 +55,14 @@ public class FunctionBackend {
    * The format of the configuration file is defined in the <a href="https://github.com/DataSQRL/apiRAG">Github repository</a>
    * and you can find examples underneath the {@code api-examples} directory.
    *
-   * @param configFile Path to a configuration file
+   * @param tools Json string that defines the tools
    * @param apiExecutor Executor for the API queries
    * @return An {@link FunctionBackend} instance
    * @throws IOException if configuration file cannot be read
    */
-  public static FunctionBackend of(@NonNull Path configFile, @NonNull APIExecutor apiExecutor) throws IOException {
+  public static FunctionBackend of(@NonNull String tools, @NonNull APIExecutor apiExecutor) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    List<RuntimeFunctionDefinition> functions = mapper.readValue(configFile.toFile(),
+    List<RuntimeFunctionDefinition> functions = mapper.readValue(tools,
         new TypeReference<List<RuntimeFunctionDefinition>>(){});
     return new FunctionBackend(functions.stream()
         .filter(f -> !RESERVED_FUNCTION_NAMES.contains(f.getName().toLowerCase()))

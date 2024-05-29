@@ -10,7 +10,22 @@ import com.theokanning.openai.completion.chat.ChatMessageRole;
 
 import java.time.Instant;
 
+/**
+ * TODO: Replace this by returning a GenericChatMessage from the ChatClientProvider
+ * and then mapping the generic message to a reponse.
+ */
 public class ProviderMessageMapper {
+
+  public static ResponseMessage toResponse(Object msg) {
+    if (msg instanceof ChatMessage) {
+      return toResponse((ChatMessage) msg);
+    } else if (msg instanceof BedrockChatMessage) {
+      return toResponse((BedrockChatMessage) msg);
+    } else {
+      throw new IllegalArgumentException("Unexpected chat message: " + msg.getClass());
+    }
+  }
+
 
   public static ResponseMessage toResponse(ChatMessage msg) {
     ChatFunctionCall functionCall = null;

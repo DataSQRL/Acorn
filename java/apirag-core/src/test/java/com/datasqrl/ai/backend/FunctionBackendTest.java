@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.datasqrl.ai.api.MockAPIExecutor;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,8 @@ public class FunctionBackendTest {
   public void readNutshop() throws Exception {
     String currentDirectory = System.getProperty("user.dir");
     System.out.println("Current working directory: " + currentDirectory);
-    FunctionBackend fctExec = FunctionBackend.of(Path.of("../../api-examples/nutshop/nutshop-c360.tools.json"),
-        MockAPIExecutor.of("none"));
+    String tools = Files.readString(Path.of("../../api-examples/nutshop/nutshop-c360.tools.json"));
+    FunctionBackend fctExec = FunctionBackend.of(tools, MockAPIExecutor.of("none"));
     List<RuntimeFunctionDefinition> chatFcts = new ArrayList<>(fctExec.getFunctions().values());
     assertEquals(3, chatFcts.size());
     for (RuntimeFunctionDefinition function : chatFcts) {

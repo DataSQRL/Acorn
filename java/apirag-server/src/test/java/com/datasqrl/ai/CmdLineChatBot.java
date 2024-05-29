@@ -4,6 +4,7 @@ import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.config.ApplicationConfiguration;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIChatSession;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -15,6 +16,7 @@ import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
@@ -34,7 +36,7 @@ import lombok.Value;
  * and meant only for demonstration and testing.
  *
  * To run the main method, you need to set your OPENAI token as an environment variable.
- * The main method expects the name of an {@link Examples} value.
+ * The main method expects two arguments: A configuration file and a tools file.
  */
 @Value
 public class CmdLineChatBot {
@@ -131,24 +133,22 @@ public class CmdLineChatBot {
   }
 
   public static void main(String... args) throws Exception {
-    if (args==null || args.length==0) throw new IllegalArgumentException("Please provide the name of the example you want to run. One of: " + Arrays.toString(Examples.values()));
-    Examples example = Examples.valueOf(args[0].trim().toUpperCase());
-    String openAIToken = System.getenv("OPENAI_TOKEN");
-    String graphQLEndpoint = example.getApiURL();
-    if (args.length>1) graphQLEndpoint = args[1];
+    if (args==null || args.length!=2) throw new IllegalArgumentException("Please provide a configuration file and a tools file");
+    ApplicationConfiguration configuration = ApplicationConfiguration.fromFile(Path.of(args[0]), Path.of(args[1]));
+
 
     Map<String,Object> context = Map.of();
-    if (example.hasUserId()) {
+    if (configuration.hasAuth()) {
       Scanner scanner = new Scanner(System.in);
       System.out.print("Enter the User ID: ");
       String userid = scanner.nextLine();
-      context = example.getContext(userid);
+      context = configuration.getContextFunction().apply(userid);
     }
 
-    GraphQLExecutor apiExecutor = new GraphQLExecutor(graphQLEndpoint);
-    FunctionBackend backend = FunctionBackend.of(Path.of(example.configFile), apiExecutor);
+    FunctionBackend backend = configuration.getFunctionBackend();
+    String openAIToken = System.getenv("OPENAI_TOKEN");
     CmdLineChatBot chatBot = new CmdLineChatBot(openAIToken, backend);
-    chatBot.start(example.systemPrompt, context);
+    chatBot.start(configuration.getSystemPrompt(), context);
   }
 
 }

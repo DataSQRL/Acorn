@@ -1,5 +1,5 @@
 {
-  "name": "_chart",
+  "name": "data_visualization",
   "description": "Visualizes the provided table of data in the given chart type. Use this function to visually present data to the user.",
   "parameters": {
     "type": "object",

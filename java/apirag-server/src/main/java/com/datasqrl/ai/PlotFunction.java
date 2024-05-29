@@ -1,5 +1,6 @@
 package com.datasqrl.ai;
 
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,9 +8,11 @@ import lombok.Getter;
 @Getter
 public enum PlotFunction {
 
-  none(""), oneD("plotfunction1d.json"), twoD("plotfunction2d.json");
+  none(Optional.empty()),
+  oneD(Optional.of("plotfunction1d.json")),
+  twoD(Optional.of("plotfunction2d.json"));
 
-  private final String resourceFile;
+  private final Optional<String> resourceFile;
 
   public boolean isPresent() {
     return this!=none;
