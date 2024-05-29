@@ -21,14 +21,12 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessage> {
+public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, BedrockFunctionCall> {
 
   private final BedrockChatModel model;
-  private final FunctionBackend backend;
   private final BedrockRuntimeClient client;
   private final ChatMessageEncoder<BedrockChatMessage> encoder;
   private final String systemPrompt;
-  private final ModelBindings<BedrockChatMessage> bindings;
 
   private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with JSON text in the following format: "
       + "{\"function\": \"$FUNCTION_NAME\","
@@ -44,15 +42,14 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
       + "Here are the functions you can use:";
 
   public BedrockChatProvider(BedrockChatModel model, FunctionBackend backend, String systemPrompt) {
+    super(backend, new BedrockModelBindings(model));
     this.model = model;
-    this.backend = backend;
     this.systemPrompt = combineSystemPromptAndFunctions(systemPrompt);
     EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
     this.client = BedrockRuntimeClient.builder()
         .region(Region.US_WEST_2)
         .credentialsProvider(credentialsProvider)
         .build();
-    this.bindings = new BedrockModelBindings(model);
     this.encoder = switch (model) {
       case LLAMA3_70B, LLAMA3_8B -> new Llama3MessageEncoder();
     };
@@ -60,7 +57,7 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
 
   @Override
   public BedrockChatMessage chat(String message, Map<String, Object> context) {
-    ChatSession<BedrockChatMessage> session = new ChatSession<>(backend, context, systemPrompt, bindings);
+    ChatSession<BedrockChatMessage,BedrockFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
@@ -96,27 +93,8 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
     }
   }
 
-  public FunctionValidation<BedrockChatMessage> validateFunctionCall(BedrockFunctionCall chatFunctionCall) {
-    return backend.validateFunctionCall(chatFunctionCall.getFunctionName(),
-        chatFunctionCall.getArguments()).translate(this::convertExceptionToMessage);
-  }
-
-  public BedrockChatMessage executeFunctionCall(BedrockFunctionCall chatFunctionCall, Map<String, Object> context) {
-    try {
-      return new BedrockChatMessage(BedrockChatRole.FUNCTION,
-          backend.executeFunctionCall(chatFunctionCall.getFunctionName(), chatFunctionCall.getArguments(), context),
-          chatFunctionCall.getFunctionName());
-    } catch (Exception e) {
-      return convertExceptionToMessage(e);
-    }
-  }
-
-  private BedrockChatMessage convertExceptionToMessage(Exception exception) {
-    String error = exception.getMessage() == null ? exception.toString() : exception.getMessage();
-    return convertExceptionToMessage(error);
-  }
-
-  private BedrockChatMessage convertExceptionToMessage(String error) {
+  @Override
+  protected BedrockChatMessage convertExceptionToMessage(String error) {
     return new BedrockChatMessage(BedrockChatRole.USER, "{\"error\": \"" + error + "\"}", "error");
   }
 

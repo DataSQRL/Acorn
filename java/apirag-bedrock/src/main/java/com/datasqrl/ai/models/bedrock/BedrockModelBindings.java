@@ -1,11 +1,12 @@
 package com.datasqrl.ai.models.bedrock;
 
 import com.datasqrl.ai.backend.*;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.Instant;
 import java.util.Map;
 
-public class BedrockModelBindings implements ModelBindings<BedrockChatMessage> {
+public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, BedrockFunctionCall> {
 
   private final BedrockChatModel model;
   BedrockTokenCounter tokenCounter;
@@ -56,12 +57,27 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage> {
 
   @Override
   public int getMaxInputTokens() {
-    return model.getContextWindowLength() - model.getContextWindowLength();
+    return model.getContextWindowLength() - model.getCompletionLength();
   }
 
   @Override
   public GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext) {
     return null;
+  }
+
+  @Override
+  public String getFunctionName(BedrockFunctionCall functionCall) {
+    return functionCall.getFunctionName();
+  }
+
+  @Override
+  public JsonNode getFunctionArguments(BedrockFunctionCall functionCall) {
+    return functionCall.getArguments();
+  }
+
+  @Override
+  public BedrockChatMessage newFunctionResultMessage(String functionName, String functionResult) {
+    return new BedrockChatMessage(BedrockChatRole.FUNCTION, functionResult, functionName);
   }
 
   private static String functionCall2String(BedrockFunctionCall fctCall) {
