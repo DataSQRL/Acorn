@@ -3,6 +3,7 @@ package com.datasqrl.ai.models.openai;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.datasqrl.ai.backend.ModelBindings;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
@@ -15,10 +16,10 @@ import com.theokanning.openai.completion.chat.UserMessage;
 import java.time.Instant;
 import java.util.Map;
 
-public class OpenAIModelBindings implements ModelBindings<ChatMessage> {
+public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunctionCall> {
 
-  OpenAITokenCounter tokenCounter;
   private final OpenAiChatModel model;
+  OpenAITokenCounter tokenCounter;
 
   public OpenAIModelBindings(OpenAiChatModel model) {
     this.tokenCounter = OpenAITokenCounter.of(model);
@@ -63,12 +64,12 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage> {
   }
 
   @Override
-  public ModelAnalyzer<ChatMessage> getTokenizer() {
+  public ModelAnalyzer<ChatMessage> getTokenCounter() {
     return tokenCounter;
   }
 
   @Override
-  public int getModelCompletionLength() {
+  public int getMaxInputTokens() {
     return model.getContextWindowLength() - model.getCompletionLength();
   }
 
@@ -77,8 +78,26 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage> {
     return convertMessage(new SystemMessage(systemMessage), sessionContext);
   }
 
+  @Override
+  public String getFunctionName(ChatFunctionCall functionCall) {
+    return functionCall.getName();
+  }
+
+  @Override
+  public JsonNode getFunctionArguments(ChatFunctionCall functionCall) {
+    return functionCall.getArguments();
+  }
+
+  @Override
+  public FunctionMessage newFunctionResultMessage(String functionName, String functionResult) {
+    return new FunctionMessage(functionResult, functionName);
+  }
+
   private static String functionCall2String(ChatFunctionCall fctCall) {
-    return fctCall.getName() + "@" + fctCall.getArguments().toPrettyString();
+    return "{"
+        + "\"function\": \"" + fctCall.getName() + "\", "
+        + "\"parameters\": " + fctCall.getArguments().toString()
+        + "}";
   }
 
 }

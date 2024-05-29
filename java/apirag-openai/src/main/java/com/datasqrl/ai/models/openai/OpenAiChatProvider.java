@@ -4,7 +4,6 @@ import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.backend.ModelBindings;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.util.JsonUtil;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -20,27 +19,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class OpenAiChatProvider implements ChatClientProvider<ChatMessage> {
+public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
 
   private final OpenAiChatModel model;
-  private final FunctionBackend backend;
   private final OpenAiService service;
   private final String systemPrompt;
-  private final ModelBindings<ChatMessage> bindings;
 
-  public OpenAiChatProvider(OpenAiChatModel model, String systemPrompt, FunctionBackend backend) {
+  public OpenAiChatProvider(OpenAiChatModel model, FunctionBackend backend, String systemPrompt) {
+    super(backend, new OpenAIModelBindings(model));
     this.model = model;
-    this.backend = backend;
     this.systemPrompt = systemPrompt;
     String openAIToken = System.getenv("OPENAI_TOKEN");
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
-    this.bindings = new OpenAIModelBindings(model);
   }
 
 
   @Override
   public ChatMessage chat(String message, Map<String, Object> context) {
-    ChatSession<ChatMessage> session = new ChatSession<>(backend, context, systemPrompt, bindings);
+    ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     ChatMessage chatMessage = new UserMessage(message);
@@ -75,14 +71,14 @@ public class OpenAiChatProvider implements ChatClientProvider<ChatMessage> {
       session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<ChatMessage> fctValid = validateFunctionCall(functionCall);
+        FunctionValidation<ChatMessage> fctValid = this.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
             return responseMessage;
           } else {
             System.out.println("Executing " + functionCall.getName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
-            FunctionMessage functionResponse = executeFunctionCall(functionCall, context);
+            FunctionMessage functionResponse = (FunctionMessage) this.executeFunctionCall(functionCall, context);
             System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
@@ -97,28 +93,8 @@ public class OpenAiChatProvider implements ChatClientProvider<ChatMessage> {
   public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
     return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
   }
-
-  public FunctionValidation<ChatMessage> validateFunctionCall(ChatFunctionCall chatFunctionCall) {
-    return backend.validateFunctionCall(chatFunctionCall.getName(),
-        chatFunctionCall.getArguments()).translate(this::convertExceptionToMessage);
-  }
-
-  public FunctionMessage executeFunctionCall(ChatFunctionCall chatFunctionCall, Map<String, Object> context) {
-    try {
-      return new FunctionMessage(
-          backend.executeFunctionCall(chatFunctionCall.getName(), chatFunctionCall.getArguments(), context),
-          chatFunctionCall.getName());
-    } catch (Exception e) {
-      return convertExceptionToMessage(e);
-    }
-  }
-
-  private FunctionMessage convertExceptionToMessage(Exception exception) {
-    String error = exception.getMessage() == null ? exception.toString() : exception.getMessage();
-    return convertExceptionToMessage(error);
-  }
-
-  private FunctionMessage convertExceptionToMessage(String error) {
+  @Override
+  public FunctionMessage convertExceptionToMessage(String error) {
     return new FunctionMessage("{\"error\": \"" + error + "\"}", "error");
   }
 

@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @AllArgsConstructor
-public class ChatSession<Message> {
+public class ChatSession<Message, FunctionCall> {
 
   private final FunctionBackend backend;
   private final Map<String, Object> sessionContext;
   private final String systemMessage;
-  private final ModelBindings<Message> bindings;
+  private final ModelBindings<Message, FunctionCall> bindings;
 
   private final List<GenericChatMessage> messages = new ArrayList<>();
 
@@ -68,7 +68,7 @@ public class ChatSession<Message> {
   }
 
   public ChatSessionComponents<Message> getSessionComponents() {
-    ContextWindow<GenericChatMessage> context = getWindow(bindings.getModelCompletionLength(), bindings.getTokenizer());
+    ContextWindow<GenericChatMessage> context = getWindow(bindings.getMaxInputTokens(), bindings.getTokenCounter());
     return new ChatSessionComponents<>(context.getMessages().stream().map(bindings::convertMessage).toList(), context.getFunctions());
   }
 
