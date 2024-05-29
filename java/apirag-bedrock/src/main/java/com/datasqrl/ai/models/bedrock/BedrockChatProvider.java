@@ -1,8 +1,10 @@
 package com.datasqrl.ai.models.bedrock;
 
+import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.backend.ModelBindings;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.datasqrl.ai.models.ChatClientProvider;
@@ -16,7 +18,6 @@ import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,8 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
   private final FunctionBackend backend;
   private final BedrockRuntimeClient client;
   private final ChatMessageEncoder<BedrockChatMessage> encoder;
-  private final BedrockChatMessage systemPrompt;
+  private final String systemPrompt;
+  private final ModelBindings<BedrockChatMessage> bindings;
 
   private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with JSON text in the following format: "
       + "{\"function\": \"$FUNCTION_NAME\","
@@ -41,7 +43,7 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
       + "}\n"
       + "Here are the functions you can use:";
 
-  public BedrockChatProvider(BedrockChatModel model, String systemPrompt, FunctionBackend backend) {
+  public BedrockChatProvider(BedrockChatModel model, FunctionBackend backend, String systemPrompt) {
     this.model = model;
     this.backend = backend;
     this.systemPrompt = combineSystemPromptAndFunctions(systemPrompt);
@@ -50,24 +52,15 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
         .region(Region.US_WEST_2)
         .credentialsProvider(credentialsProvider)
         .build();
+    this.bindings = new BedrockModelBindings(model);
     this.encoder = switch (model) {
       case LLAMA3_70B, LLAMA3_8B -> new Llama3MessageEncoder();
     };
   }
 
   @Override
-  public List<BedrockChatMessage> getChatHistory(Map<String, Object> context) {
-    BedrockChatSession session = new BedrockChatSession(model, systemPrompt, backend, context);
-    List<BedrockChatMessage> messages = session.retrieveMessageHistory(50);
-    return messages.stream().filter(m -> switch (m.getRole()) {
-      case USER, ASSISTANT -> true;
-      default -> false;
-    }).toList();
-  }
-
-  @Override
   public BedrockChatMessage chat(String message, Map<String, Object> context) {
-    BedrockChatSession session = new BedrockChatSession(model, systemPrompt, backend, context);
+    ChatSession<BedrockChatMessage> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
@@ -84,14 +77,14 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
       session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
+        FunctionValidation<BedrockChatMessage> fctValid = this.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
             return responseMessage;
           } else {
             System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
-            BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall);
+            BedrockChatMessage functionResponse = this.executeFunctionCall(functionCall, context);
             System.out.println("Executed " + functionCall.getFunctionName() + " with results: " + functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
@@ -103,7 +96,31 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
     }
   }
 
-  private BedrockChatMessage combineSystemPromptAndFunctions(String systemPrompt) {
+  public FunctionValidation<BedrockChatMessage> validateFunctionCall(BedrockFunctionCall chatFunctionCall) {
+    return backend.validateFunctionCall(chatFunctionCall.getFunctionName(),
+        chatFunctionCall.getArguments()).translate(this::convertExceptionToMessage);
+  }
+
+  public BedrockChatMessage executeFunctionCall(BedrockFunctionCall chatFunctionCall, Map<String, Object> context) {
+    try {
+      return new BedrockChatMessage(BedrockChatRole.FUNCTION,
+          backend.executeFunctionCall(chatFunctionCall.getFunctionName(), chatFunctionCall.getArguments(), context),
+          chatFunctionCall.getFunctionName());
+    } catch (Exception e) {
+      return convertExceptionToMessage(e);
+    }
+  }
+
+  private BedrockChatMessage convertExceptionToMessage(Exception exception) {
+    String error = exception.getMessage() == null ? exception.toString() : exception.getMessage();
+    return convertExceptionToMessage(error);
+  }
+
+  private BedrockChatMessage convertExceptionToMessage(String error) {
+    return new BedrockChatMessage(BedrockChatRole.USER, "{\"error\": \"" + error + "\"}", "error");
+  }
+
+  private String combineSystemPromptAndFunctions(String systemPrompt) {
     ObjectMapper objectMapper = new ObjectMapper();
 //    Note: This approach does not take into account the context window for the system prompt
     String functionText = this.FUNCTION_CALLING_PROMPT
@@ -122,7 +139,7 @@ public class BedrockChatProvider implements ChatClientProvider<BedrockChatMessag
           }
         })
         .collect(Collectors.joining("\n"));
-    return new BedrockChatMessage(BedrockChatRole.SYSTEM, systemPrompt + "\n" + functionText + "\n", "");
+    return systemPrompt + "\n" + functionText + "\n";
   }
 
   private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens) {

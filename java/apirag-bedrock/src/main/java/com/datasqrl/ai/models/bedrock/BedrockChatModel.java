@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public enum BedrockChatModel implements GenericLanguageModel {
 
-//  Tokenizers are not openly downloadable for these models yet, as they need a HuggingFace Access Token.
+  //  Tokenizers are not openly downloadable for these models yet, as they need a HuggingFace Access Token.
 //  In the next release of ai.djl.huggingface, the Hugging Face access token is read from the local environment.
 //  Until then, we can use the llama3-7b tokenizer as a temporary solution, as the tokenizer is currently only used to
 //  prevent context window overflow
@@ -17,11 +17,6 @@ public enum BedrockChatModel implements GenericLanguageModel {
 
   final String modelName;
   final String tokenizerName;
-  final int maxContextLength;
+  final int contextWindowLength;
   final int completionLength;
-
-  public int getMaxInputTokens() {
-    return maxContextLength - completionLength;
-  }
-
 }
