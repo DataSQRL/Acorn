@@ -91,7 +91,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           .functionCall("auto")
           .n(1)
           .temperature(0.2)
-          .maxTokens(model.getContextWindowLength())
+          .maxTokens(model.getCompletionLength())
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;
