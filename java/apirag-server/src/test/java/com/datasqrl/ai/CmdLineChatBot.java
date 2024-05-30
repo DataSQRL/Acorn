@@ -1,22 +1,25 @@
 package com.datasqrl.ai;
 
 import com.datasqrl.ai.api.GraphQLExecutor;
+import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.config.ApplicationConfiguration;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
+import com.datasqrl.ai.models.openai.OpenAiChatProvider;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
-import java.nio.file.Files;
+
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
@@ -62,11 +65,10 @@ public class CmdLineChatBot {
    *
    * @param instructionMessage The system instruction message for the ChatBot
    */
-  public void start(String instructionMessage, Map<String, Object> context) {
+  public void start(String instructionMessage, Map<String, Object> context) throws IOException {
     Scanner scanner = new Scanner(System.in);
-    ChatMessage systemMessage = new SystemMessage(instructionMessage);
-    OpenAIModelBindings session = new OpenAIModelBindings(chatModel, systemMessage);
-
+    OpenAIModelBindings modelBindings = new OpenAIModelBindings(chatModel);
+    ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, instructionMessage, modelBindings);
 
     System.out.print("First Query: ");
     ChatMessage firstMsg = new UserMessage(scanner.nextLine());
@@ -110,14 +112,14 @@ public class CmdLineChatBot {
 
       if (chatMessage.getFunctionCall() != null) {
         ChatFunctionCall fctCall = chatMessage.getFunctionCall();
-        FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(fctCall);
+        FunctionValidation<String> fctValid = backend.validateFunctionCall(fctCall.getName(), fctCall.getArguments());
         if (fctValid.isValid()) {
           System.out.println("Trying to execute " + fctCall.getName() + " with arguments " + fctCall.getArguments().toPrettyString());
-          ChatMessage functionResponse = session.executeFunctionCall(fctCall);
+          ChatMessage functionResponse = new FunctionMessage(backend.executeFunctionCall(fctCall.getName(), fctCall.getArguments(), context), fctCall.getName());
           System.out.println("Executed " + fctCall.getName() + " with response: " + functionResponse.getTextContent());
           session.addMessage(functionResponse);
         } else {
-          session.addMessage(fctValid.getErrorMessage());
+          session.addMessage(new FunctionMessage("{\"error\": \"" + fctValid.getErrorMessage() + "\"}", "error"));
         }
         continue;
       }

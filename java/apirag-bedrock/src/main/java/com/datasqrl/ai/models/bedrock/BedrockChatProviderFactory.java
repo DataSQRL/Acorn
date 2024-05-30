@@ -18,8 +18,7 @@ public class BedrockChatProviderFactory extends AbstractChatProviderFactory {
   }
 
   @Override
-  public ChatClientProvider<?> create(Configuration modelConfiguration, String prompt,
-      FunctionBackend backend) {
-    return new BedrockChatProvider(getModel(modelConfiguration, BedrockChatModel.class), prompt, backend);
+  public ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt) {
+    return new BedrockChatProvider(getModel(modelConfiguration, BedrockChatModel.class), backend, prompt);
   }
 }

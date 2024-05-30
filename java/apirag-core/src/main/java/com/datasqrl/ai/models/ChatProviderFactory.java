@@ -7,6 +7,6 @@ public interface ChatProviderFactory {
 
   String getProviderName();
 
-  ChatClientProvider<?> create(Configuration modelConfiguration, String prompt, FunctionBackend backend);
+  ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt);
 
 }

@@ -18,8 +18,7 @@ public class GroqChatProviderFactory extends AbstractChatProviderFactory {
   }
 
   @Override
-  public ChatClientProvider<?> create(Configuration modelConfiguration, String prompt,
-      FunctionBackend backend) {
-    return new GroqChatProvider(getModel(modelConfiguration, GroqChatModel.class), prompt, backend);
+  public ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt) {
+    return new GroqChatProvider(getModel(modelConfiguration, GroqChatModel.class), backend, prompt);
   }
 }

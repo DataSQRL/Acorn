@@ -1,6 +1,7 @@
 package com.datasqrl.ai.spring;
 
 import com.datasqrl.ai.PlotFunction;
+import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.FunctionType;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.SneakyThrows;
+import okhttp3.internal.concurrent.TaskRunner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -41,24 +43,28 @@ public class SimpleServer {
   @RestController
   public static class MessageController {
 
-    private final ChatClientProvider<?> chatClientProvider;
+    private final FunctionBackend backend;
+    private final String systemPrompt;
+    private final ChatClientProvider<?, ?> chatClientProvider;
     private final Function<String,Map<String,Object>> getContextFunction;
 
     @SneakyThrows
     public MessageController(@Value("${config}") String configFile, @Value("${tools}") String toolsFile) {
       ApplicationConfiguration configuration = ApplicationConfiguration.fromFile(Path.of(configFile), Path.of(toolsFile));
       this.getContextFunction = configuration.getContextFunction();
-      FunctionBackend backend = configuration.getFunctionBackend();
+      this.backend = configuration.getFunctionBackend();
+      this.systemPrompt = configuration.getSystemPrompt();
       configuration.getPlotFunction().getResourceFile().ifPresent(resourceFile ->
           configuration.addPlotFunction(backend, SimpleServer.class.getClassLoader().getResource(resourceFile)));
       this.chatClientProvider = configuration.getChatProviderFactory().create(
-          configuration.getModelConfiguration(), configuration.getSystemPrompt(), backend);
+          configuration.getModelConfiguration(), backend, systemPrompt);
     }
 
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
       Map<String, Object> context = getContextFunction.apply(userId);
-      return chatClientProvider.getChatHistory(context).stream().map(msg -> ProviderMessageMapper.toResponse(msg)).toList();
+      ChatSession session = new ChatSession<>(backend, context, systemPrompt, chatClientProvider.getBindings());
+      return session.getChatHistory(false).stream().map(msg -> ProviderMessageMapper.toResponse(msg)).toList();
     }
 
     @PostMapping("/messages")
