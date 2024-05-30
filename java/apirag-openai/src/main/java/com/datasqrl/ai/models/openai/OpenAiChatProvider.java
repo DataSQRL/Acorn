@@ -53,7 +53,7 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
           .functionCall("auto")
           .n(1)
           .temperature(0.2)
-          .maxTokens(model.getContextWindowLength())
+          .maxTokens(model.getCompletionLength())
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();

@@ -62,7 +62,7 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, B
 
   @Override
   public GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext) {
-    return null;
+    return convertMessage(new BedrockChatMessage(BedrockChatRole.SYSTEM, systemMessage, ""), sessionContext);
   }
 
   @Override

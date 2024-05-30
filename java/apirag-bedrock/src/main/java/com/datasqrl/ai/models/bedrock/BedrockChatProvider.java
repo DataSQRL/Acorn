@@ -69,7 +69,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
           .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
       System.out.println("Calling Bedrock with model " + model.getModelName());
-      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getContextWindowLength());
+      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
       BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
       session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
