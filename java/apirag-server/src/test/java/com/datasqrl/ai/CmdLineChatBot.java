@@ -1,33 +1,30 @@
 package com.datasqrl.ai;
 
-import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.models.openai.OpenAiChatModel;
+import com.datasqrl.ai.config.ApplicationConfiguration;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
-import com.datasqrl.ai.models.openai.OpenAiChatProvider;
+import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.FunctionMessage;
-import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
+import lombok.Value;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
-import lombok.Value;
 
 /**
  * A simple streaming chatbot for the command line.
