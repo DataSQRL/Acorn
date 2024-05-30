@@ -29,7 +29,7 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
     super(backend, new OpenAIModelBindings(model));
     this.model = model;
     this.systemPrompt = systemPrompt;
-    String openAIToken = System.getenv("OPENAI_TOKEN");
+    String openAIToken = System.getenv("OPENAI_API_KEY");
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
   }
 

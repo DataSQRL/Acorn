@@ -4,7 +4,7 @@ import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.config.ApplicationConfiguration;
+import com.datasqrl.ai.config.ChatBotConfiguration;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -133,7 +133,7 @@ public class CmdLineChatBot {
 
   public static void main(String... args) throws Exception {
     if (args==null || args.length!=2) throw new IllegalArgumentException("Please provide a configuration file and a tools file");
-    ApplicationConfiguration configuration = ApplicationConfiguration.fromFile(Path.of(args[0]), Path.of(args[1]));
+    ChatBotConfiguration configuration = ChatBotConfiguration.fromFile(Path.of(args[0]), Path.of(args[1]));
 
 
     Map<String,Object> context = Map.of();
@@ -145,7 +145,7 @@ public class CmdLineChatBot {
     }
 
     FunctionBackend backend = configuration.getFunctionBackend();
-    String openAIToken = System.getenv("OPENAI_TOKEN");
+    String openAIToken = System.getenv("OPENAI_API_KEY");
     CmdLineChatBot chatBot = new CmdLineChatBot(openAIToken, backend);
     chatBot.start(configuration.getSystemPrompt(), context);
   }

@@ -1,23 +1,14 @@
 package com.datasqrl.ai.spring;
 
-import com.datasqrl.ai.PlotFunction;
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.FunctionType;
-import com.datasqrl.ai.backend.ModelBindings;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
-import com.datasqrl.ai.config.ApplicationConfiguration;
+import com.datasqrl.ai.config.ChatBotConfiguration;
 import com.datasqrl.ai.models.ChatClientProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.SneakyThrows;
-import okhttp3.internal.concurrent.TaskRunner;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -50,12 +41,10 @@ public class SimpleServer {
 
     @SneakyThrows
     public MessageController(@Value("${config}") String configFile, @Value("${tools}") String toolsFile) {
-      ApplicationConfiguration configuration = ApplicationConfiguration.fromFile(Path.of(configFile), Path.of(toolsFile));
+      ChatBotConfiguration configuration = ChatBotConfiguration.fromFile(Path.of(configFile), Path.of(toolsFile));
       this.getContextFunction = configuration.getContextFunction();
       this.backend = configuration.getFunctionBackend();
       this.systemPrompt = configuration.getSystemPrompt();
-      configuration.getPlotFunction().getResourceFile().ifPresent(resourceFile ->
-          configuration.addPlotFunction(backend, SimpleServer.class.getClassLoader().getResource(resourceFile)));
       this.chatClientProvider = configuration.getChatProviderFactory().create(
           configuration.getModelConfiguration(), backend, systemPrompt);
     }

@@ -28,7 +28,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.JSONConfiguration;
 
 @Value
-public class ApplicationConfiguration {
+public class ChatBotConfiguration {
 
   public static final String MODEL_PREFIX = "model";
   public static final String MODEL_PROVIDER_KEY = "provider";
@@ -47,31 +47,34 @@ public class ApplicationConfiguration {
   public FunctionBackend getFunctionBackend() {
     String graphQLEndpoint = baseConfiguration.getString(API_URL_KEY);
     APIExecutor apiExecutor = new GraphQLExecutor(graphQLEndpoint);
+    FunctionBackend backend;
     try {
-      return FunctionBackend.of(toolsDefinition, apiExecutor);
+      backend = FunctionBackend.of(toolsDefinition, apiExecutor);
     } catch (IOException e) {
       throw new IllegalArgumentException("Could not parse tools definition", e);
     }
+    PlotFunction plotFunction = getPlotFunction();
+    if (plotFunction.isPresent()) {
+      URL url = ChatBotConfiguration.class.getClassLoader().getResource(plotFunction.getResourceFile().get());
+      ErrorHandling.checkArgument(url!=null, "Invalid url: %s", url);
+      ObjectMapper objectMapper = new ObjectMapper();
+      try {
+        FunctionDefinition plotFunctionDef = objectMapper.readValue(url, FunctionDefinition.class);
+        backend.addFunction(RuntimeFunctionDefinition.builder()
+            .type(FunctionType.visualize)
+            .function(plotFunctionDef)
+            .context(List.of())
+            .build());
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Could not read plot function definition at: " + url, e);
+      }
+    }
+    return backend;
   }
 
   public PlotFunction getPlotFunction() {
     return ConfigurationUtil.getEnumFromString(PlotFunction.class,baseConfiguration.getString(PLOT_FCT_KEY, PlotFunction.none.name()))
         .orElseThrow(() -> new IllegalArgumentException("Not a valid configuration value for ["+PLOT_FCT_KEY+"]. Expected one of: " + Arrays.toString(PlotFunction.values())));
-  }
-
-  public void addPlotFunction(FunctionBackend backend, URL url) {
-    ErrorHandling.checkArgument(url!=null, "Invalid url: %s", url);
-    ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      FunctionDefinition plotFunction = objectMapper.readValue(url, FunctionDefinition.class);
-      backend.addFunction(RuntimeFunctionDefinition.builder()
-          .type(FunctionType.visualize)
-          .function(plotFunction)
-          .context(List.of())
-          .build());
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Could not read plot function definition at: " + url, e);
-    }
   }
 
   public String getSystemPrompt() {
@@ -106,7 +109,7 @@ public class ApplicationConfiguration {
     return baseConfiguration.containsKey(AUTH_FIELD_KEY);
   }
 
-  public static ApplicationConfiguration fromFile(Path configPath, Path toolsPath) {
+  public static ChatBotConfiguration fromFile(Path configPath, Path toolsPath) {
     ErrorHandling.checkArgument(Files.isRegularFile(configPath), "Cannot access configuration file: %s", configPath);
     ErrorHandling.checkArgument(Files.isRegularFile(toolsPath), "Cannot access tools file: %s", toolsPath);
     JSONConfiguration baseConfig = JsonUtil.getConfiguration(configPath);
@@ -116,7 +119,7 @@ public class ApplicationConfiguration {
     } catch (IOException e) {
       throw new IllegalArgumentException("Could not read tools file: %s" + toolsPath, e);
     }
-    return new ApplicationConfiguration(baseConfig, baseConfig.subset("model"), tools);
+    return new ChatBotConfiguration(baseConfig, baseConfig.subset("model"), tools);
   }
 
 }
