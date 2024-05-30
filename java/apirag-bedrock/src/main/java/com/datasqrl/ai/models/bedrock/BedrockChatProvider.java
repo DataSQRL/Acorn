@@ -4,7 +4,7 @@ import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.backend.ModelBindings;
+import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.datasqrl.ai.models.ChatClientProvider;
@@ -56,9 +56,9 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
   }
 
   @Override
-  public BedrockChatMessage chat(String message, Map<String, Object> context) {
+  public GenericChatMessage chat(String message, Map<String, Object> context) {
     ChatSession<BedrockChatMessage,BedrockFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
-    int numMsg = session.retrieveMessageHistory(20).size();
+    int numMsg = session.getChatHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
     session.addMessage(chatMessage);
@@ -71,13 +71,13 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       System.out.println("Calling Bedrock with model " + model.getModelName());
       JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getContextWindowLength());
       BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
-      session.addMessage(responseMessage);
+      GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
         FunctionValidation<BedrockChatMessage> fctValid = this.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-            return responseMessage;
+            return genericResponse;
           } else {
             System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
@@ -88,7 +88,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
         } //TODO: add retry in case of invalid function call
       } else {
         //The text answer
-        return responseMessage;
+        return genericResponse;
       }
     }
   }

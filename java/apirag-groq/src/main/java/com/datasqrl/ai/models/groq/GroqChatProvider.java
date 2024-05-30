@@ -4,6 +4,7 @@ import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -72,9 +73,9 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
   }
 
   @Override
-  public ChatMessage chat(String message, Map<String, Object> context) {
+  public GenericChatMessage chat(String message, Map<String, Object> context) {
     ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
-    int numMsg = session.retrieveMessageHistory(20).size();
+    int numMsg = session.getChatHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);
@@ -116,13 +117,13 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           System.out.println("!!!Remapped content to function call");
         }
       }
-      session.addMessage(responseMessage);
+      GenericChatMessage genericResponse = session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
         FunctionValidation<ChatMessage> fctValid = this.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { // return as is - evaluated on frontend
-            return responseMessage;
+            return genericResponse;
           } else {
             System.out.println("Executing " + functionCall.getName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
@@ -133,7 +134,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         } // TODO: add retry in case of invalid function call
       } else {
         // The text answer
-        return responseMessage;
+        return genericResponse;
       }
     }
   }

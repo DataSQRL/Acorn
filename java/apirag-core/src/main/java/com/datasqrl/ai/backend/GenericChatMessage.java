@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.experimental.SuperBuilder;
 
 @Data
@@ -20,6 +21,7 @@ public class GenericChatMessage implements ChatMessageInterface {
   String role;
   String content;
   String name;
+  JsonNode passThroughCall;
   Map<String,Object> context;
   String uuid;
   String timestamp;

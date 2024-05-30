@@ -34,8 +34,6 @@ public class SimpleServer {
   @RestController
   public static class MessageController {
 
-    private final FunctionBackend backend;
-    private final String systemPrompt;
     private final ChatClientProvider<?, ?> chatClientProvider;
     private final Function<String,Map<String,Object>> getContextFunction;
 
@@ -43,24 +41,20 @@ public class SimpleServer {
     public MessageController(@Value("${config}") String configFile, @Value("${tools}") String toolsFile) {
       ChatBotConfiguration configuration = ChatBotConfiguration.fromFile(Path.of(configFile), Path.of(toolsFile));
       this.getContextFunction = configuration.getContextFunction();
-      this.backend = configuration.getFunctionBackend();
-      this.systemPrompt = configuration.getSystemPrompt();
-      this.chatClientProvider = configuration.getChatProviderFactory().create(
-          configuration.getModelConfiguration(), backend, systemPrompt);
+      this.chatClientProvider = configuration.getChatProvider();
     }
 
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
       Map<String, Object> context = getContextFunction.apply(userId);
-      ChatSession session = new ChatSession<>(backend, context, systemPrompt, chatClientProvider.getBindings());
-      return session.getChatHistory(false).stream().map(msg -> ProviderMessageMapper.toResponse(msg)).toList();
+      return chatClientProvider.getHistory(context, false).stream().map(ResponseMessage::from).toList();
     }
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
       System.out.println("\nUser #" + message.getUserId() + ": " + message.getContent());
       Map<String, Object> context = getContextFunction.apply(message.getUserId());
-      return ProviderMessageMapper.toResponse(chatClientProvider.chat(message.getContent(), context));
+      return ResponseMessage.from(chatClientProvider.chat(message.getContent(), context));
     }
   }
 }

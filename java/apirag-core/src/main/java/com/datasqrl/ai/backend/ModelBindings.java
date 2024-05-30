@@ -12,6 +12,10 @@ public interface ModelBindings<Message, FunctionCall> {
 
   boolean isUserOrAssistantMessage(Message message);
 
+  default boolean isUserOrAssistantMessage(GenericChatMessage message) {
+    return isUserOrAssistantMessage(convertMessage(message));
+  }
+
   ModelAnalyzer<Message> getTokenCounter();
 
   int getMaxInputTokens();

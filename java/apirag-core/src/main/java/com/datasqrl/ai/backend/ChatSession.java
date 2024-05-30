@@ -19,23 +19,18 @@ public class ChatSession<Message, FunctionCall> {
 
   private final List<GenericChatMessage> messages = new ArrayList<>();
 
-  public void addMessage(Message message) {
+  public GenericChatMessage addMessage(Message message) {
     GenericChatMessage convertedMsg = bindings.convertMessage(message, sessionContext);
     messages.add(convertedMsg);
     backend.saveChatMessage(convertedMsg);
+    return convertedMsg;
   }
 
-  public List<GenericChatMessage> retrieveMessageHistory(int limit) {
+  public List<GenericChatMessage> getChatHistory(int limit) {
     if (!messages.isEmpty())
       throw new IllegalArgumentException("Can only retrieve message history at beginning of session");
     messages.addAll(backend.getChatMessages(sessionContext, limit, GenericChatMessage.class));
     return messages;
-  }
-
-  public List<Message> getChatHistory(boolean includeFunctionCalls) {
-    List<GenericChatMessage> messages = retrieveMessageHistory(50);
-    return messages.stream().map(bindings::convertMessage)
-        .filter(message -> includeFunctionCalls || bindings.isUserOrAssistantMessage(message)).toList();
   }
 
   protected ContextWindow<GenericChatMessage> getWindow(int maxTokens, ModelAnalyzer<Message> analyzer) {

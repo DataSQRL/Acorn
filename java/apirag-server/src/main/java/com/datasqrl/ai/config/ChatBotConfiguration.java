@@ -7,6 +7,7 @@ import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.FunctionType;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
+import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.ErrorHandling;
@@ -82,6 +83,12 @@ public class ChatBotConfiguration {
     ErrorHandling.checkArgument(prompt!=null, "Need to configure `["+PROMPT_KEY+"]` in configuration file.");
     ErrorHandling.checkArgument(!prompt.isBlank(), "`["+PROMPT_KEY+"]` cannot be empty.");
     return prompt;
+  }
+
+  public ChatClientProvider getChatProvider() {
+    FunctionBackend backend = getFunctionBackend();
+    String systemPrompt = getSystemPrompt();
+    return getChatProviderFactory().create(getModelConfiguration(), backend, systemPrompt);
   }
 
   public ChatProviderFactory getChatProviderFactory() {
