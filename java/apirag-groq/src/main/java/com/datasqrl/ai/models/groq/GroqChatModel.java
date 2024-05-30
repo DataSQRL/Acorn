@@ -22,11 +22,7 @@ public enum GroqChatModel implements GenericLanguageModel {
 
   final String modelName;
   final String tokenizerName;
-  final int maxContextLength;
+  final int contextWindowLength;
   final int completionLength;
-
-  public int getMaxInputTokens() {
-    return maxContextLength - completionLength;
-  }
 
 }

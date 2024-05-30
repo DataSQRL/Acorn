@@ -90,12 +90,13 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
     }
   }
 
-  public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
-    return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
-  }
   @Override
   public FunctionMessage convertExceptionToMessage(String error) {
     return new FunctionMessage("{\"error\": \"" + error + "\"}", "error");
+  }
+
+  public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
+    return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
   }
 
 }

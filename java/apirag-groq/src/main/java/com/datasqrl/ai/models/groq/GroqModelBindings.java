@@ -1,4 +1,4 @@
-package com.datasqrl.ai.models.openai;
+package com.datasqrl.ai.models.groq;
 
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.backend.ModelAnalyzer;
@@ -16,14 +16,14 @@ import com.theokanning.openai.completion.chat.UserMessage;
 import java.time.Instant;
 import java.util.Map;
 
-public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunctionCall> {
+public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctionCall> {
 
-  private final OpenAiChatModel model;
-  OpenAITokenCounter tokenCounter;
+  GroqChatModel model;
+  GroqTokenCounter tokenCounter;
 
-  public OpenAIModelBindings(OpenAiChatModel model) {
+  public GroqModelBindings(GroqChatModel model) {
     this.model = model;
-    this.tokenCounter = OpenAITokenCounter.of(model);
+    this.tokenCounter = GroqTokenCounter.of(model);
   }
 
 
@@ -60,7 +60,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
   @Override
   public boolean isUserOrAssistantMessage(ChatMessage chatMessage) {
     return ChatMessageRole.valueOf(chatMessage.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT
-    || ChatMessageRole.valueOf(chatMessage.getRole().toUpperCase()) == ChatMessageRole.USER;
+        || ChatMessageRole.valueOf(chatMessage.getRole().toUpperCase()) == ChatMessageRole.USER;
   }
 
   @Override

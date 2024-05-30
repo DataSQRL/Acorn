@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models.groq;
 
+import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
@@ -14,9 +15,7 @@ import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.completion.chat.ChatMessageRole;
 import com.theokanning.openai.completion.chat.FunctionMessage;
-import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import okhttp3.Interceptor;
@@ -37,27 +36,24 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.theokanning.openai.service.OpenAiService.defaultClient;
 import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 
-public class GroqChatProvider implements ChatClientProvider<ChatMessage> {
+public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
 
-  private final FunctionBackend backend;
-  private final OpenAiService service;
   private final GroqChatModel model;
-  private final SystemMessage systemPrompt;
+  private final OpenAiService service;
+  private final String systemPrompt;
   private ChatFunctionCall errorFunctionCall = null;
   public static final String GROQ_URL = "https://api.groq.com/openai/v1/";
 
-  public GroqChatProvider(GroqChatModel model, String systemPrompt, FunctionBackend backend) {
+  public GroqChatProvider(GroqChatModel model, FunctionBackend backend, String systemPrompt) {
+    super(backend, new GroqModelBindings(model));
     this.model = model;
-    this.backend = backend;
-    this.systemPrompt = new SystemMessage(systemPrompt);
+    this.systemPrompt = systemPrompt;
     String groqApiKey = System.getenv("GROQ_API_KEY");
     ObjectMapper mapper = defaultObjectMapper();
     HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -76,21 +72,8 @@ public class GroqChatProvider implements ChatClientProvider<ChatMessage> {
   }
 
   @Override
-  public List<ChatMessage> getChatHistory(Map<String, Object> context) {
-    GroqChatSession session = new GroqChatSession(model, systemPrompt, backend, context);
-    List<ChatMessage> messages = session.retrieveMessageHistory(50);
-    return messages.stream().filter(m -> {
-      ChatMessageRole role = ChatMessageRole.valueOf(m.getRole().toUpperCase());
-      return switch (role) {
-        case USER, ASSISTANT -> true;
-        default -> false;
-      };
-    }).collect(Collectors.toUnmodifiableList());
-  }
-
-  @Override
   public ChatMessage chat(String message, Map<String, Object> context) {
-    GroqChatSession session = new GroqChatSession(model, systemPrompt, backend, context);
+    ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     int numMsg = session.retrieveMessageHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     ChatMessage chatMessage = new UserMessage(message);
@@ -136,14 +119,14 @@ public class GroqChatProvider implements ChatClientProvider<ChatMessage> {
       session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
+        FunctionValidation<ChatMessage> fctValid = this.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { // return as is - evaluated on frontend
             return responseMessage;
           } else {
             System.out.println("Executing " + functionCall.getName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
-            FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall);
+            FunctionMessage functionResponse = (FunctionMessage) this.executeFunctionCall(functionCall, context);
             System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
@@ -180,6 +163,11 @@ public class GroqChatProvider implements ChatClientProvider<ChatMessage> {
       }
       return response;
     }
+  }
+
+  @Override
+  public FunctionMessage convertExceptionToMessage(String error) {
+    return new FunctionMessage("{\"error\": \"" + error + "\"}", "error");
   }
 
   private ChatFunctionCall getFunctionCallFromGroqError(String errorText) {
