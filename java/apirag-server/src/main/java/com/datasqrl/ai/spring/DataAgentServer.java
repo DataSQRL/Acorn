@@ -1,8 +1,6 @@
 package com.datasqrl.ai.spring;
 
-import com.datasqrl.ai.backend.ChatSession;
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.config.ChatBotConfiguration;
+import com.datasqrl.ai.config.DataAgentConfiguration;
 import com.datasqrl.ai.models.ChatClientProvider;
 import java.nio.file.Path;
 import java.util.List;
@@ -20,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
-public class SimpleServer {
+public class DataAgentServer {
 
   public static void main(String[] args) {
     try {
-      SpringApplication.run(SimpleServer.class, args);
+      SpringApplication.run(DataAgentServer.class, args);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -38,8 +36,8 @@ public class SimpleServer {
     private final Function<String,Map<String,Object>> getContextFunction;
 
     @SneakyThrows
-    public MessageController(@Value("${config}") String configFile, @Value("${tools}") String toolsFile) {
-      ChatBotConfiguration configuration = ChatBotConfiguration.fromFile(Path.of(configFile), Path.of(toolsFile));
+    public MessageController(DataAgentServerProperties props) {
+      DataAgentConfiguration configuration = DataAgentConfiguration.fromFile(Path.of(props.getConfig()), Path.of(props.getTools()));
       this.getContextFunction = configuration.getContextFunction();
       this.chatClientProvider = configuration.getChatProvider();
     }

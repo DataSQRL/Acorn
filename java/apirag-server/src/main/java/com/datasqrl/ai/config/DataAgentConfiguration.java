@@ -29,7 +29,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.JSONConfiguration;
 
 @Value
-public class ChatBotConfiguration {
+public class DataAgentConfiguration {
 
   public static final String MODEL_PREFIX = "model";
   public static final String MODEL_PROVIDER_KEY = "provider";
@@ -56,7 +56,7 @@ public class ChatBotConfiguration {
     }
     PlotFunction plotFunction = getPlotFunction();
     if (plotFunction.isPresent()) {
-      URL url = ChatBotConfiguration.class.getClassLoader().getResource(plotFunction.getResourceFile().get());
+      URL url = DataAgentConfiguration.class.getClassLoader().getResource(plotFunction.getResourceFile().get());
       ErrorHandling.checkArgument(url!=null, "Invalid url: %s", url);
       ObjectMapper objectMapper = new ObjectMapper();
       try {
@@ -116,7 +116,7 @@ public class ChatBotConfiguration {
     return baseConfiguration.containsKey(AUTH_FIELD_KEY);
   }
 
-  public static ChatBotConfiguration fromFile(Path configPath, Path toolsPath) {
+  public static DataAgentConfiguration fromFile(Path configPath, Path toolsPath) {
     ErrorHandling.checkArgument(Files.isRegularFile(configPath), "Cannot access configuration file: %s", configPath);
     ErrorHandling.checkArgument(Files.isRegularFile(toolsPath), "Cannot access tools file: %s", toolsPath);
     JSONConfiguration baseConfig = JsonUtil.getConfiguration(configPath);
@@ -126,7 +126,7 @@ public class ChatBotConfiguration {
     } catch (IOException e) {
       throw new IllegalArgumentException("Could not read tools file: %s" + toolsPath, e);
     }
-    return new ChatBotConfiguration(baseConfig, baseConfig.subset("model"), tools);
+    return new DataAgentConfiguration(baseConfig, baseConfig.subset("model"), tools);
   }
 
 }

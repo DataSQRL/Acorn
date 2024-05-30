@@ -60,7 +60,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>com.datasqrl.ai.spring.SimpleServer</mainClass>
+              <mainClass>com.datasqrl.ai.spring.DataAgentServer</mainClass>
             </manifest>
           </archive>
         </configuration>

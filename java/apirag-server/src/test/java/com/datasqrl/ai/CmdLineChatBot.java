@@ -4,7 +4,7 @@ import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ChatSessionComponents;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
-import com.datasqrl.ai.config.ChatBotConfiguration;
+import com.datasqrl.ai.config.DataAgentConfiguration;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
 import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -133,7 +133,7 @@ public class CmdLineChatBot {
 
   public static void main(String... args) throws Exception {
     if (args==null || args.length!=2) throw new IllegalArgumentException("Please provide a configuration file and a tools file");
-    ChatBotConfiguration configuration = ChatBotConfiguration.fromFile(Path.of(args[0]), Path.of(args[1]));
+    DataAgentConfiguration configuration = DataAgentConfiguration.fromFile(Path.of(args[0]), Path.of(args[1]));
 
 
     Map<String,Object> context = Map.of();
