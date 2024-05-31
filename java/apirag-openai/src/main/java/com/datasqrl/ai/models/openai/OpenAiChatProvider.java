@@ -19,7 +19,9 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
 
   private final OpenAiChatModel model;
@@ -40,7 +42,7 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
     session.addMessage(chatMessage);
 
     while (true) {
-      System.out.println("Calling OpenAI with model " + model.getModelName());
+      log.debug("Calling OpenAI with model " + model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
@@ -54,7 +56,7 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
-      System.out.println("Response:\n" + responseMessage);
+      log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
       if (res != null) {
@@ -62,7 +64,7 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
           responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
-          System.out.println("!!!Remapped content to function call");
+          log.debug("!!!Remapped content to function call");
         }
       }
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
@@ -73,10 +75,10 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
             return genericResponse;
           } else {
-            System.out.println("Executing " + functionCall.getName() + " with arguments "
-                + functionCall.getArguments().toPrettyString());
+            log.debug("Executing {} with arguments {}", functionCall.getName(),
+                functionCall.getArguments().toPrettyString());
             FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall, context);
-            System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
+            log.debug("Executed {} with results: {}" ,functionCall.getName(),functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
         } //TODO: add retry in case of invalid function call

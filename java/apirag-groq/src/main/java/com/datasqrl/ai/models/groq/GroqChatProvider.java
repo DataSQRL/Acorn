@@ -19,6 +19,7 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -43,6 +44,7 @@ import java.util.Optional;
 import static com.theokanning.openai.service.OpenAiService.defaultClient;
 import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 
+@Slf4j
 public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
 
   private final GroqChatModel model;
@@ -79,7 +81,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
     session.addMessage(chatMessage);
 
     while (true) {
-      System.out.println("Calling GROQ with model " + model.getModelName());
+      log.debug("Calling GROQ with model {}", model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
@@ -104,7 +106,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           throw e;
         }
       }
-      System.out.println("Response:\n" + responseMessage);
+      log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
       if (res != null) {
@@ -112,7 +114,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
           responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
-          System.out.println("!!!Remapped content to function call");
+          log.debug("!!!Remapped content to function call");
         }
       }
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
@@ -123,10 +125,10 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           if (fctValid.isPassthrough()) { // return as is - evaluated on frontend
             return genericResponse;
           } else {
-            System.out.println("Executing " + functionCall.getName() + " with arguments "
-                + functionCall.getArguments().toPrettyString());
+            log.debug("Executing {} with arguments {}", functionCall.getName(),
+                functionCall.getArguments().toPrettyString());
             FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall, context);
-            System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
+            log.debug("Executed {} with results: {}" ,functionCall.getName(),functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
         } // TODO: add retry in case of invalid function call
@@ -157,7 +159,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         String jsonText = buffer.clone().readString(charset);
         errorFunctionCall = getFunctionCallFromGroqError(jsonText);
         if (errorFunctionCall != null) {
-          System.out.println("!!!Extracted function call from 400");
+          log.debug("!!!Extracted function call from 400");
         }
       }
       return response;
@@ -174,8 +176,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       JsonNode toolJson = json.get("tool_calls").get(0);
       return new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
     } catch (JsonProcessingException e) {
-      System.out.println("Could not parse groq error:\n" + errorText);
-      e.printStackTrace();
+      log.error("Could not parse groq error [{}]:\n", errorText, e);
       return null;
     }
   }

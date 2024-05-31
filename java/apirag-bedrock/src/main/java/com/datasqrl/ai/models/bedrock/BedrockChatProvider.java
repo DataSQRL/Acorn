@@ -10,6 +10,7 @@ import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
@@ -21,6 +22,7 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, BedrockFunctionCall> {
 
   private final BedrockChatModel model;
@@ -66,7 +68,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       String prompt = contextWindow.getMessages().stream()
           .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
-      System.out.println("Calling Bedrock with model " + model.getModelName());
+      log.debug("Calling Bedrock with model {}", model.getModelName());
       JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
       BedrockChatMessage responseMessage = encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
@@ -77,10 +79,10 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
             return genericResponse;
           } else {
-            System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
-                + functionCall.getArguments().toPrettyString());
+            log.debug("Executing {} with arguments {}", functionCall.getFunctionName(),
+                functionCall.getArguments().toPrettyString());
             BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall, context);
-            System.out.println("Executed " + functionCall.getFunctionName() + " with results: " + functionResponse.getTextContent());
+            log.debug("Executed {} with results: {}" ,functionCall.getFunctionName(),functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
         } //TODO: add retry in case of invalid function call
@@ -123,7 +125,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
         .build();
     InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
-    System.out.println("🤖Bedrock Response:\n" + jsonObject);
+    log.debug("🤖Bedrock Response: {}", jsonObject);
     return jsonObject;
   }
 }

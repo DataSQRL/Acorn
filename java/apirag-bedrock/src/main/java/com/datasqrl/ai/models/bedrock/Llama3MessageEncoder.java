@@ -2,8 +2,10 @@ package com.datasqrl.ai.models.bedrock;
 
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
+@Slf4j
 public class Llama3MessageEncoder implements ChatMessageEncoder<BedrockChatMessage> {
 
   public String encodeMessage(BedrockChatMessage message) {
@@ -37,7 +39,7 @@ public class Llama3MessageEncoder implements ChatMessageEncoder<BedrockChatMessa
       BedrockChatMessage message = new BedrockChatMessage(BedrockChatRole.valueOf(role.toUpperCase()), cleanText, "");
       return message;
     } else {
-      System.out.println("Message can't be decoded:\n" + text);
+      log.error("Message can't be decoded:\n{}", text);
     }
     if (roleHint != null) {
       return new BedrockChatMessage(BedrockChatRole.valueOf(roleHint.toUpperCase()), text, "");

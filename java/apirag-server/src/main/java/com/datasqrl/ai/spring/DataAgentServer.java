@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
+@Slf4j
 public class DataAgentServer {
 
   public static void main(String[] args) {
@@ -50,7 +52,7 @@ public class DataAgentServer {
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
-      System.out.println("\nUser #" + message.getUserId() + ": " + message.getContent());
+      log.debug("\nUser #{}: {}", message.getUserId(), message.getContent());
       Map<String, Object> context = getContextFunction.apply(message.getUserId());
       return ResponseMessage.from(chatClientProvider.chat(message.getContent(), context));
     }
