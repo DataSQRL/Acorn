@@ -40,7 +40,6 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
     };
   }
 
-
   @Override
   public GenericChatMessage convertMessage(ChatMessage msg, Map<String, Object> sessionContext) {
     ChatFunctionCall fctCall = null;
@@ -75,8 +74,8 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
   }
 
   @Override
-  public GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext) {
-    return convertMessage(new SystemMessage(systemMessage), sessionContext);
+  public ChatMessage createSystemMessage(String systemMessage) {
+    return new SystemMessage(systemMessage);
   }
 
   @Override
@@ -92,6 +91,11 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
   @Override
   public FunctionMessage newFunctionResultMessage(String functionName, String functionResult) {
     return new FunctionMessage(functionResult, functionName);
+  }
+
+  @Override
+  public ChatMessage convertExceptionToMessage(String error) {
+    return new UserMessage("{\"error\": \"" + error + "\"}", "error");
   }
 
   private static String functionCall2String(ChatFunctionCall fctCall) {

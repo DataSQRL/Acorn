@@ -75,8 +75,8 @@ public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctio
   }
 
   @Override
-  public GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext) {
-    return convertMessage(new SystemMessage(systemMessage), sessionContext);
+  public ChatMessage createSystemMessage(String systemMessage) {
+    return new SystemMessage(systemMessage);
   }
 
   @Override
@@ -92,6 +92,11 @@ public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctio
   @Override
   public FunctionMessage newFunctionResultMessage(String functionName, String functionResult) {
     return new FunctionMessage(functionResult, functionName);
+  }
+
+  @Override
+  public ChatMessage convertExceptionToMessage(String error) {
+    return new UserMessage("{\"error\": \"" + error + "\"}", "error");
   }
 
   private static String functionCall2String(ChatFunctionCall fctCall) {

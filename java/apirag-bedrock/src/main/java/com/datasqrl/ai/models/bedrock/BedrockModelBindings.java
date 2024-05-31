@@ -46,6 +46,11 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, B
   }
 
   @Override
+  public BedrockChatMessage convertExceptionToMessage(String error) {
+    return new BedrockChatMessage(BedrockChatRole.USER, "{\"error\": \"" + error + "\"}", "error");
+  }
+
+  @Override
   public boolean isUserOrAssistantMessage(BedrockChatMessage chatMessage) {
     return chatMessage.getRole() == BedrockChatRole.USER
         || chatMessage.getRole() == BedrockChatRole.ASSISTANT;
@@ -62,8 +67,8 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, B
   }
 
   @Override
-  public GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext) {
-    return convertMessage(new BedrockChatMessage(BedrockChatRole.SYSTEM, systemMessage, ""), sessionContext);
+  public BedrockChatMessage createSystemMessage(String systemMessage) {
+    return new BedrockChatMessage(BedrockChatRole.SYSTEM, systemMessage, "");
   }
 
   @Override

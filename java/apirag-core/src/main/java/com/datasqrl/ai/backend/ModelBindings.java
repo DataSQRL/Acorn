@@ -12,19 +12,17 @@ public interface ModelBindings<Message, FunctionCall> {
 
   boolean isUserOrAssistantMessage(Message message);
 
-  default boolean isUserOrAssistantMessage(GenericChatMessage message) {
-    return isUserOrAssistantMessage(convertMessage(message));
-  }
-
   ModelAnalyzer<Message> getTokenCounter();
 
   int getMaxInputTokens();
 
-  GenericChatMessage createSystemMessage(String systemMessage, Map<String, Object> sessionContext);
+  Message createSystemMessage(String systemMessage);
 
   String getFunctionName(FunctionCall functionCall);
 
   JsonNode getFunctionArguments(FunctionCall functionCall);
 
   Message newFunctionResultMessage(String functionName, String functionResult);
+
+  Message convertExceptionToMessage(String s);
 }

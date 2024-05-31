@@ -1,13 +1,13 @@
 package com.datasqrl.ai.models.bedrock;
 
 import com.datasqrl.ai.backend.ChatSession;
-import com.datasqrl.ai.backend.ChatSessionComponents;
+import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
-import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.datasqrl.ai.models.ChatClientProvider;
+import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
@@ -58,30 +58,30 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
   @Override
   public GenericChatMessage chat(String message, Map<String, Object> context) {
     ChatSession<BedrockChatMessage,BedrockFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
-    int numMsg = session.getChatHistory(20).size();
+    int numMsg = session.getHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
     session.addMessage(chatMessage);
 
     while (true) {
-      ChatSessionComponents<BedrockChatMessage> sessionComponents = session.getSessionComponents();
-      String prompt = sessionComponents.getMessages().stream()
+      ContextWindow<BedrockChatMessage> contextWindow = session.getContextWindow();
+      String prompt = contextWindow.getMessages().stream()
           .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
       System.out.println("Calling Bedrock with model " + model.getModelName());
       JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
-      BedrockChatMessage responseMessage = (BedrockChatMessage) encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
+      BedrockChatMessage responseMessage = encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<BedrockChatMessage> fctValid = this.validateFunctionCall(functionCall);
+        FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
             return genericResponse;
           } else {
             System.out.println("Executing " + functionCall.getFunctionName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
-            BedrockChatMessage functionResponse = this.executeFunctionCall(functionCall, context);
+            BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall, context);
             System.out.println("Executed " + functionCall.getFunctionName() + " with results: " + functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
@@ -92,12 +92,6 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       }
     }
   }
-
-  @Override
-  protected BedrockChatMessage convertExceptionToMessage(String error) {
-    return new BedrockChatMessage(BedrockChatRole.USER, "{\"error\": \"" + error + "\"}", "error");
-  }
-
   private String combineSystemPromptAndFunctions(String systemPrompt) {
     ObjectMapper objectMapper = new ObjectMapper();
 //    Note: This approach does not take into account the context window for the system prompt

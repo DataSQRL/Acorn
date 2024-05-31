@@ -1,7 +1,7 @@
 package com.datasqrl.ai;
 
 import com.datasqrl.ai.backend.ChatSession;
-import com.datasqrl.ai.backend.ChatSessionComponents;
+import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.config.DataAgentConfiguration;
@@ -72,12 +72,12 @@ public class CmdLineChatBot {
     session.addMessage(firstMsg);
 
     while (true) {
-      ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
+      ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(chatModel.getModelName())
-          .messages(sessionComponents.getMessages())
-          .functions(sessionComponents.getFunctions())
+          .messages(contextWindow.getMessages())
+          .functions(contextWindow.getFunctions())
           .functionCall("auto")
           .n(1)
           .maxTokens(chatModel.getContextWindowLength())

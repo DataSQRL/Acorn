@@ -16,7 +16,7 @@ public class ResponseMessage {
   private String timestamp;
 
   public static ResponseMessage from(GenericChatMessage message) {
-    return new ResponseMessage(message.getRole(), message.getFunctionCall()==null?message.getContent():null,
+    return new ResponseMessage(message.getRole(), message.getFunctionCall() == null ? message.getContent() : null,
         message.getFunctionCall(), message.getUuid(), message.getTimestamp());
   }
 

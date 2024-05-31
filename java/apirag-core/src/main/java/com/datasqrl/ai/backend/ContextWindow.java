@@ -7,10 +7,10 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ContextWindow<ChatMessage extends ChatMessageInterface> {
+public class ContextWindow<Message> {
 
   @Singular
-  List<ChatMessage> messages;
+  List<Message> messages;
   @Singular
   List<FunctionDefinition> functions;
   int numTokens;
