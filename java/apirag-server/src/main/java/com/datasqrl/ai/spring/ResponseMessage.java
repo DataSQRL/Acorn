@@ -11,13 +11,13 @@ public class ResponseMessage {
 
   private String role;
   private String content;
-  private JsonNode chart;
+  private JsonNode visualization;
   private String uuid;
   private String timestamp;
 
   public static ResponseMessage from(GenericChatMessage message) {
-    return new ResponseMessage(message.getRole(), message.getContent(),
-        message.getPassThroughCall(), message.getUuid(), message.getTimestamp());
+    return new ResponseMessage(message.getRole(), message.getFunctionCall()==null?message.getContent():null,
+        message.getFunctionCall(), message.getUuid(), message.getTimestamp());
   }
 
 }

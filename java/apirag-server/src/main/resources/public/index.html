@@ -7,6 +7,11 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    table th, table td {
+      padding: 0.1rem 0.5rem;
+    }
+  </style>
 </head>
 <body>
 <div id="content" class="position-fixed w-100 p-3" style="bottom: 70px;">
@@ -89,7 +94,7 @@
         $('#chatBox').append(`<p class="d-flex align-items-center mb-1" style="height: 20px;"><span><img src="user.svg" alt="User" width="26" height="20" /></span><span class="font-weight-bold ml-2">You</span></p><p class="mt-1">${message}</p>`);
 
         $.ajax({
-          url: 'http://localhost:8080/messages',
+          url: '/messages',
           type: 'post',
           dataType: 'json',
           contentType: 'application/json',
@@ -112,8 +117,8 @@
             if (data.content) {
               let contentHtml = marked.parse(data.content);
               $('#chatBox').append(`<div>${contentHtml}</div>`);
-            } else if (data.chart) {
-              let chart = data.chart;
+            } else if (data.visualization) {
+              let chart = data.visualization;
               console.log(chart);
               chartData(chart);
             } else {
