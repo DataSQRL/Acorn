@@ -1,7 +1,7 @@
 package com.datasqrl.ai.models.openai;
 
 import com.datasqrl.ai.backend.ChatSession;
-import com.datasqrl.ai.backend.ChatSessionComponents;
+import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.GenericChatMessage;
@@ -34,23 +34,21 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
   }
 
-
-  @Override
   public GenericChatMessage chat(String message, Map<String, Object> context) {
     ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
-    int numMsg = session.getChatHistory(20).size();
+    int numMsg = session.getHistory(20).size();
     System.out.printf("Retrieved %d messages\n", numMsg);
     ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);
 
     while (true) {
       System.out.println("Calling OpenAI with model " + model.getModelName());
-      ChatSessionComponents<ChatMessage> sessionComponents = session.getSessionComponents();
+      ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(model.getModelName())
-          .messages(sessionComponents.getMessages())
-          .functions(sessionComponents.getFunctions())
+          .messages(contextWindow.getMessages())
+          .functions(contextWindow.getFunctions())
           .functionCall("auto")
           .n(1)
           .temperature(0.2)
@@ -72,14 +70,14 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<ChatMessage> fctValid = this.validateFunctionCall(functionCall);
+        FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
         if (fctValid.isValid()) {
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
             return genericResponse;
           } else {
             System.out.println("Executing " + functionCall.getName() + " with arguments "
                 + functionCall.getArguments().toPrettyString());
-            FunctionMessage functionResponse = (FunctionMessage) this.executeFunctionCall(functionCall, context);
+            FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall, context);
             System.out.println("Executed " + functionCall.getName() + " with results: " + functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
@@ -89,11 +87,6 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
         return genericResponse;
       }
     }
-  }
-
-  @Override
-  public FunctionMessage convertExceptionToMessage(String error) {
-    return new FunctionMessage("{\"error\": \"" + error + "\"}", "error");
   }
 
   public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
