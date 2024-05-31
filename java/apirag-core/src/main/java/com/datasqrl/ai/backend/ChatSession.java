@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ChatSession<Message, FunctionCall> {
+
+  private static final int MESSAGE_HISTORY_LIMIT = 100;
 
   private final FunctionBackend backend;
   private final Map<String, Object> sessionContext;
@@ -23,7 +27,9 @@ public class ChatSession<Message, FunctionCall> {
     this.sessionContext = sessionContext;
     this.systemMessage = systemMessage;
     this.bindings = bindings;
-    messages.addAll(backend.getChatMessages(sessionContext, Integer.MAX_VALUE, GenericChatMessage.class));
+    List<GenericChatMessage> chatHistory = backend.getChatMessages(sessionContext, MESSAGE_HISTORY_LIMIT, GenericChatMessage.class);
+    log.debug("Retrieved {} messages from history", chatHistory.size());
+    messages.addAll(chatHistory);
   }
 
   public GenericChatMessage addMessage(Message message) {
@@ -31,10 +37,6 @@ public class ChatSession<Message, FunctionCall> {
     messages.add(convertedMsg);
     backend.saveChatMessage(convertedMsg);
     return convertedMsg;
-  }
-
-  public List<Message> getHistory(int limit) {
-    return this.messages.stream().limit(limit).map(bindings::convertMessage).toList();
   }
 
   protected ContextWindow<GenericChatMessage> getContextWindow(int maxTokens, ModelAnalyzer<Message> analyzer) {
@@ -63,7 +65,7 @@ public class ChatSession<Message, FunctionCall> {
     builder.messages(resultMessages);
     builder.numTokens(numTokens.get());
     ContextWindow<GenericChatMessage> window = builder.build();
-    if (numMessages > 0) System.out.printf("Truncated the first %s messages\n", numMessages);
+    if (numMessages > 0) log.debug("Truncated the first {} messages", numMessages);
     return window;
   }
 

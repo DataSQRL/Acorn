@@ -27,6 +27,7 @@
     <autservice.version>1.1.1</autservice.version>
     <commons-config.version>2.10.1</commons-config.version>
     <commons-beanutil.version>1.9.4</commons-beanutil.version>
+    <slf4j.version>2.0.13</slf4j.version>
   </properties>
 
   <dependencies>
@@ -36,6 +37,11 @@
       <artifactId>lombok</artifactId>
       <version>${lombok.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

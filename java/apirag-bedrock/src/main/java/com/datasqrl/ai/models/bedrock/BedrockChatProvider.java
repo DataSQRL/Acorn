@@ -58,8 +58,6 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
   @Override
   public GenericChatMessage chat(String message, Map<String, Object> context) {
     ChatSession<BedrockChatMessage,BedrockFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
-    int numMsg = session.getHistory(20).size();
-    System.out.printf("Retrieved %d messages\n", numMsg);
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
     session.addMessage(chatMessage);
 

@@ -36,8 +36,6 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
 
   public GenericChatMessage chat(String message, Map<String, Object> context) {
     ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
-    int numMsg = session.getHistory(20).size();
-    System.out.printf("Retrieved %d messages\n", numMsg);
     ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);
 
