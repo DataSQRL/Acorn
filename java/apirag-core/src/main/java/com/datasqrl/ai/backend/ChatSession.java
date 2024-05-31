@@ -28,7 +28,7 @@ public class ChatSession<Message, FunctionCall> {
     this.systemMessage = systemMessage;
     this.bindings = bindings;
     List<GenericChatMessage> chatHistory = backend.getChatMessages(sessionContext, MESSAGE_HISTORY_LIMIT, GenericChatMessage.class);
-    log.debug("Retrieved {} messages from history", chatHistory.size());
+    log.info("Retrieved {} messages from history", chatHistory.size());
     messages.addAll(chatHistory);
   }
 
@@ -65,7 +65,7 @@ public class ChatSession<Message, FunctionCall> {
     builder.messages(resultMessages);
     builder.numTokens(numTokens.get());
     ContextWindow<GenericChatMessage> window = builder.build();
-    if (numMessages > 0) log.debug("Truncated the first {} messages", numMessages);
+    if (numMessages > 0) log.info("Truncated the first {} messages", numMessages);
     return window;
   }
 

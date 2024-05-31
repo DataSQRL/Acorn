@@ -68,7 +68,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       String prompt = contextWindow.getMessages().stream()
           .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
-      log.debug("Calling Bedrock with model {}", model.getModelName());
+      log.info("Calling Bedrock with model {}", model.getModelName());
       JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
       BedrockChatMessage responseMessage = encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
@@ -79,10 +79,10 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
           if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
             return genericResponse;
           } else {
-            log.debug("Executing {} with arguments {}", functionCall.getFunctionName(),
+            log.info("Executing {} with arguments {}", functionCall.getFunctionName(),
                 functionCall.getArguments().toPrettyString());
             BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall, context);
-            log.debug("Executed {} with results: {}" ,functionCall.getFunctionName(),functionResponse.getTextContent());
+            log.info("Executed {} with results: {}" ,functionCall.getFunctionName(),functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
         } //TODO: add retry in case of invalid function call
@@ -125,7 +125,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
         .build();
     InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
-    log.debug("🤖Bedrock Response: {}", jsonObject);
+    log.info("🤖Bedrock Response: {}", jsonObject);
     return jsonObject;
   }
 }

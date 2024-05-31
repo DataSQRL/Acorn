@@ -81,7 +81,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
     session.addMessage(chatMessage);
 
     while (true) {
-      log.debug("Calling GROQ with model {}", model.getModelName());
+      log.info("Calling GROQ with model {}", model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
@@ -106,7 +106,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           throw e;
         }
       }
-      log.debug("Response:\n{}", responseMessage);
+      log.info("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
       if (res != null) {
@@ -114,7 +114,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
           responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
-          log.debug("!!!Remapped content to function call");
+          log.info("!!!Remapped content to function call");
         }
       }
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
@@ -125,10 +125,10 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           if (fctValid.isPassthrough()) { // return as is - evaluated on frontend
             return genericResponse;
           } else {
-            log.debug("Executing {} with arguments {}", functionCall.getName(),
+            log.info("Executing {} with arguments {}", functionCall.getName(),
                 functionCall.getArguments().toPrettyString());
             FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall, context);
-            log.debug("Executed {} with results: {}" ,functionCall.getName(),functionResponse.getTextContent());
+            log.info("Executed {} with results: {}" ,functionCall.getName(),functionResponse.getTextContent());
             session.addMessage(functionResponse);
           }
         } // TODO: add retry in case of invalid function call
@@ -159,7 +159,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         String jsonText = buffer.clone().readString(charset);
         errorFunctionCall = getFunctionCallFromGroqError(jsonText);
         if (errorFunctionCall != null) {
-          log.debug("!!!Extracted function call from 400");
+          log.info("!!!Extracted function call from 400");
         }
       }
       return response;

@@ -52,7 +52,7 @@ public class DataAgentServer {
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
-      log.debug("\nUser #{}: {}", message.getUserId(), message.getContent());
+      log.info("\nUser #{}: {}", message.getUserId(), message.getContent());
       Map<String, Object> context = getContextFunction.apply(message.getUserId());
       return ResponseMessage.from(chatClientProvider.chat(message.getContent(), context));
     }
