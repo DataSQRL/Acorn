@@ -113,7 +113,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         String responseText = res.trim();
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
-          responseMessage = new AssistantMessage("", "", null, functionCall);
+          responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
           System.out.println("!!!Remapped content to function call");
         }
       }
