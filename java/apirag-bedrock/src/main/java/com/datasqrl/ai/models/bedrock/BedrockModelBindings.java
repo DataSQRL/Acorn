@@ -51,6 +51,11 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, B
   }
 
   @Override
+  public String getTextContent(BedrockChatMessage message) {
+    return message.getTextContent();
+  }
+
+  @Override
   public boolean isUserOrAssistantMessage(BedrockChatMessage chatMessage) {
     return chatMessage.getRole() == BedrockChatRole.USER
         || chatMessage.getRole() == BedrockChatRole.ASSISTANT;

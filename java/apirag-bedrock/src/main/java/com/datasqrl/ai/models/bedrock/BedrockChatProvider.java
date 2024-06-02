@@ -20,6 +20,7 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -59,7 +60,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
 
   @Override
   public GenericChatMessage chat(String message, Map<String, Object> context) {
-    ChatSession<BedrockChatMessage,BedrockFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
+    ChatSession<BedrockChatMessage, BedrockFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
     session.addMessage(chatMessage);
 
@@ -74,17 +75,9 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<BedrockChatMessage> fctValid = session.validateFunctionCall(functionCall);
-        if (fctValid.isValid()) {
-          if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-            return genericResponse;
-          } else {
-            log.info("Executing {} with arguments {}", functionCall.getFunctionName(),
-                functionCall.getArguments().toPrettyString());
-            BedrockChatMessage functionResponse = session.executeFunctionCall(functionCall, context);
-            log.info("Executed {} with results: {}" ,functionCall.getFunctionName(),functionResponse.getTextContent());
-            session.addMessage(functionResponse);
-          }
+        Optional<BedrockFunctionCall> passthroughFunctionCall = session.executeOrPassthroughFunctionCall(functionCall);
+        if (passthroughFunctionCall.isPresent()) {
+          return genericResponse;
         } //TODO: add retry in case of invalid function call
       } else {
         //The text answer
@@ -92,6 +85,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       }
     }
   }
+
   private String combineSystemPromptAndFunctions(String systemPrompt) {
     ObjectMapper objectMapper = new ObjectMapper();
 //    Note: This approach does not take into account the context window for the system prompt

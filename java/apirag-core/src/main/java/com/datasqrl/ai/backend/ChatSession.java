@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,31 +17,31 @@ public class ChatSession<Message, FunctionCall> {
   private static final int MESSAGE_HISTORY_LIMIT = 100;
 
   private final FunctionBackend backend;
-  private final Map<String, Object> sessionContext;
+  private final Map<String, Object> context;
   private final String systemMessage;
   private final ModelBindings<Message, FunctionCall> bindings;
   private final List<GenericChatMessage> messages = new ArrayList<>();
 
-  public ChatSession(FunctionBackend backend, Map<String, Object> sessionContext, String systemMessage,
+  public ChatSession(FunctionBackend backend, Map<String, Object> context, String systemMessage,
                      ModelBindings<Message, FunctionCall> bindings) {
     this.backend = backend;
-    this.sessionContext = sessionContext;
+    this.context = context;
     this.systemMessage = systemMessage;
     this.bindings = bindings;
-    List<GenericChatMessage> chatHistory = backend.getChatMessages(sessionContext, MESSAGE_HISTORY_LIMIT, GenericChatMessage.class);
+    List<GenericChatMessage> chatHistory = backend.getChatMessages(context, MESSAGE_HISTORY_LIMIT, GenericChatMessage.class);
     log.info("Retrieved {} messages from history", chatHistory.size());
     messages.addAll(chatHistory);
   }
 
   public GenericChatMessage addMessage(Message message) {
-    GenericChatMessage convertedMsg = bindings.convertMessage(message, sessionContext);
+    GenericChatMessage convertedMsg = bindings.convertMessage(message, context);
     messages.add(convertedMsg);
     backend.saveChatMessage(convertedMsg);
     return convertedMsg;
   }
 
   protected ContextWindow<GenericChatMessage> getContextWindow(int maxTokens, ModelAnalyzer<Message> analyzer) {
-    GenericChatMessage systemMessage = bindings.convertMessage(bindings.createSystemMessage(this.systemMessage), sessionContext);
+    GenericChatMessage systemMessage = bindings.convertMessage(bindings.createSystemMessage(this.systemMessage), context);
     final AtomicInteger numTokens = new AtomicInteger(0);
     numTokens.addAndGet(systemMessage.getNumTokens());
     ContextWindow.ContextWindowBuilder<GenericChatMessage> builder = ContextWindow.builder();
@@ -94,5 +95,22 @@ public class ChatSession<Message, FunctionCall> {
   private Message convertExceptionToMessage(Exception exception) {
     String error = exception.getMessage() == null ? exception.toString() : exception.getMessage();
     return bindings.convertExceptionToMessage(error);
+  }
+
+  public Optional<FunctionCall> executeOrPassthroughFunctionCall(FunctionCall functionCall) {
+    FunctionValidation<Message> fctValid = this.validateFunctionCall(functionCall);
+    if (fctValid.isValid()) {
+      if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
+        return Optional.of(functionCall);
+      } else {
+        String functionName = bindings.getFunctionName(functionCall);
+        log.info("Executing {} with arguments {}", functionName,
+            bindings.getFunctionArguments(functionCall).toPrettyString());
+        Message functionResponse = this.executeFunctionCall(functionCall, context);
+        log.info("Executed {} with results: {}" , functionName, bindings.getTextContent(functionResponse));
+        this.addMessage(functionResponse);
+      }
+    } //TODO: add retry in case of invalid function call
+    return Optional.empty();
   }
 }

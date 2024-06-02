@@ -120,17 +120,9 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
-        if (fctValid.isValid()) {
-          if (fctValid.isPassthrough()) { // return as is - evaluated on frontend
-            return genericResponse;
-          } else {
-            log.info("Executing {} with arguments {}", functionCall.getName(),
-                functionCall.getArguments().toPrettyString());
-            FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall, context);
-            log.info("Executed {} with results: {}" ,functionCall.getName(),functionResponse.getTextContent());
-            session.addMessage(functionResponse);
-          }
+        Optional<ChatFunctionCall> passthroughFunctionCall = session.executeOrPassthroughFunctionCall(functionCall);
+        if (passthroughFunctionCall.isPresent()) {
+          return genericResponse;
         } // TODO: add retry in case of invalid function call
       } else {
         // The text answer

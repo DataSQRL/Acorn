@@ -99,6 +99,11 @@ public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctio
     return new UserMessage("{\"error\": \"" + error + "\"}", "error");
   }
 
+  @Override
+  public String getTextContent(ChatMessage chatMessage) {
+    return chatMessage.getTextContent();
+  }
+
   private static String functionCall2String(ChatFunctionCall fctCall) {
     return "{"
         + "\"function\": \"" + fctCall.getName() + "\", "

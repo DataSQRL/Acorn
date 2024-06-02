@@ -3,7 +3,6 @@ package com.datasqrl.ai.models.openai;
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.util.JsonUtil;
@@ -11,7 +10,6 @@ import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 
@@ -19,6 +17,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -70,18 +69,10 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        FunctionValidation<ChatMessage> fctValid = session.validateFunctionCall(functionCall);
-        if (fctValid.isValid()) {
-          if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
-            return genericResponse;
-          } else {
-            log.info("Executing {} with arguments {}", functionCall.getName(),
-                functionCall.getArguments().toPrettyString());
-            FunctionMessage functionResponse = (FunctionMessage) session.executeFunctionCall(functionCall, context);
-            log.info("Executed {} with results: {}" ,functionCall.getName(),functionResponse.getTextContent());
-            session.addMessage(functionResponse);
-          }
-        } //TODO: add retry in case of invalid function call
+        Optional<ChatFunctionCall> passthroughFunctionCall = session.executeOrPassthroughFunctionCall(functionCall);
+        if (passthroughFunctionCall.isPresent()) {
+          return genericResponse;
+        }
       } else {
         //The text answer
         return genericResponse;
