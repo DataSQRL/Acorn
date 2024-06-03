@@ -100,7 +100,7 @@ public class ChatSession<Message, FunctionCall> {
   public Optional<FunctionCall> executeOrPassthroughFunctionCall(FunctionCall functionCall) {
     FunctionValidation<Message> fctValid = this.validateFunctionCall(functionCall);
     if (fctValid.isValid()) {
-      if (fctValid.isPassthrough()) { //return as is - evaluated on frontend
+      if (fctValid.isClientExecuted()) { //return as is - evaluated on frontend
         return Optional.of(functionCall);
       } else {
         String functionName = bindings.getFunctionName(functionCall);

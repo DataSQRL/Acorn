@@ -7,12 +7,12 @@ public enum FunctionType {
 
   graphql(false),
   rest(false),
-  visualize(true),
+  client(true),
   local(false);
 
-  private boolean isPassThrough;
+  private boolean isClientExecuted;
 
-  FunctionType(boolean isPassThrough) {
-    this.isPassThrough = isPassThrough;
+  FunctionType(boolean isClientExecuted) {
+    this.isClientExecuted = isClientExecuted;
   }
 }

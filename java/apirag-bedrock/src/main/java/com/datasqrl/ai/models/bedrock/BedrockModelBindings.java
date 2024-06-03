@@ -37,7 +37,7 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, B
     return GenericChatMessage.builder()
         .role(msg.getRole().getRole())
         .content(fctCall == null ? msg.getTextContent() : functionCall2String(fctCall))
-        .functionCall(fctCall == null ? null : fctCall.getArguments())
+        .functionCall(fctCall == null ? null :  new GenericFunctionCall(fctCall.getFunctionName(),fctCall.getArguments()))
         .name(msg.getName())
         .context(sessionContext)
         .timestamp(Instant.now().toString())

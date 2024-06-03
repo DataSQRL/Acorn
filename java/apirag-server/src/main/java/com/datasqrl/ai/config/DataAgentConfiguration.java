@@ -1,6 +1,6 @@
 package com.datasqrl.ai.config;
 
-import com.datasqrl.ai.PlotFunction;
+import com.datasqrl.ai.DataVizFunction;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.FunctionBackend;
@@ -54,15 +54,16 @@ public class DataAgentConfiguration {
     } catch (IOException e) {
       throw new IllegalArgumentException("Could not parse tools definition", e);
     }
-    PlotFunction plotFunction = getPlotFunction();
-    if (plotFunction.isPresent()) {
-      URL url = DataAgentConfiguration.class.getClassLoader().getResource(plotFunction.getResourceFile().get());
+    DataVizFunction dataVizFunction = getDataVizFunction();
+    if (dataVizFunction.isPresent()) {
+      URL url = DataAgentConfiguration.class.getClassLoader().getResource(
+          dataVizFunction.getResourceFile().get());
       ErrorHandling.checkArgument(url!=null, "Invalid url: %s", url);
       ObjectMapper objectMapper = new ObjectMapper();
       try {
         FunctionDefinition plotFunctionDef = objectMapper.readValue(url, FunctionDefinition.class);
         backend.addFunction(RuntimeFunctionDefinition.builder()
-            .type(FunctionType.visualize)
+            .type(FunctionType.client)
             .function(plotFunctionDef)
             .context(List.of())
             .build());
@@ -73,9 +74,11 @@ public class DataAgentConfiguration {
     return backend;
   }
 
-  public PlotFunction getPlotFunction() {
-    return ConfigurationUtil.getEnumFromString(PlotFunction.class,baseConfiguration.getString(PLOT_FCT_KEY, PlotFunction.none.name()))
-        .orElseThrow(() -> new IllegalArgumentException("Not a valid configuration value for ["+PLOT_FCT_KEY+"]. Expected one of: " + Arrays.toString(PlotFunction.values())));
+  public DataVizFunction getDataVizFunction() {
+    return ConfigurationUtil.getEnumFromString(
+            DataVizFunction.class,baseConfiguration.getString(PLOT_FCT_KEY, DataVizFunction.none.name()))
+        .orElseThrow(() -> new IllegalArgumentException("Not a valid configuration value for ["+PLOT_FCT_KEY+"]. Expected one of: " + Arrays.toString(
+            DataVizFunction.values())));
   }
 
   public String getSystemPrompt() {

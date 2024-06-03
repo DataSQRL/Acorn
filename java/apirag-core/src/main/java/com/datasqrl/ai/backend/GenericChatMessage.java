@@ -19,7 +19,7 @@ public class GenericChatMessage implements ChatMessageInterface {
   String role;
   String content;
   String name;
-  JsonNode functionCall;
+  GenericFunctionCall functionCall;
   Map<String,Object> context;
   String uuid;
   String timestamp;
@@ -34,8 +34,8 @@ public class GenericChatMessage implements ChatMessageInterface {
 
   @JsonIgnore
   public int getNumTokens(Function<GenericChatMessage,Integer> tokenCounter) {
-    if (numTokens==null) {
-      numTokens=tokenCounter.apply(this);
+    if (numTokens == null) {
+      numTokens = tokenCounter.apply(this);
     }
     return numTokens;
   }

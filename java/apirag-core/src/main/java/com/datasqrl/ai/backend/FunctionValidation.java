@@ -8,13 +8,13 @@ import lombok.Value;
 public class FunctionValidation<Message> {
 
   boolean isValid;
-  boolean isPassthrough;
+  boolean isClientExecuted;
   Message errorMessage;
 
   public <OutputMessage> FunctionValidation<OutputMessage> translate(
       Function<Message,OutputMessage> errorHandler) {
-    if (isValid) return new FunctionValidation<>(isValid, isPassthrough, null);
-    return new FunctionValidation<>(isValid, isPassthrough, errorHandler.apply(errorMessage));
+    if (isValid) return new FunctionValidation<>(isValid, isClientExecuted, null);
+    return new FunctionValidation<>(isValid, isClientExecuted, errorHandler.apply(errorMessage));
   }
 
 }
