@@ -162,9 +162,10 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
     try {
       ObjectMapper mapper = new ObjectMapper();
       JsonNode json = mapper.readTree(errorText);
-      JsonNode failedGeneration = json.get("error").get("failed_generation");
-      String cleanText = failedGeneration.asText().replace("`", "");
-      json = mapper.readTree(cleanText);
+      String failedGeneration = json.get("error").get("failed_generation").asText().trim();
+      int startJson = failedGeneration.indexOf("{");
+      String jsonText = failedGeneration.substring(startJson);
+      json = mapper.readTree(jsonText);
       JsonNode toolJson = json.get("tool_calls").get(0);
       return new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
     } catch (JsonProcessingException e) {
