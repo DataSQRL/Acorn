@@ -13,7 +13,9 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17-slim
 WORKDIR /app
 
-COPY --from=builder /app/apirag-server/target/*.jar app.jar
+COPY --from=builder /app/apirag-server/target/*.jar server.jar
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
-CMD ["param1", "param2"]
+COPY server-start.sh /app
+RUN chmod +x /app/server-start.sh
+
+ENTRYPOINT ["/app/server-start.sh"]
