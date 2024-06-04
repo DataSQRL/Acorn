@@ -3,9 +3,11 @@ package com.datasqrl.ai.util;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+
 import org.apache.commons.configuration2.JSONConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -14,8 +16,7 @@ public class JsonUtil {
 
 
   public static Optional<JsonNode> parseJson(String json) {
-    ObjectMapper mapper = new ObjectMapper()
-        .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+    ObjectMapper mapper = new ObjectMapper();
     try {
       return Optional.of(mapper.readTree(json));
     } catch (Exception e) {

@@ -113,8 +113,10 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         String responseText = res.trim();
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
-          responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
-          log.info("!!!Remapped content to function call");
+          if (functionCall != null) {
+            responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
+            log.info("!!!Remapped content to function call");
+          }
         }
       }
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
@@ -175,6 +177,12 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
   }
 
   public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
-    return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    Optional<JsonNode> functionCall = JsonUtil.parseJson(text);
+    if (functionCall.isEmpty()) {
+      log.error("Could not parse function text [{}]:\n", text);
+      return Optional.empty();
+    } else {
+      return functionCall.map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    }
   }
 }

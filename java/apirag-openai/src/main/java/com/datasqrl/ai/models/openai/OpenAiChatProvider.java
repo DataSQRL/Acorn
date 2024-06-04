@@ -6,6 +6,7 @@ import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.util.JsonUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
@@ -62,8 +63,10 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
         String responseText = res.trim();
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
+          if (functionCall != null) {
           responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
           log.info("!!!Remapped content to function call");
+          }
         }
       }
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
@@ -81,7 +84,13 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
   }
 
   public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
-    return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    Optional<JsonNode> functionCall = JsonUtil.parseJson(text);
+    if (functionCall.isEmpty()) {
+      log.error("Could not parse function text [{}]:\n", text);
+      return Optional.empty();
+    } else {
+      return functionCall.map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    }
   }
 
 }
