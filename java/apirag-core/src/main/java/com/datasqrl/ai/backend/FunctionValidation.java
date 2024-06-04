@@ -17,12 +17,12 @@ public record FunctionValidation<Message>(
 
   public record ValidationError<Message>(
       Message errorMessage,
-      ValidationErrorType errorType
+      Type errorType
   ) {
+    public enum Type {
+      FUNCTION_NOT_FOUND,
+      INVALID_JSON
+    }
   }
 
-  public enum ValidationErrorType {
-    FUNCTION_NOT_FOUND,
-    INVALID_JSON
-  }
 }

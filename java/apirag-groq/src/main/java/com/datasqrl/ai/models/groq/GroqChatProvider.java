@@ -78,6 +78,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
     ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);
 
+    int retryCount = 0;
     while (true) {
       log.info("Calling GROQ with model {}", model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
@@ -120,10 +121,20 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        Optional<ChatFunctionCall> passthroughFunctionCall = session.executeOrPassthroughFunctionCall(functionCall);
-        if (passthroughFunctionCall.isPresent()) {
-          return genericResponse;
-        } // TODO: add retry in case of invalid function call
+        ChatSession.FunctionExecutionOutcome outcome = session.validateAndExecuteFunctionCall(functionCall);
+        switch (outcome.status()) {
+          case EXECUTE_ON_CLIENT -> {
+            return genericResponse;
+          }
+          case VALIDATION_ERROR_RETRY -> {
+            if (retryCount >= 10) {
+              throw new RuntimeException("Too many function call retries for the same function.");
+            } else {
+              retryCount++;
+              log.info("Function call {} failed. Retrying...", functionCall);
+            }
+          }
+        }
       } else {
         // The text answer
         return genericResponse;

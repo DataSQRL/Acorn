@@ -27,4 +27,6 @@ public interface ModelBindings<Message, FunctionCall> {
   Message convertExceptionToMessage(String s);
 
   String getTextContent(Message message);
+
+  Message newUserMessage(String text);
 }

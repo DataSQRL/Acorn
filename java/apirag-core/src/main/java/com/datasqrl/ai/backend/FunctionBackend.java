@@ -151,7 +151,7 @@ public class FunctionBackend {
     FunctionValidation.ValidationError<String> error = null;
     if (function == null) {
       error = new FunctionValidation.ValidationError<>("Not a valid function name: " + functionName,
-          FunctionValidation.ValidationErrorType.FUNCTION_NOT_FOUND);
+          FunctionValidation.ValidationError.Type.FUNCTION_NOT_FOUND);
     } else {
       SchemaValidatorsConfig config = new SchemaValidatorsConfig();
       config.setPathType(PathType.JSON_POINTER);
@@ -164,7 +164,7 @@ public class FunctionBackend {
       Set<ValidationMessage> schemaErrors = schema.validate(arguments);
       if (!schemaErrors.isEmpty()) {
         error = new FunctionValidation.ValidationError<>("Invalid Schema: " + String.join("; ", schemaErrors.stream().map(ValidationMessage::toString).collect(Collectors.toList())),
-            FunctionValidation.ValidationErrorType.INVALID_JSON);
+            FunctionValidation.ValidationError.Type.INVALID_JSON);
       }
     }
     return new FunctionValidation<>(error == null, function != null && function.getType().isClientExecuted(), error);

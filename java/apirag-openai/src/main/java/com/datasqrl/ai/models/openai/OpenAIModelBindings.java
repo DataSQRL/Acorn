@@ -104,6 +104,11 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
     return chatMessage.getTextContent();
   }
 
+  @Override
+  public ChatMessage newUserMessage(String text) {
+    return new UserMessage(text);
+  }
+
   private static String functionCall2String(ChatFunctionCall fctCall) {
     return "{"
         + "\"function\": \"" + fctCall.getName() + "\", "

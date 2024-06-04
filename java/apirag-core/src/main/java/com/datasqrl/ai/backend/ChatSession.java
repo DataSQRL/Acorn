@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,11 +96,12 @@ public class ChatSession<Message, FunctionCall> {
     return bindings.convertExceptionToMessage(error);
   }
 
-  public Optional<FunctionCall> executeOrPassthroughFunctionCall(FunctionCall functionCall) {
-    FunctionValidation<Message> fctValid = this.validateFunctionCall(functionCall);
+  public FunctionExecutionOutcome validateAndExecuteFunctionCall(FunctionCall functionCall) {
+    FunctionValidation<String> fctValid = backend.validateFunctionCall(bindings.getFunctionName(functionCall),
+        bindings.getFunctionArguments(functionCall));
     if (fctValid.isValid()) {
       if (fctValid.isClientExecuted()) { //return as is - evaluated on frontend
-        return Optional.of(functionCall);
+        return new FunctionExecutionOutcome(FunctionExecutionOutcome.Status.EXECUTE_ON_CLIENT, null);
       } else {
         String functionName = bindings.getFunctionName(functionCall);
         log.info("Executing {} with arguments {}", functionName,
@@ -109,8 +109,25 @@ public class ChatSession<Message, FunctionCall> {
         Message functionResponse = this.executeFunctionCall(functionCall, context);
         log.info("Executed {} with results: {}" , functionName, bindings.getTextContent(functionResponse));
         this.addMessage(functionResponse);
+        return new FunctionExecutionOutcome(FunctionExecutionOutcome.Status.EXECUTED, null);
       }
-    } //TODO: add retry in case of invalid function call
-    return Optional.empty();
+    } else {
+      Message retryResponse = bindings.newUserMessage("It looks like you tried to call a function, but this has failed with the following error: "
+          + fctValid.validationError() + ". Please retry to call the function again.");
+      this.addMessage(retryResponse);
+      return new FunctionExecutionOutcome(FunctionExecutionOutcome.Status.VALIDATION_ERROR_RETRY, fctValid.validationError());
+    }
+  }
+
+  public record FunctionExecutionOutcome(
+      Status status,
+      FunctionValidation.ValidationError<String> validationError
+  ) {
+    public enum Status {
+      EXECUTED,
+      EXECUTE_ON_CLIENT,
+      EXECUTION_ERROR,
+      VALIDATION_ERROR_RETRY
+    }
   }
 }
