@@ -31,6 +31,10 @@
       "title": {
         "description": "The title for the chart.",
         "type": "string"
+      },
+      "caption": {
+        "description": "A caption that describes this data visualization and how it answers the user's question.",
+        "type": "string"
       }
     },
     "required": ["values", "labels", "chartType", "title"]

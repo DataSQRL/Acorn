@@ -1,6 +1,7 @@
 package com.datasqrl.ai.models.openai;
 
 import com.datasqrl.ai.backend.GenericChatMessage;
+import com.datasqrl.ai.backend.GenericFunctionCall;
 import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.datasqrl.ai.backend.ModelBindings;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,7 +50,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
     return GenericChatMessage.builder()
         .role(msg.getRole())
         .content(fctCall == null ? msg.getTextContent() : functionCall2String(fctCall))
-        .functionCall(fctCall == null ? null : fctCall.getArguments())
+        .functionCall(fctCall == null ? null : new GenericFunctionCall(fctCall.getName(),fctCall.getArguments()))
         .name(msg.getName())
         .context(sessionContext)
         .timestamp(Instant.now().toString())

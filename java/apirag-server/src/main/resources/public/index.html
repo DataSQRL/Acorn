@@ -113,14 +113,21 @@
             $('#loading').remove();
           },
           success: function(data) {
-
-            if (data.content) {
+            if (data.clientFunction) {
+              let functionCall = data.clientFunction;
+              console.log(functionCall);
+              if (functionCall.name === "data_visualization") {
+                chartData(functionCall.arguments);
+                if (functionCall.arguments.caption) {
+                  $('#chatBox').append(`<div>${functionCall.arguments.caption}</div>`);
+                }
+              } else {
+                console.error("Unrecognized function call: " + functionCall.name);
+              }
+            }
+            else if (data.content) {
               let contentHtml = marked.parse(data.content);
               $('#chatBox').append(`<div>${contentHtml}</div>`);
-            } else if (data.visualization) {
-              let chart = data.visualization;
-              console.log(chart);
-              chartData(chart);
             } else {
               console.error("Invalid response: " + data);
             }

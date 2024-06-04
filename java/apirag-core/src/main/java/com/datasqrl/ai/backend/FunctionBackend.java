@@ -70,8 +70,7 @@ public class FunctionBackend {
   public static FunctionBackend of(@NonNull String tools, @NonNull APIExecutor apiExecutor) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     List<RuntimeFunctionDefinition> functions = mapper.readValue(tools,
-        new TypeReference<>() {
-        });
+        new TypeReference<List<RuntimeFunctionDefinition>>(){});
     return new FunctionBackend(functions.stream()
         .filter(f -> !RESERVED_FUNCTION_NAMES.contains(f.getName().toLowerCase()))
         .collect(Collectors.toMap(RuntimeFunctionDefinition::getName, Function.identity())),
@@ -184,8 +183,7 @@ public class FunctionBackend {
   public String executeFunctionCall(String functionName, JsonNode arguments, @NonNull Map<String, Object> context) throws IOException {
     RuntimeFunctionDefinition function = functions.get(functionName);
     if (function == null) throw new IllegalArgumentException("Not a valid function name: " + functionName);
-    if (function.getType().isPassThrough())
-      throw new IllegalArgumentException("Cannot execute passthrough functions: " + functionName);
+    if (function.getType().isClientExecuted()) throw new IllegalArgumentException("Cannot execute client-side functions: " + functionName);
 
     JsonNode variables = addOrOverrideContext(arguments, function, context);
 
@@ -195,8 +193,7 @@ public class FunctionBackend {
         String graphqlQuery = function.getApi().getQuery();
         yield apiExecutor.executeQuery(graphqlQuery, variables);
       }
-      default ->
-          throw new IllegalArgumentException("Cannot execute function [" + functionName + "] of type: " + function.getType());
+      default -> throw new IllegalArgumentException("Cannot execute function [" + functionName + "] of type: " + function.getType());
     };
   }
 
