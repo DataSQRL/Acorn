@@ -10,7 +10,7 @@ public record FunctionValidation<Message>(
 
   public <OutputMessage> FunctionValidation<OutputMessage> translate(
       Function<Message, OutputMessage> errorHandler) {
-    if (isValid) return new FunctionValidation<>(isValid, isPassthrough, null);
+    if (isValid) return new FunctionValidation<>(isValid, isClientExecuted, null);
     return new FunctionValidation<>(isValid, isClientExecuted,
         new ValidationError<>(errorHandler.apply(validationError.errorMessage), validationError.errorType));
   }

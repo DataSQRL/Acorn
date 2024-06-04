@@ -167,7 +167,7 @@ public class FunctionBackend {
             FunctionValidation.ValidationErrorType.INVALID_JSON);
       }
     }
-    return new FunctionValidation<>(error == null, function != null && function.getType().isPassThrough(), error);
+    return new FunctionValidation<>(error == null, function != null && function.getType().isClientExecuted(), error);
   }
 
 
