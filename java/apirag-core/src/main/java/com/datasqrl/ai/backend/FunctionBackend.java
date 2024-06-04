@@ -149,10 +149,11 @@ public class FunctionBackend {
   @SneakyThrows
   public FunctionValidation<String> validateFunctionCall(String functionName, JsonNode arguments) {
     RuntimeFunctionDefinition function = functions.get(functionName);
-    String error = null;
-    if (function == null) error = "Not a valid function name: " + functionName;
-    else {
-      //TODO: throw exception if json schema is not matched
+    FunctionValidation.ValidationError<String> error = null;
+    if (function == null) {
+      error = new FunctionValidation.ValidationError<>("Not a valid function name: " + functionName,
+          FunctionValidation.ValidationErrorType.FUNCTION_NOT_FOUND);
+    } else {
       SchemaValidatorsConfig config = new SchemaValidatorsConfig();
       config.setPathType(PathType.JSON_POINTER);
       ObjectMapper mapper = new ObjectMapper();
@@ -161,9 +162,10 @@ public class FunctionBackend {
       String schemaText = mapper.writeValueAsString(def.getParameters());
       JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
       JsonSchema schema = factory.getSchema(schemaText, config);
-      Set<ValidationMessage> errors = schema.validate(arguments);
-      if (!errors.isEmpty()) {
-        error = "Invalid Schema: " + String.join("; ", errors.stream().map(ValidationMessage::toString).collect(Collectors.toList()));
+      Set<ValidationMessage> schemaErrors = schema.validate(arguments);
+      if (!schemaErrors.isEmpty()) {
+        error = new FunctionValidation.ValidationError<>("Invalid Schema: " + String.join("; ", schemaErrors.stream().map(ValidationMessage::toString).collect(Collectors.toList())),
+            FunctionValidation.ValidationErrorType.INVALID_JSON);
       }
     }
     return new FunctionValidation<>(error == null, function != null && function.getType().isPassThrough(), error);
