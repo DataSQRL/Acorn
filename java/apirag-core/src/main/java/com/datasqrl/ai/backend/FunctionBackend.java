@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -145,7 +144,7 @@ public class FunctionBackend {
     else {
       //TODO: throw exception if json schema is not matched
     }
-    return new FunctionValidation<>(error==null, function!=null && function.getType().isPassThrough(), error);
+    return new FunctionValidation<>(error==null, function!=null && function.getType().isClientExecuted(), error);
   }
 
 
@@ -161,7 +160,7 @@ public class FunctionBackend {
   public String executeFunctionCall(String functionName, JsonNode arguments, @NonNull Map<String, Object> context) throws IOException {
     RuntimeFunctionDefinition function = functions.get(functionName);
     if (function == null) throw new IllegalArgumentException("Not a valid function name: " + functionName);
-    if (function.getType().isPassThrough()) throw new IllegalArgumentException("Cannot execute passthrough functions: " + functionName);
+    if (function.getType().isClientExecuted()) throw new IllegalArgumentException("Cannot execute client-side functions: " + functionName);
 
     JsonNode variables = addOrOverrideContext(arguments, function, context);
 
