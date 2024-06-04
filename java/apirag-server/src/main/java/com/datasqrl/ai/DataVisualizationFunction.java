@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum DataVizFunction {
+public enum DataVisualizationFunction {
 
   none(Optional.empty()),
   oneD(Optional.of("functions/plotfunction1d.json")),

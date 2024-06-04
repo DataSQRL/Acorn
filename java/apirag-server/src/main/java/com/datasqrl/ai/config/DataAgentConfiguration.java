@@ -1,6 +1,6 @@
 package com.datasqrl.ai.config;
 
-import com.datasqrl.ai.DataVizFunction;
+import com.datasqrl.ai.DataVisualizationFunction;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.backend.FunctionBackend;
@@ -54,10 +54,10 @@ public class DataAgentConfiguration {
     } catch (IOException e) {
       throw new IllegalArgumentException("Could not parse tools definition", e);
     }
-    DataVizFunction dataVizFunction = getDataVizFunction();
-    if (dataVizFunction.isPresent()) {
+    DataVisualizationFunction dataVisualizationFunction = getDataVizFunction();
+    if (dataVisualizationFunction.isPresent()) {
       URL url = DataAgentConfiguration.class.getClassLoader().getResource(
-          dataVizFunction.getResourceFile().get());
+          dataVisualizationFunction.getResourceFile().get());
       ErrorHandling.checkArgument(url!=null, "Invalid url: %s", url);
       ObjectMapper objectMapper = new ObjectMapper();
       try {
@@ -74,11 +74,11 @@ public class DataAgentConfiguration {
     return backend;
   }
 
-  public DataVizFunction getDataVizFunction() {
+  public DataVisualizationFunction getDataVizFunction() {
     return ConfigurationUtil.getEnumFromString(
-            DataVizFunction.class,baseConfiguration.getString(PLOT_FCT_KEY, DataVizFunction.none.name()))
+            DataVisualizationFunction.class,baseConfiguration.getString(PLOT_FCT_KEY, DataVisualizationFunction.none.name()))
         .orElseThrow(() -> new IllegalArgumentException("Not a valid configuration value for ["+PLOT_FCT_KEY+"]. Expected one of: " + Arrays.toString(
-            DataVizFunction.values())));
+            DataVisualizationFunction.values())));
   }
 
   public String getSystemPrompt() {
