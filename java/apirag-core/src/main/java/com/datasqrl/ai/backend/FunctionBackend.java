@@ -7,8 +7,17 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.PathType;
+import com.networknt.schema.SchemaValidatorsConfig;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
+
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,8 +27,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.NonNull;
-import lombok.Value;
 
 /**
  * An {@link FunctionBackend} defines and executes functions that a language model
@@ -63,7 +70,8 @@ public class FunctionBackend {
   public static FunctionBackend of(@NonNull String tools, @NonNull APIExecutor apiExecutor) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     List<RuntimeFunctionDefinition> functions = mapper.readValue(tools,
-        new TypeReference<List<RuntimeFunctionDefinition>>(){});
+        new TypeReference<>() {
+        });
     return new FunctionBackend(functions.stream()
         .filter(f -> !RESERVED_FUNCTION_NAMES.contains(f.getName().toLowerCase()))
         .collect(Collectors.toMap(RuntimeFunctionDefinition::getName, Function.identity())),
@@ -102,7 +110,7 @@ public class FunctionBackend {
    * @param context Arbitrary session context that identifies a user or provides contextual information.
    * @return Saved messages for the provided context
    */
-  public<ChatMessage extends ChatMessageInterface> List<ChatMessage> getChatMessages(
+  public <ChatMessage extends ChatMessageInterface> List<ChatMessage> getChatMessages(
       @NonNull Map<String, Object> context, int limit, @NonNull Class<ChatMessage> clazz) {
     if (getChatsFct.isEmpty()) return List.of();
     ObjectNode arguments = mapper.createObjectNode();
@@ -138,14 +146,27 @@ public class FunctionBackend {
    * @param arguments Arguments to the function
    * @return
    */
+  @SneakyThrows
   public FunctionValidation<String> validateFunctionCall(String functionName, JsonNode arguments) {
     RuntimeFunctionDefinition function = functions.get(functionName);
     String error = null;
     if (function == null) error = "Not a valid function name: " + functionName;
     else {
       //TODO: throw exception if json schema is not matched
+      SchemaValidatorsConfig config = new SchemaValidatorsConfig();
+      config.setPathType(PathType.JSON_POINTER);
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+      FunctionDefinition def = function.getChatFunction();
+      String schemaText = mapper.writeValueAsString(def.getParameters());
+      JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+      JsonSchema schema = factory.getSchema(schemaText, config);
+      Set<ValidationMessage> errors = schema.validate(arguments);
+      if (!errors.isEmpty()) {
+        error = "Invalid Schema: " + String.join("; ", errors.stream().map(ValidationMessage::toString).collect(Collectors.toList()));
+      }
     }
-    return new FunctionValidation<>(error==null, function!=null && function.getType().isPassThrough(), error);
+    return new FunctionValidation<>(error == null, function != null && function.getType().isPassThrough(), error);
   }
 
 
@@ -161,7 +182,8 @@ public class FunctionBackend {
   public String executeFunctionCall(String functionName, JsonNode arguments, @NonNull Map<String, Object> context) throws IOException {
     RuntimeFunctionDefinition function = functions.get(functionName);
     if (function == null) throw new IllegalArgumentException("Not a valid function name: " + functionName);
-    if (function.getType().isPassThrough()) throw new IllegalArgumentException("Cannot execute passthrough functions: " + functionName);
+    if (function.getType().isPassThrough())
+      throw new IllegalArgumentException("Cannot execute passthrough functions: " + functionName);
 
     JsonNode variables = addOrOverrideContext(arguments, function, context);
 
@@ -171,14 +193,15 @@ public class FunctionBackend {
         String graphqlQuery = function.getApi().getQuery();
         yield apiExecutor.executeQuery(graphqlQuery, variables);
       }
-      default -> throw new IllegalArgumentException("Cannot execute function [" + functionName + "] of type: " + function.getType());
+      default ->
+          throw new IllegalArgumentException("Cannot execute function [" + functionName + "] of type: " + function.getType());
     };
   }
 
   private JsonNode addOrOverrideContext(JsonNode arguments, RuntimeFunctionDefinition function, @NonNull Map<String, Object> context) {
     // Create a copy of the original JsonNode to add context
     ObjectNode copyJsonNode;
-    if (arguments==null || arguments.isEmpty()) {
+    if (arguments == null || arguments.isEmpty()) {
       copyJsonNode = mapper.createObjectNode();
     } else {
       copyJsonNode = (ObjectNode) arguments.deepCopy();
@@ -186,7 +209,7 @@ public class FunctionBackend {
     // Add context
     for (String contextField : function.getContext()) {
       Object value = context.get(contextField);
-      if (value==null) throw new IllegalArgumentException("Missing context field: " + contextField);
+      if (value == null) throw new IllegalArgumentException("Missing context field: " + contextField);
       copyJsonNode.putPOJO(contextField, value);
     }
     return copyJsonNode;
