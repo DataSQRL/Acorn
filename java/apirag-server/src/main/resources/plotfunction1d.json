@@ -33,6 +33,6 @@
         "type": "string"
       }
     },
-    "required": ["table", "rowLabels", "columnLabels", "chartType", "title"]
+    "required": ["values", "labels", "chartType", "title"]
   }
 }
