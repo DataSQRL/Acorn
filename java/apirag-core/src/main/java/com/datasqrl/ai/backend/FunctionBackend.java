@@ -70,8 +70,7 @@ public class FunctionBackend {
   public static FunctionBackend of(@NonNull String tools, @NonNull APIExecutor apiExecutor) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     List<RuntimeFunctionDefinition> functions = mapper.readValue(tools,
-        new TypeReference<>() {
-        });
+        new TypeReference<List<RuntimeFunctionDefinition>>(){});
     return new FunctionBackend(functions.stream()
         .filter(f -> !RESERVED_FUNCTION_NAMES.contains(f.getName().toLowerCase()))
         .collect(Collectors.toMap(RuntimeFunctionDefinition::getName, Function.identity())),
