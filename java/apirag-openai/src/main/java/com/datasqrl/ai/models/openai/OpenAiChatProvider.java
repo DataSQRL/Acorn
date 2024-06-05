@@ -42,8 +42,9 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
 
     int retryCount = 0;
     while (true) {
-      log.info("Calling OpenAI with model " + model.getModelName());
+      log.info("Calling OpenAI with model {}", model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
+      log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(model.getModelName())
@@ -78,11 +79,12 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            if (retryCount >= 10) {
+            if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
               retryCount++;
-              log.info("Function call {} failed. Retrying...", functionCall);
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retrying ...");
             }
           }
         }

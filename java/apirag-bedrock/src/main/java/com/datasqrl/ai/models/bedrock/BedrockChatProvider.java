@@ -81,11 +81,12 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            if (retryCount >= 10) {
+            if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
               retryCount++;
-              log.info("Function call {} failed. Retrying...", functionCall);
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retrying ...");
             }
           }
         }
@@ -127,6 +128,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
         .modelId(modelId)
         .body(SdkBytes.fromUtf8String(request.toString()))
         .build();
+    log.debug("Bedrock prompt: {}", prompt);
     InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
     log.info("🤖Bedrock Response: {}", jsonObject);

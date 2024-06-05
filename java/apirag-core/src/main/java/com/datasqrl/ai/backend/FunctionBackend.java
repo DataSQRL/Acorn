@@ -16,6 +16,7 @@ import com.networknt.schema.ValidationMessage;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
  *
  *
  */
+@Slf4j
 @Value
 public class FunctionBackend {
 
@@ -70,7 +72,8 @@ public class FunctionBackend {
   public static FunctionBackend of(@NonNull String tools, @NonNull APIExecutor apiExecutor) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     List<RuntimeFunctionDefinition> functions = mapper.readValue(tools,
-        new TypeReference<List<RuntimeFunctionDefinition>>(){});
+        new TypeReference<>() {
+        });
     return new FunctionBackend(functions.stream()
         .filter(f -> !RESERVED_FUNCTION_NAMES.contains(f.getName().toLowerCase()))
         .collect(Collectors.toMap(RuntimeFunctionDefinition::getName, Function.identity())),
@@ -153,18 +156,17 @@ public class FunctionBackend {
       error = new FunctionValidation.ValidationError<>("Not a valid function name: " + functionName,
           FunctionValidation.ValidationError.Type.FUNCTION_NOT_FOUND);
     } else {
-      SchemaValidatorsConfig config = new SchemaValidatorsConfig();
-      config.setPathType(PathType.JSON_POINTER);
       ObjectMapper mapper = new ObjectMapper();
       mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
       FunctionDefinition def = function.getChatFunction();
       String schemaText = mapper.writeValueAsString(def.getParameters());
       JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
-      JsonSchema schema = factory.getSchema(schemaText, config);
+      JsonSchema schema = factory.getSchema(schemaText);
       Set<ValidationMessage> schemaErrors = schema.validate(arguments);
       if (!schemaErrors.isEmpty()) {
-        error = new FunctionValidation.ValidationError<>("Invalid Schema: " + String.join("; ", schemaErrors.stream().map(ValidationMessage::toString).collect(Collectors.toList())),
-            FunctionValidation.ValidationError.Type.INVALID_JSON);
+        String schemaErrorsText = schemaErrors.stream().map(ValidationMessage::toString).collect(Collectors.joining("; "));
+        log.info("Function call had schema errors: {}", schemaErrorsText);
+        error = new FunctionValidation.ValidationError<>("Invalid Schema: " + schemaErrorsText, FunctionValidation.ValidationError.Type.INVALID_JSON);
       }
     }
     return new FunctionValidation<>(error == null, function != null && function.getType().isClientExecuted(), error);
@@ -183,7 +185,8 @@ public class FunctionBackend {
   public String executeFunctionCall(String functionName, JsonNode arguments, @NonNull Map<String, Object> context) throws IOException {
     RuntimeFunctionDefinition function = functions.get(functionName);
     if (function == null) throw new IllegalArgumentException("Not a valid function name: " + functionName);
-    if (function.getType().isClientExecuted()) throw new IllegalArgumentException("Cannot execute client-side functions: " + functionName);
+    if (function.getType().isClientExecuted())
+      throw new IllegalArgumentException("Cannot execute client-side functions: " + functionName);
 
     JsonNode variables = addOrOverrideContext(arguments, function, context);
 
@@ -193,7 +196,8 @@ public class FunctionBackend {
         String graphqlQuery = function.getApi().getQuery();
         yield apiExecutor.executeQuery(graphqlQuery, variables);
       }
-      default -> throw new IllegalArgumentException("Cannot execute function [" + functionName + "] of type: " + function.getType());
+      default ->
+          throw new IllegalArgumentException("Cannot execute function [" + functionName + "] of type: " + function.getType());
     };
   }
 

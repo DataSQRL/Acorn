@@ -113,7 +113,7 @@ public class ChatSession<Message, FunctionCall> {
       }
     } else {
       Message retryResponse = bindings.newUserMessage("It looks like you tried to call a function, but this has failed with the following error: "
-          + fctValid.validationError() + ". Please retry to call the function again.");
+          + fctValid.validationError().errorMessage() + ". Please retry to call the function again. Send ONLY the JSON as a response.");
       this.addMessage(retryResponse);
       return new FunctionExecutionOutcome(FunctionExecutionOutcome.Status.VALIDATION_ERROR_RETRY, fctValid.validationError());
     }
