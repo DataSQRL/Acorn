@@ -82,6 +82,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
     while (true) {
       log.info("Calling GROQ with model {}", model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
+      log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(model.getModelName())
@@ -127,11 +128,12 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            if (retryCount >= 10) {
+            if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
               retryCount++;
-              log.info("Function call {} failed. Retrying...", functionCall);
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retry attempt #{}", retryCount + " ...");
             }
           }
         }
@@ -175,7 +177,8 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       JsonNode json = mapper.readTree(errorText);
       String failedGeneration = json.get("error").get("failed_generation").asText().trim();
       int startJson = failedGeneration.indexOf("{");
-      String jsonText = failedGeneration.substring(startJson);
+      int endJson = failedGeneration.lastIndexOf("}");
+      String jsonText = failedGeneration.substring(startJson, endJson + 1);
       json = mapper.readTree(jsonText);
       JsonNode toolJson = json.get("tool_calls").get(0);
       return new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
