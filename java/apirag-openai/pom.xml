@@ -47,7 +47,7 @@
     <dependency>
       <groupId>ai.djl.huggingface</groupId>
       <artifactId>tokenizers</artifactId>
-      <version>${huggingface.version}</version>
+      <version>${djl.version}</version>
     </dependency>
   </dependencies>
 
