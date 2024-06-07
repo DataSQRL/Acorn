@@ -3,7 +3,6 @@ package com.datasqrl.ai.models.bedrock;
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatClientProvider;
@@ -64,6 +63,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
     session.addMessage(chatMessage);
 
+    int retryCount = 0;
     while (true) {
       ContextWindow<BedrockChatMessage> contextWindow = session.getContextWindow();
       String prompt = contextWindow.getMessages().stream()
@@ -75,10 +75,21 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        Optional<BedrockFunctionCall> passthroughFunctionCall = session.executeOrPassthroughFunctionCall(functionCall);
-        if (passthroughFunctionCall.isPresent()) {
-          return genericResponse;
-        } //TODO: add retry in case of invalid function call
+        ChatSession.FunctionExecutionOutcome outcome = session.validateAndExecuteFunctionCall(functionCall);
+        switch (outcome.status()) {
+          case EXECUTE_ON_CLIENT -> {
+            return genericResponse;
+          }
+          case VALIDATION_ERROR_RETRY -> {
+            if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+              throw new RuntimeException("Too many function call retries for the same function.");
+            } else {
+              retryCount++;
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retrying ...");
+            }
+          }
+        }
       } else {
         //The text answer
         return genericResponse;
@@ -117,6 +128,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
         .modelId(modelId)
         .body(SdkBytes.fromUtf8String(request.toString()))
         .build();
+    log.debug("Bedrock prompt: {}", prompt);
     InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
     log.info("🤖Bedrock Response: {}", jsonObject);

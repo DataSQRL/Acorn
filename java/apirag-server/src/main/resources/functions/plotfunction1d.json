@@ -37,6 +37,6 @@
         "type": "string"
       }
     },
-    "required": ["table", "rowLabels", "columnLabels", "chartType", "title", "caption"]
+    "required": ["values", "labels", "chartType", "title"]
   }
 }

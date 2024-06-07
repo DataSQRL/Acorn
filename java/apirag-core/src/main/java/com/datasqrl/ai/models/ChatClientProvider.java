@@ -13,6 +13,7 @@ import java.util.Map;
 public abstract class ChatClientProvider<Message, FunctionCall> {
 
   public static int DEFAULT_HISTORY_LIMIT = 50;
+  public static final int FUNCTION_CALL_RETRIES_LIMIT = 5;
 
   protected final FunctionBackend backend;
   @Getter

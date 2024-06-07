@@ -116,7 +116,7 @@ public class CmdLineChatBot {
           System.out.println("Executed " + fctCall.getName() + " with response: " + functionResponse.getTextContent());
           session.addMessage(functionResponse);
         } else {
-          session.addMessage(new FunctionMessage("{\"error\": \"" + fctValid.getErrorMessage() + "\"}", "error"));
+          session.addMessage(new FunctionMessage("{\"error\": \"" + fctValid.validationError().errorMessage() + "\"}", "error"));
         }
         continue;
       }

@@ -6,19 +6,19 @@ import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.util.JsonUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
@@ -40,9 +40,11 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
     ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);
 
+    int retryCount = 0;
     while (true) {
-      log.info("Calling OpenAI with model " + model.getModelName());
+      log.info("Calling OpenAI with model {}", model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
+      log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(model.getModelName())
@@ -62,26 +64,45 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
         String responseText = res.trim();
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
+          if (functionCall != null) {
           responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
           log.info("!!!Remapped content to function call");
+          }
         }
       }
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        Optional<ChatFunctionCall> passthroughFunctionCall = session.executeOrPassthroughFunctionCall(functionCall);
-        if (passthroughFunctionCall.isPresent()) {
-          return genericResponse;
+        ChatSession.FunctionExecutionOutcome outcome = session.validateAndExecuteFunctionCall(functionCall);
+        switch (outcome.status()) {
+          case EXECUTE_ON_CLIENT -> {
+            return genericResponse;
+          }
+          case VALIDATION_ERROR_RETRY -> {
+            if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+              throw new RuntimeException("Too many function call retries for the same function.");
+            } else {
+              retryCount++;
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retrying ...");
+            }
+          }
         }
       } else {
-        //The text answer
+        // The text answer
         return genericResponse;
       }
     }
   }
 
   public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
-    return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    Optional<JsonNode> functionCall = JsonUtil.parseJson(text);
+    if (functionCall.isEmpty()) {
+      log.error("Could not parse function text [{}]:\n", text);
+      return Optional.empty();
+    } else {
+      return functionCall.map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    }
   }
 
 }

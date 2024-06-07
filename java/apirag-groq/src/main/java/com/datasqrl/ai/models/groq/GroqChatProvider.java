@@ -3,7 +3,6 @@ package com.datasqrl.ai.models.groq;
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.util.JsonUtil;
@@ -16,7 +15,6 @@ import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import lombok.extern.slf4j.Slf4j;
@@ -80,9 +78,11 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
     ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);
 
+    int retryCount = 0;
     while (true) {
       log.info("Calling GROQ with model {}", model.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
+      log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(model.getModelName())
@@ -113,17 +113,30 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         String responseText = res.trim();
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
-          responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
-          log.info("!!!Remapped content to function call");
+          if (functionCall != null) {
+            responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
+            log.info("!!!Remapped content to function call");
+          }
         }
       }
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
-        Optional<ChatFunctionCall> passthroughFunctionCall = session.executeOrPassthroughFunctionCall(functionCall);
-        if (passthroughFunctionCall.isPresent()) {
-          return genericResponse;
-        } // TODO: add retry in case of invalid function call
+        ChatSession.FunctionExecutionOutcome outcome = session.validateAndExecuteFunctionCall(functionCall);
+        switch (outcome.status()) {
+          case EXECUTE_ON_CLIENT -> {
+            return genericResponse;
+          }
+          case VALIDATION_ERROR_RETRY -> {
+            if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+              throw new RuntimeException("Too many function call retries for the same function.");
+            } else {
+              retryCount++;
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retry attempt #{}", retryCount + " ...");
+            }
+          }
+        }
       } else {
         // The text answer
         return genericResponse;
@@ -164,7 +177,8 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       JsonNode json = mapper.readTree(errorText);
       String failedGeneration = json.get("error").get("failed_generation").asText().trim();
       int startJson = failedGeneration.indexOf("{");
-      String jsonText = failedGeneration.substring(startJson);
+      int endJson = failedGeneration.lastIndexOf("}");
+      String jsonText = failedGeneration.substring(startJson, endJson + 1);
       json = mapper.readTree(jsonText);
       JsonNode toolJson = json.get("tool_calls").get(0);
       return new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
@@ -175,6 +189,12 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
   }
 
   public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
-    return JsonUtil.parseJson(text).map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    Optional<JsonNode> functionCall = JsonUtil.parseJson(text);
+    if (functionCall.isEmpty()) {
+      log.error("Could not parse function text [{}]:\n", text);
+      return Optional.empty();
+    } else {
+      return functionCall.map(json -> new ChatFunctionCall(json.get("function").asText(), json.get("parameters")));
+    }
   }
 }
