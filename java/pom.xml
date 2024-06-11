@@ -16,8 +16,8 @@
     <module>apirag-bedrock</module>
     <module>apirag-graphql</module>
     <module>apirag-rest</module>
+    <module>apirag-google</module>
     <module>apirag-server</module>
-
   </modules>
 
   <properties>
