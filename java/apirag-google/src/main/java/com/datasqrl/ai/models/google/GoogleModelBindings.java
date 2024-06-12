@@ -45,29 +45,53 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
               .setName(functionCall.getName())
               .setArgs(ProtobufUtils.convertJsonNodeToStruct(functionCall.getArguments()));
           partBuilder.setFunctionCall(fctCallBuilder);
-
         }
         yield msgBuilder.addParts(partBuilder).build();
       }
 //      TODO: Revisit!
       case "system" -> ContentMaker.forRole("system").fromString(message.getContent());
+      case "function" -> {
+        Content.Builder msgBuilder = Content.newBuilder().setRole("function");
+        Optional<JsonNode> responseJson = JsonUtil.parseJson(message.getContent());
+        if (responseJson.isPresent()) {
+          String functionName = responseJson.get().get("function").asText();
+          JsonNode arguments = responseJson.get().get("parameters");
+          FunctionResponse.Builder functionResponseBuilder = FunctionResponse.newBuilder()
+              .setName(functionName)
+              .setResponse(ProtobufUtils.convertJsonNodeToStruct(arguments));
+          msgBuilder.addParts(Part.newBuilder().setFunctionResponse(functionResponseBuilder));
+        } else {
+          msgBuilder.addParts(Part.newBuilder().setText(message.getContent()));
+        }
+        yield msgBuilder.build();
+      }
       default -> ContentMaker.forRole("user").fromString(message.getContent());
     };
   }
 
+//  TODO: Double check
   @Override
   public GenericChatMessage convertMessage(Content content, Map<String, Object> sessionContext) {
-    Optional<FunctionCall> functionCall = content.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
     try {
-      return GenericChatMessage.builder()
+      GenericChatMessage.GenericChatMessageBuilder builder = GenericChatMessage.builder()
           .role(content.getRole())
-          .content(functionCall.map(this::functionCall2String).orElseGet(content::toString))
-          .functionCall(functionCall.map(call -> new GenericFunctionCall(call.getName(), ProtobufUtils.convertStructToJsonNode(call.getArgs()))).orElse(null))
-          .name("")
           .context(sessionContext)
           .timestamp(Instant.now().toString())
-          .numTokens(generativeModel.countTokens(ProtobufUtils.contentToString(content)).getTotalTokens())
-          .build();
+          .numTokens(generativeModel.countTokens(content).getTotalTokens());
+      switch (content.getRole()) {
+        default -> builder.content(ProtobufUtils.contentToString(content)).name("");
+        case "model" -> {
+          Optional<FunctionCall> functionCall = content.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
+          builder.functionCall(functionCall.map(call -> new GenericFunctionCall(call.getName(), ProtobufUtils.convertStructToJsonNode(call.getArgs()))).orElse(null))
+              .name(functionCall.map(FunctionCall::getName).orElse(""));
+        }
+        case "function" -> {
+          Optional<FunctionResponse> functionResponse = content.getPartsList().stream().filter(Part::hasFunctionResponse).map(Part::getFunctionResponse).findFirst();
+          builder.content(functionResponse.map(response -> ProtobufUtils.convertStructToJsonNode(response.getResponse()).toString()).orElseGet(() -> ProtobufUtils.contentToString(content)))
+              .name(functionResponse.map(FunctionResponse::getName).orElse(""));
+        }
+      }
+      return builder.build();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

@@ -78,17 +78,18 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
   public GenericChatMessage chat(String message, Map<String, Object> context) {
     ChatSession<Content, FunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     Content chatMessage = ContentMaker.fromString(message);
-    session.addMessage(chatMessage);
 
     int retryCount = 0;
     while (true) {
       ContextWindow<Content> contextWindow = session.getContextWindow();
       com.google.cloud.vertexai.generativeai.ChatSession chatSession = chatModel.startChat();
-      chatSession.setHistory(contextWindow.getMessages());
+      List<Content> messageHistory = contextWindow.getMessages().stream().filter(m -> !m.getRole().equals("system")).toList();
+      chatSession.setHistory(messageHistory);
 
       log.info("Calling Google with model {}", chatModel.getModelName());
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
+        session.addMessage(chatMessage);
         Content response = ResponseHandler.getContent(generatedResponse);
         log.info("Response: {}", response);
         GenericChatMessage genericResponse = session.addMessage(response);

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 @AllArgsConstructor
 public class GenericChatMessage implements ChatMessageInterface {
 
+//  TODO: Store function response as a separate attribute, similar to functionCall
   String role;
   String content;
   String name;
