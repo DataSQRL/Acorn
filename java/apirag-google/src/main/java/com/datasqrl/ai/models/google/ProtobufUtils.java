@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.cloud.vertexai.api.Content;
+import com.google.cloud.vertexai.api.Part;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.NullValue;
 import com.google.protobuf.Struct;
@@ -12,12 +14,21 @@ import com.google.protobuf.Value;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ProtobufUtils {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
-  public static JsonNode convertMapToJsonNode(Map<String, Value> map) {
+  public static JsonNode convertStructToJsonNode(Struct struct) {
+    return convertMapToJsonNode(struct.getFieldsMap());
+  }
+
+  public static Struct convertJsonNodeToStruct(JsonNode node) {
+    return Struct.newBuilder().putAllFields(convertJsonNodeToValueMap(node)).build();
+  }
+
+  private static JsonNode convertMapToJsonNode(Map<String, Value> map) {
     ObjectNode jsonNode = objectMapper.createObjectNode();
     for (Map.Entry<String, Value> entry : map.entrySet()) {
       String key = entry.getKey();
@@ -56,7 +67,7 @@ public class ProtobufUtils {
     }
   }
 
-  public static Map<String, Value> convertJsonNodeToValueMap(JsonNode node) {
+  private static Map<String, Value> convertJsonNodeToValueMap(JsonNode node) {
     Map<String, Value> result = new HashMap<>();
 
     if (node.isObject()) {
@@ -100,4 +111,9 @@ public class ProtobufUtils {
       throw new IllegalArgumentException("Unexpected JsonNode type: " + node);
     }
   }
+
+  public static String contentToString(Content content) {
+    return content.getPartsList().stream().map(Part::getText).collect(Collectors.joining("\n"));
+  }
+
 }

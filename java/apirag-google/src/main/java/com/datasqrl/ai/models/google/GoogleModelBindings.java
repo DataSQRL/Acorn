@@ -4,10 +4,12 @@ import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.backend.GenericFunctionCall;
 import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.datasqrl.ai.backend.ModelBindings;
+import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.api.FunctionCall;
+import com.google.cloud.vertexai.api.FunctionResponse;
 import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
@@ -15,30 +17,26 @@ import com.google.protobuf.Struct;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class GoogleModelBindings implements ModelBindings<Content, FunctionCall> {
 
-  public final GoogleChatModel model;
-  public final GenerativeModel generativeModel;
-  public final String projectId;
-  public final String projectLocation;
+  private final GoogleChatModel model;
+  private final GenerativeModel generativeModel;
+  private final GoogleTokenCounter tokenCounter;
+
 
   public GoogleModelBindings(GoogleChatModel model, String vertexProjectId, String vertexProjectLocation) {
     this.model = model;
-    this.projectId = vertexProjectId;
-    this.projectLocation = vertexProjectLocation;
     VertexAI vertexAI = new VertexAI(vertexProjectId, vertexProjectLocation);
     this.generativeModel = new GenerativeModel(model.modelName, vertexAI);
+    this.tokenCounter = GoogleTokenCounter.of(generativeModel);
   }
 
   @Override
   public Content convertMessage(GenericChatMessage message) {
     return switch (message.getRole()) {
-      case "user", default -> ContentMaker.forRole("user").fromString(message.getContent());
       case "model" -> {
         Content.Builder msgBuilder = Content.newBuilder().setRole("model");
         Part.Builder partBuilder = Part.newBuilder().setText(message.getContent());
@@ -46,7 +44,7 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
         if (functionCall != null) {
           FunctionCall.Builder fctCallBuilder = FunctionCall.newBuilder()
               .setName(functionCall.getName())
-              .setArgs(Struct.newBuilder().putAllFields(ProtobufUtils.convertJsonNodeToValueMap(functionCall.getArguments())));
+              .setArgs(ProtobufUtils.convertJsonNodeToStruct(functionCall.getArguments()));
           partBuilder.setFunctionCall(fctCallBuilder);
 
         }
@@ -54,6 +52,7 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
       }
 //      TODO: Revisit!
       case "system" -> ContentMaker.forRole("system").fromString(message.getContent());
+      default -> ContentMaker.forRole("user").fromString(message.getContent());
     };
   }
 
@@ -64,11 +63,11 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
       return GenericChatMessage.builder()
           .role(content.getRole())
           .content(functionCall.map(this::functionCall2String).orElseGet(content::toString))
-          .functionCall(functionCall.map(call -> new GenericFunctionCall(call.getName(), ProtobufUtils.convertMapToJsonNode(call.getArgs().getFieldsMap()))).orElse(null))
+          .functionCall(functionCall.map(call -> new GenericFunctionCall(call.getName(), ProtobufUtils.convertStructToJsonNode(call.getArgs()))).orElse(null))
           .name("")
           .context(sessionContext)
           .timestamp(Instant.now().toString())
-          .numTokens(generativeModel.countTokens(partsToString(content.getPartsList())).getTotalTokens())
+          .numTokens(generativeModel.countTokens(ProtobufUtils.contentToString(content)).getTotalTokens())
           .build();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -77,52 +76,56 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
 
   @Override
   public boolean isUserOrAssistantMessage(Content content) {
-    return false;
+    return !content.getRole().equals("system");
   }
 
   @Override
   public ModelAnalyzer<Content> getTokenCounter() {
-    return null;
+    return tokenCounter;
   }
 
+  //  TODO: This method is the same in all bindings
   @Override
   public int getMaxInputTokens() {
-    return 0;
+    return model.getContextWindowLength() - model.getCompletionLength();
   }
 
   @Override
   public Content createSystemMessage(String systemMessage) {
-    return null;
+    return ContentMaker.forRole("system").fromString(systemMessage);
   }
 
   @Override
   public String getFunctionName(FunctionCall functionCall) {
-    return "";
+    return functionCall.getName();
   }
 
   @Override
   public JsonNode getFunctionArguments(FunctionCall functionCall) {
-    return null;
+    return ProtobufUtils.convertStructToJsonNode(functionCall.getArgs());
   }
 
   @Override
   public Content newFunctionResultMessage(String functionName, String functionResult) {
-    return null;
+    Optional<JsonNode> jsonNode = JsonUtil.parseJson(functionResult);
+    FunctionResponse.Builder responseBuilder = FunctionResponse.newBuilder().setName(functionName);
+    jsonNode.map(node -> responseBuilder.setResponse(ProtobufUtils.convertJsonNodeToStruct(node)));
+    return Content.newBuilder().addParts(Part.newBuilder().setFunctionResponse(responseBuilder)).build();
   }
 
   @Override
   public Content convertExceptionToMessage(String s) {
-    return null;
+    return ContentMaker.fromString(s);
   }
 
   @Override
   public String getTextContent(Content content) {
-    return "";
+    return ProtobufUtils.contentToString(content);
   }
 
   @Override
   public Content newUserMessage(String text) {
-    return null;
+    return ContentMaker.forRole("user").fromString(text);
   }
 
   private String functionCall2String(FunctionCall fctCall) {
@@ -130,10 +133,6 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
         + "\"function\": \"" + fctCall.getName() + "\", "
         + "\"parameters\": " + fctCall.getArgs()
         + "}";
-  }
-
-  private String partsToString(List<Part> parts) {
-    return parts.stream().map(Part::getText).collect(Collectors.joining("\n"));
   }
 
 }
