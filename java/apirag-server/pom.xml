@@ -51,6 +51,11 @@
       <artifactId>apirag-bedrock</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.datasqrl</groupId>
+      <artifactId>apirag-google</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>

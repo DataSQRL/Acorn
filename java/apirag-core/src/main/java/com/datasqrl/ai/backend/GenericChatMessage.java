@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GenericChatMessage implements ChatMessageInterface {
 
+//  TODO: Store function response as a separate attribute, similar to functionCall
   String role;
   String content;
   String name;
