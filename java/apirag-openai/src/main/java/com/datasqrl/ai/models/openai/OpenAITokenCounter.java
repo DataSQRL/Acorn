@@ -16,6 +16,7 @@ import java.util.Optional;
 @Slf4j
 public record OpenAITokenCounter(Encoding encoding) implements ModelAnalyzer<ChatMessage> {
 
+  @Override
   public int countTokens(ChatMessage message) {
     int numTokens = countTokens(message.getTextContent());
     return numTokens + numTokens / 10; //Add a 10% buffer
@@ -25,7 +26,7 @@ public record OpenAITokenCounter(Encoding encoding) implements ModelAnalyzer<Cha
     return encoding.countTokens(message);
   }
 
-
+//TODO: This method is the same in every token counter. Move this logic to the caller and just call countTokens(String)
   @Override
   @SneakyThrows
   public int countTokens(FunctionDefinition function) {
