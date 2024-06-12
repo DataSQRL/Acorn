@@ -13,7 +13,6 @@ import com.google.cloud.vertexai.api.FunctionResponse;
 import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
-import com.google.protobuf.Struct;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -111,6 +110,13 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
     FunctionResponse.Builder responseBuilder = FunctionResponse.newBuilder().setName(functionName);
     jsonNode.map(node -> responseBuilder.setResponse(ProtobufUtils.convertJsonNodeToStruct(node)));
     return Content.newBuilder().addParts(Part.newBuilder().setFunctionResponse(responseBuilder)).build();
+
+//    Content content =
+//        ContentMaker.fromMultiModalData(
+//            PartMaker.fromFunctionResponse(
+//                "getCurrentWeather",
+//                Collections.singletonMap("currentWeather", "sunny")));
+
   }
 
   @Override

@@ -12,6 +12,7 @@
     <artifactId>apirag-google</artifactId>
     <name>apiRAG - Google Provider</name>
     <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>com.datasqrl</groupId>
