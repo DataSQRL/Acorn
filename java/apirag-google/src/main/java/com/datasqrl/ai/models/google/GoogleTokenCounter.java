@@ -10,9 +10,10 @@ import lombok.Value;
 
 public record GoogleTokenCounter(GenerativeModel model) implements ModelAnalyzer<Content> {
 
+  @SneakyThrows
   @Override
   public int countTokens(Content content) {
-    int numTokens = countTokens(ProtobufUtils.contentToString(content));
+    int numTokens = model.countTokens(content).getTotalTokens();
     return numTokens + numTokens / 10; //Add a 10% buffer
   }
 

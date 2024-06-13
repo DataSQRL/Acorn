@@ -20,25 +20,25 @@ public class ProtobufUtils {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
-  public static JsonNode convertStructToJsonNode(Struct struct) {
-    return convertMapToJsonNode(struct.getFieldsMap());
+  public static JsonNode structToJsonNode(Struct struct) {
+    return valueMapToJsonNode(struct.getFieldsMap());
   }
 
-  public static Struct convertJsonNodeToStruct(JsonNode node) {
-    return Struct.newBuilder().putAllFields(convertJsonNodeToValueMap(node)).build();
+  public static Struct jsonNodeToStruct(JsonNode node) {
+    return Struct.newBuilder().putAllFields(jsonNodeToValueMap(node)).build();
   }
 
-  private static JsonNode convertMapToJsonNode(Map<String, Value> map) {
+  private static JsonNode valueMapToJsonNode(Map<String, Value> map) {
     ObjectNode jsonNode = objectMapper.createObjectNode();
     for (Map.Entry<String, Value> entry : map.entrySet()) {
       String key = entry.getKey();
       Value value = entry.getValue();
-      jsonNode.set(key, convertValueToJsonNode(value));
+      jsonNode.set(key, valueToJsonNode(value));
     }
     return jsonNode;
   }
 
-  private static JsonNode convertValueToJsonNode(Value value) {
+  private static JsonNode valueToJsonNode(Value value) {
     switch (value.getKindCase()) {
       case NULL_VALUE:
         return objectMapper.nullNode();
@@ -52,14 +52,14 @@ public class ProtobufUtils {
         ObjectNode objectNode = objectMapper.createObjectNode();
         Struct struct = value.getStructValue();
         for (Map.Entry<String, Value> entry : struct.getFieldsMap().entrySet()) {
-          objectNode.set(entry.getKey(), convertValueToJsonNode(entry.getValue()));
+          objectNode.set(entry.getKey(), valueToJsonNode(entry.getValue()));
         }
         return objectNode;
       case LIST_VALUE:
         ArrayNode arrayNode = objectMapper.createArrayNode();
         ListValue listValue = value.getListValue();
         for (Value elementValue : listValue.getValuesList()) {
-          arrayNode.add(convertValueToJsonNode(elementValue));
+          arrayNode.add(valueToJsonNode(elementValue));
         }
         return arrayNode;
       default:
@@ -67,20 +67,20 @@ public class ProtobufUtils {
     }
   }
 
-  private static Map<String, Value> convertJsonNodeToValueMap(JsonNode node) {
+  private static Map<String, Value> jsonNodeToValueMap(JsonNode node) {
     Map<String, Value> result = new HashMap<>();
 
     if (node.isObject()) {
       Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
       while (fields.hasNext()) {
         Map.Entry<String, JsonNode> field = fields.next();
-        result.put(field.getKey(), convertJsonNodeToValue(field.getValue()));
+        result.put(field.getKey(), jsonNodeToValue(field.getValue()));
       }
       return result;
     } else if (node.isArray()) {
       ListValue.Builder listBuilder = ListValue.newBuilder();
       for (JsonNode element : node) {
-        listBuilder.addValues(convertJsonNodeToValue(element));
+        listBuilder.addValues(jsonNodeToValue(element));
       }
       return Map.of("", Value.newBuilder().setListValue(listBuilder.build()).build());
     } else {
@@ -88,7 +88,7 @@ public class ProtobufUtils {
     }
   }
 
-  private static Value convertJsonNodeToValue(JsonNode node) {
+  private static Value jsonNodeToValue(JsonNode node) {
     if (node.isNull()) {
       return Value.newBuilder().setNullValue(NullValue.NULL_VALUE).build();
     } else if (node.isBoolean()) {
@@ -99,12 +99,12 @@ public class ProtobufUtils {
       return Value.newBuilder().setStringValue(node.asText()).build();
     } else if (node.isObject()) {
       Struct.Builder structBuilder = Struct.newBuilder();
-      structBuilder.putAllFields(convertJsonNodeToValueMap(node));
+      structBuilder.putAllFields(jsonNodeToValueMap(node));
       return Value.newBuilder().setStructValue(structBuilder.build()).build();
     } else if (node.isArray()) {
       ListValue.Builder listBuilder = ListValue.newBuilder();
       for (JsonNode element : node) {
-        listBuilder.addValues(convertJsonNodeToValue(element));
+        listBuilder.addValues(jsonNodeToValue(element));
       }
       return Value.newBuilder().setListValue(listBuilder.build()).build();
     } else {
