@@ -51,24 +51,19 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
         .map(RuntimeFunctionDefinition::getChatFunction)
         .map(fromValue -> objectMapper.convertValue(fromValue, JsonNode.class))
         .map(f -> {
-          System.out.println("Function def before: " + f);
           capitalizeObjectTypes(f);
-          System.out.println("Function def after: " + f);
           try {
             String funDef = objectMapper.writeValueAsString(f);
             FunctionDeclaration.Builder builder = FunctionDeclaration.newBuilder();
             try {
               JsonFormat.parser().merge(funDef, builder);
-              FunctionDeclaration functionDeclaration = builder.build();
-              System.out.println("Built Function declaration:\n" + functionDeclaration);
-              return functionDeclaration;
+              return builder.build();
             } catch (InvalidProtocolBufferException e) {
               throw new RuntimeException(e);
             }
           } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
           }
-
         })
         .forEach(toolBuilder::addFunctionDeclarations);
     return List.of(toolBuilder.build());
@@ -87,6 +82,7 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
       chatSession.setHistory(messageHistory);
 
       log.info("Calling Google with model {}", chatModel.getModelName());
+      log.debug("with message {}", chatMessage);
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
         session.addMessage(chatMessage);
@@ -95,11 +91,12 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
         GenericChatMessage genericResponse = session.addMessage(response);
         Optional<FunctionCall> functionCall = response.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
         if (functionCall.isPresent()) {
-          ChatSession.FunctionExecutionOutcome outcome = session.validateAndExecuteFunctionCall(functionCall.get());
+          ChatSession.FunctionExecutionOutcome<Content> outcome = session.validateAndExecuteFunctionCall(functionCall.get(), false);
           switch (outcome.status()) {
             case EXECUTE_ON_CLIENT -> {
               return genericResponse;
             }
+            case EXECUTED -> chatMessage = outcome.functionResponse();
             case VALIDATION_ERROR_RETRY -> {
               if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
                 throw new RuntimeException("Too many function call retries for the same function.");
@@ -107,6 +104,7 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
                 retryCount++;
                 log.debug("Failed function call: {}", functionCall);
                 log.info("Function call failed. Retrying ...");
+                chatMessage = outcome.functionResponse();
               }
             }
           }
@@ -120,7 +118,7 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
     }
   }
 
-  public static void capitalizeObjectTypes(JsonNode node) {
+  private void capitalizeObjectTypes(JsonNode node) {
     if (node.isObject()) {
       ObjectNode objectNode = (ObjectNode) node;
       // Iterate over the fields of the object node

@@ -14,7 +14,6 @@ import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -43,22 +42,21 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
         if (functionCall != null) {
           FunctionCall.Builder fctCallBuilder = FunctionCall.newBuilder()
               .setName(functionCall.getName())
-              .setArgs(ProtobufUtils.convertJsonNodeToStruct(functionCall.getArguments()));
+              .setArgs(ProtobufUtils.jsonNodeToStruct(functionCall.getArguments()));
           partBuilder.setFunctionCall(fctCallBuilder);
         }
         yield msgBuilder.addParts(partBuilder).build();
       }
-//      TODO: Revisit!
+//      TODO: Revisit! System and function are not Gemini roles. Need to encode them differently internally
       case "system" -> ContentMaker.forRole("system").fromString(message.getContent());
       case "function" -> {
-        Content.Builder msgBuilder = Content.newBuilder().setRole("function");
+        Content.Builder msgBuilder = Content.newBuilder().setRole("user");
+        String functionName = message.getName();
         Optional<JsonNode> responseJson = JsonUtil.parseJson(message.getContent());
         if (responseJson.isPresent()) {
-          String functionName = responseJson.get().get("function").asText();
-          JsonNode arguments = responseJson.get().get("parameters");
           FunctionResponse.Builder functionResponseBuilder = FunctionResponse.newBuilder()
               .setName(functionName)
-              .setResponse(ProtobufUtils.convertJsonNodeToStruct(arguments));
+              .setResponse(ProtobufUtils.jsonNodeToStruct(responseJson.get()));
           msgBuilder.addParts(Part.newBuilder().setFunctionResponse(functionResponseBuilder));
         } else {
           msgBuilder.addParts(Part.newBuilder().setText(message.getContent()));
@@ -69,37 +67,39 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
     };
   }
 
-//  TODO: Double check
+  //  TODO: Double check
   @Override
   public GenericChatMessage convertMessage(Content content, Map<String, Object> sessionContext) {
-    try {
-      GenericChatMessage.GenericChatMessageBuilder builder = GenericChatMessage.builder()
-          .role(content.getRole())
-          .context(sessionContext)
-          .timestamp(Instant.now().toString())
-          .numTokens(generativeModel.countTokens(content).getTotalTokens());
-      switch (content.getRole()) {
-        default -> builder.content(ProtobufUtils.contentToString(content)).name("");
-        case "model" -> {
-          Optional<FunctionCall> functionCall = content.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
-          builder.functionCall(functionCall.map(call -> new GenericFunctionCall(call.getName(), ProtobufUtils.convertStructToJsonNode(call.getArgs()))).orElse(null))
-              .name(functionCall.map(FunctionCall::getName).orElse(""));
-        }
-        case "function" -> {
-          Optional<FunctionResponse> functionResponse = content.getPartsList().stream().filter(Part::hasFunctionResponse).map(Part::getFunctionResponse).findFirst();
-          builder.content(functionResponse.map(response -> ProtobufUtils.convertStructToJsonNode(response.getResponse()).toString()).orElseGet(() -> ProtobufUtils.contentToString(content)))
-              .name(functionResponse.map(FunctionResponse::getName).orElse(""));
+    GenericChatMessage.GenericChatMessageBuilder builder = GenericChatMessage.builder()
+        .role(content.getRole())
+        .context(sessionContext)
+        .timestamp(Instant.now().toString())
+        .numTokens(tokenCounter.countTokens(content));
+    switch (content.getRole()) {
+      default -> builder.content(ProtobufUtils.contentToString(content)).name("");
+      case "model" -> {
+        Optional<FunctionCall> functionCall = content.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
+        if (functionCall.isPresent()) {
+          FunctionCall call = functionCall.get();
+          builder.functionCall(new GenericFunctionCall(call.getName(), ProtobufUtils.structToJsonNode(call.getArgs())))
+              .name(call.getName())
+              .content(functionCall2String(call));
+        } else {
+          builder.name("").content(ProtobufUtils.contentToString(content));
         }
       }
-      return builder.build();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      case "function" -> {
+        Optional<FunctionResponse> functionResponse = content.getPartsList().stream().filter(Part::hasFunctionResponse).map(Part::getFunctionResponse).findFirst();
+        builder.content(functionResponse.map(response -> ProtobufUtils.structToJsonNode(response.getResponse()).toString()).orElseGet(() -> ProtobufUtils.contentToString(content)))
+            .name(functionResponse.map(FunctionResponse::getName).orElse(""));
+      }
     }
+    return builder.build();
   }
 
   @Override
   public boolean isUserOrAssistantMessage(Content content) {
-    return !content.getRole().equals("system");
+    return content.getRole().equals("model") || content.getRole().equals("user");
   }
 
   @Override
@@ -125,22 +125,15 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
 
   @Override
   public JsonNode getFunctionArguments(FunctionCall functionCall) {
-    return ProtobufUtils.convertStructToJsonNode(functionCall.getArgs());
+    return ProtobufUtils.structToJsonNode(functionCall.getArgs());
   }
 
   @Override
   public Content newFunctionResultMessage(String functionName, String functionResult) {
     Optional<JsonNode> jsonNode = JsonUtil.parseJson(functionResult);
     FunctionResponse.Builder responseBuilder = FunctionResponse.newBuilder().setName(functionName);
-    jsonNode.map(node -> responseBuilder.setResponse(ProtobufUtils.convertJsonNodeToStruct(node)));
-    return Content.newBuilder().addParts(Part.newBuilder().setFunctionResponse(responseBuilder)).build();
-
-//    Content content =
-//        ContentMaker.fromMultiModalData(
-//            PartMaker.fromFunctionResponse(
-//                "getCurrentWeather",
-//                Collections.singletonMap("currentWeather", "sunny")));
-
+    jsonNode.map(node -> responseBuilder.setResponse(ProtobufUtils.jsonNodeToStruct(node)));
+    return Content.newBuilder().setRole("function").addParts(Part.newBuilder().setFunctionResponse(responseBuilder)).build();
   }
 
   @Override
