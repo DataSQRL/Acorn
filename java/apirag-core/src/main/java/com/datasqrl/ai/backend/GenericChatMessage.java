@@ -1,14 +1,14 @@
 package com.datasqrl.ai.backend;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.time.Instant;
-import java.util.Map;
-import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.databind.JsonNode;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.function.Function;
 
 @Data
 @Builder

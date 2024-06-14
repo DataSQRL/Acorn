@@ -161,7 +161,7 @@ public class FunctionBackend {
       Collections.reverse(chatMessages); //newest should be last
       return chatMessages;
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("Error retrieving chat messages", e);
       return List.of();
     }
   }

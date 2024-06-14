@@ -79,10 +79,11 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
       ContextWindow<Content> contextWindow = session.getContextWindow();
       com.google.cloud.vertexai.generativeai.ChatSession chatSession = chatModel.startChat();
       List<Content> messageHistory = contextWindow.getMessages().stream().filter(m -> !m.getRole().equals("system")).toList();
+      log.info("Loading Message History: {}", messageHistory);
       chatSession.setHistory(messageHistory);
 
       log.info("Calling Google with model {}", chatModel.getModelName());
-      log.debug("with message {}", chatMessage);
+      log.info("with message {}", chatMessage);
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
         session.addMessage(chatMessage);
