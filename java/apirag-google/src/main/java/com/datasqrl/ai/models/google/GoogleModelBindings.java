@@ -50,7 +50,7 @@ public class GoogleModelBindings implements ModelBindings<Content, FunctionCall>
 //      TODO: Revisit! System and function are not Gemini roles. Need to encode them differently internally
       case "system" -> ContentMaker.forRole("system").fromString(message.getContent());
       case "function" -> {
-        Content.Builder msgBuilder = Content.newBuilder().setRole("user");
+        Content.Builder msgBuilder = Content.newBuilder().setRole("function");
         String functionName = message.getName();
         Optional<JsonNode> responseJson = JsonUtil.parseJson(message.getContent());
         if (responseJson.isPresent()) {
