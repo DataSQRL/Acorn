@@ -18,6 +18,7 @@
     <module>apirag-graphql</module>
     <module>apirag-rest</module>
     <module>apirag-server</module>
+    <module>apirag-comparison</module>
   </modules>
 
   <properties>
