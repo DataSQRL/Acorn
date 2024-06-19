@@ -29,11 +29,12 @@ public class GenericFunctionCall {
     return new GenericFunctionCall(name, arguments);
   }
 
-
   @SneakyThrows
-  @Override
+  @JsonValue
   public String toString() {
-    ObjectMapper mapper = new ObjectMapper();
-    return mapper.writeValueAsString(this);
+    return "{"
+        + "\"name\": \"" + name + "\", "
+        + "\"arguments\": " + new ObjectMapper().writeValueAsString(arguments)
+        + "}";
   }
 }
