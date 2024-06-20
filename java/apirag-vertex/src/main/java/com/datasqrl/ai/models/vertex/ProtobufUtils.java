@@ -1,4 +1,4 @@
-package com.datasqrl.ai.models.google;
+package com.datasqrl.ai.models.vertex;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

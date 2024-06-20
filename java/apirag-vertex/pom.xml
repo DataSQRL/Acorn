@@ -9,8 +9,8 @@
         <version>0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>apirag-google</artifactId>
-    <name>apiRAG - Google Provider</name>
+    <artifactId>apirag-vertex</artifactId>
+    <name>apiRAG - Google Vertex Provider</name>
     <packaging>jar</packaging>
 
     <dependencies>

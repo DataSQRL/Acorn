@@ -1,4 +1,4 @@
-package com.datasqrl.ai.models.google;
+package com.datasqrl.ai.models.vertex;
 
 import com.datasqrl.ai.backend.GenericChatMessage;
 import com.datasqrl.ai.backend.GenericFunctionCall;
@@ -18,18 +18,18 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
-public class GoogleModelBindings implements ModelBindings<Content, FunctionCall> {
+public class VertexModelBindings implements ModelBindings<Content, FunctionCall> {
 
-  private final GoogleChatModel model;
+  private final VertexChatModel model;
   private final GenerativeModel generativeModel;
-  private final GoogleTokenCounter tokenCounter;
+  private final VertexTokenCounter tokenCounter;
 
 
-  public GoogleModelBindings(GoogleChatModel model, String vertexProjectId, String vertexProjectLocation) {
+  public VertexModelBindings(VertexChatModel model, String vertexProjectId, String vertexProjectLocation) {
     this.model = model;
     VertexAI vertexAI = new VertexAI(vertexProjectId, vertexProjectLocation);
     this.generativeModel = new GenerativeModel(model.modelName, vertexAI);
-    this.tokenCounter = GoogleTokenCounter.of(generativeModel);
+    this.tokenCounter = VertexTokenCounter.of(generativeModel);
   }
 
   @Override
