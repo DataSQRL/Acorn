@@ -1,6 +1,8 @@
 package com.datasqrl.ai.backend;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +21,8 @@ public class GenericChatMessage implements ChatMessageInterface {
   String role;
   String content;
   String name;
+  @JsonSerialize(using = GenericFunctionCall.JacksonSerializer.class)
+  @JsonDeserialize(using = GenericFunctionCall.JacksonDeserializer.class)
   GenericFunctionCall functionCall;
   Map<String,Object> context;
   String uuid;
