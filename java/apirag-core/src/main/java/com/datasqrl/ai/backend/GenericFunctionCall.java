@@ -46,10 +46,7 @@ public class GenericFunctionCall {
     @Override
     public GenericFunctionCall deserialize(JsonParser jsonParser,
         DeserializationContext deserializationContext) throws IOException, JacksonException {
-      JsonNode jsonNode = objectMapper.readTree(jsonParser.getValueAsString());
-      String name = jsonNode.get("name").asText();
-      JsonNode arguments = jsonNode.get("arguments");
-      return new GenericFunctionCall(name, arguments);
+      return objectMapper.readValue(jsonParser.getValueAsString(), GenericFunctionCall.class);
     }
   }
 
