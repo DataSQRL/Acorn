@@ -1,4 +1,4 @@
-package com.datasqrl.ai.models.google;
+package com.datasqrl.ai.models.vertex;
 
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.ModelAnalyzer;
@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import lombok.SneakyThrows;
-import lombok.Value;
 
-public record GoogleTokenCounter(GenerativeModel model) implements ModelAnalyzer<Content> {
+public record VertexTokenCounter(GenerativeModel model) implements ModelAnalyzer<Content> {
 
   @SneakyThrows
   @Override
@@ -31,7 +30,7 @@ public record GoogleTokenCounter(GenerativeModel model) implements ModelAnalyzer
     return model.countTokens(message).getTotalTokens();
   }
 
-  public static GoogleTokenCounter of(GenerativeModel model) {
-    return new GoogleTokenCounter(model);
+  public static VertexTokenCounter of(GenerativeModel model) {
+    return new VertexTokenCounter(model);
   }
 }

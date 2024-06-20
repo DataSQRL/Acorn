@@ -53,7 +53,7 @@
     </dependency>
     <dependency>
       <groupId>com.datasqrl</groupId>
-      <artifactId>apirag-google</artifactId>
+      <artifactId>apirag-vertex</artifactId>
       <version>${project.version}</version>
     </dependency>
 

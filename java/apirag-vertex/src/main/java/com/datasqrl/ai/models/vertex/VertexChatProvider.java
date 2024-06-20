@@ -1,4 +1,4 @@
-package com.datasqrl.ai.models.google;
+package com.datasqrl.ai.models.vertex;
 
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
@@ -30,14 +30,14 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
-public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall> {
+public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall> {
 
   private final GenerativeModel chatModel;
   private final String systemPrompt;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public GoogleChatProvider(GoogleChatModel model, String projectId, String projectLocation, FunctionBackend backend, String systemPrompt) {
-    super(backend, new GoogleModelBindings(model, projectId, projectLocation));
+  public VertexChatProvider(VertexChatModel model, String projectId, String projectLocation, FunctionBackend backend, String systemPrompt) {
+    super(backend, new VertexModelBindings(model, projectId, projectLocation));
     this.systemPrompt = systemPrompt;
     VertexAI vertexAI = new VertexAI(projectId, projectLocation);
     this.chatModel = new GenerativeModel(model.modelName, vertexAI)
@@ -79,16 +79,13 @@ public class GoogleChatProvider extends ChatClientProvider<Content, FunctionCall
       ContextWindow<Content> contextWindow = session.getContextWindow();
       com.google.cloud.vertexai.generativeai.ChatSession chatSession = chatModel.startChat();
       List<Content> messageHistory = contextWindow.getMessages().stream().filter(m -> !m.getRole().equals("system")).toList();
-      log.info("Loading Message History: {}", messageHistory);
       chatSession.setHistory(messageHistory);
 
-      log.info("Calling Google with model {}", chatModel.getModelName());
-      log.info("with message {}", chatMessage);
+      log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
         session.addMessage(chatMessage);
         Content response = ResponseHandler.getContent(generatedResponse);
-        log.info("Response: {}", response);
         GenericChatMessage genericResponse = session.addMessage(response);
         Optional<FunctionCall> functionCall = response.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
         if (functionCall.isPresent()) {
