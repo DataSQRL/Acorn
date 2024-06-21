@@ -45,7 +45,7 @@ public class GenericFunctionCall {
 
     @Override
     public GenericFunctionCall deserialize(JsonParser jsonParser,
-        DeserializationContext deserializationContext) throws IOException, JacksonException {
+        DeserializationContext deserializationContext) throws IOException {
       return objectMapper.readValue(jsonParser.getValueAsString(), GenericFunctionCall.class);
     }
   }
