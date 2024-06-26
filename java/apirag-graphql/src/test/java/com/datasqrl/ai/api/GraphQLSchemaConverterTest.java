@@ -3,7 +3,7 @@ package com.datasqrl.ai.api;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
-public class GraphQLSchemaGeneratorTest {
+public class GraphQLSchemaConverterTest {
 
   @Test
   @SneakyThrows

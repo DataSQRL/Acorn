@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.datasqrl.ai.api.RestUtil.DecomposedURL;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -21,7 +22,7 @@ public class RestUtilTest {
   @BeforeEach
   public void setup() {
     objectMapper = new ObjectMapper();
-    query = new APIQuery("myName", null, "/path/{param1}/resource/{param2}", "POST");
+    query = new APIQuery("myName", null, "/path/{param1}/resource/{param2}?param3={param3}&param4={param4}&staticFilter&anotherFilter=5", "POST");
   }
 
   @Test
@@ -33,11 +34,25 @@ public class RestUtilTest {
   }
 
   @Test
+  public void testDecomposedURL() {
+    DecomposedURL decomposedURL = RestUtil.decomposedURL(query.getPath());
+
+    assertEquals("/path/{param1}/resource/{param2}?staticFilter&anotherFilter=5", decomposedURL.path());
+    assertEquals(2, decomposedURL.pathParams().size());
+    assertTrue(decomposedURL.pathParams().contains("param1"));
+    assertTrue(decomposedURL.pathParams().contains("param2"));
+    assertEquals(2, decomposedURL.queryParams().size());
+    assertTrue(decomposedURL.queryParams().containsKey("param3"));
+    assertTrue(decomposedURL.queryParams().containsKey("param4"));
+    assertEquals(2, decomposedURL.numStaticFilters());
+  }
+
+  @Test
   public void testCreateRestCall() {
-    JsonNode arguments = JsonNodeFactory.instance.objectNode().put("param1", "value1").put("param2", "value2").put("extra", "extraValue");
+    JsonNode arguments = objectMapper.createObjectNode().put("param1", "value1").put("param2", "value2").put("extra", "extraValue");
     RestUtil.RestCall restCall = RestUtil.createRestCall(query, arguments);
 
-    assertEquals("/path/value1/resource/value2", restCall.path());
+    assertEquals("/path/value1/resource/value2?staticFilter&anotherFilter=5", restCall.path());
     assertEquals("POST", restCall.method());
 
     JsonNode body = restCall.body();
@@ -48,8 +63,20 @@ public class RestUtilTest {
   }
 
   @Test
+  public void testCreateRestCallNoBody() {
+    JsonNode arguments = objectMapper.createObjectNode().put("param1", "value1").put("param2", "value2").put("param4", "4");
+    RestUtil.RestCall restCall = RestUtil.createRestCall(query, arguments);
+
+    assertEquals("/path/value1/resource/value2?staticFilter&anotherFilter=5&param4=4", restCall.path());
+    assertEquals("POST", restCall.method());
+
+    JsonNode body = restCall.body();
+    assertTrue(body.isEmpty());
+  }
+
+  @Test
   public void testRemoveFields() {
-    ObjectNode json = JsonNodeFactory.instance.objectNode().put("field1", "value1").put("field2", "value2");
+    ObjectNode json = objectMapper.createObjectNode().put("field1", "value1").put("field2", "value2");
     Set<String> fieldsToRemove = Set.of("field1");
     JsonNode result = RestUtil.removeFields(json, fieldsToRemove);
 

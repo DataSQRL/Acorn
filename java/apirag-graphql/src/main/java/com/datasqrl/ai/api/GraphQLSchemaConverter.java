@@ -14,6 +14,10 @@ import graphql.schema.idl.SchemaParser;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Converts a given GraphQL Schema to a tools configuration for the function backend.
+ * It extracts all queries and mutations and converts them into {@link com.datasqrl.ai.backend.RuntimeFunctionDefinition}.
+ */
 public class GraphQLSchemaConverter {
 
   public static void convert(String graphQLSchema) throws IOException {
