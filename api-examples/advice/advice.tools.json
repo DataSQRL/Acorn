@@ -1,0 +1,63 @@
+[
+  {
+    "type": "api",
+    "function": {
+      "name": "random_advice",
+      "description": "Returns a random advice",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "context": [],
+    "api": {
+      "path": "/advice",
+      "method": "GET"
+    }
+  },
+  {
+    "type": "api",
+    "function": {
+      "name": "search_advice",
+      "description": "Returns advice that matches a given search string",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The search string must be a single word. Generalize user queries to a single, simple word. For example, if the user asks for advice on how to cope with a difficult situation at work, you use the query `work`."
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    "context": [],
+    "api": {
+      "path": "/advice/search/{query}",
+      "method": "GET"
+    }
+  },
+  {
+    "type": "api",
+    "function": {
+      "name": "advice_by_id",
+      "description": "Returns the advice for the given id",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "slid_id": {
+            "type": "string",
+            "description": "The unique id for the advice"
+          }
+        },
+        "required": ["slid_id"]
+      }
+    },
+    "context": [],
+    "api": {
+      "path": "/advice/{slip_id}",
+      "method": "GET"
+    }
+  }
+]

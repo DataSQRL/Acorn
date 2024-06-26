@@ -35,13 +35,16 @@ public class FunctionBackendFactory {
     List<RuntimeFunctionDefinition> functions = mapper.readValue(tools,
         new TypeReference<>() {
         });
-    return new FunctionBackend(functions.stream()
-        .filter(f -> !RESERVED_FUNCTION_NAMES.contains(f.getName().toLowerCase()))
-        .collect(Collectors.toMap(RuntimeFunctionDefinition::getName, Function.identity())),
-        functions.stream().filter(f -> f.getName().equalsIgnoreCase(
-            SAVE_CHAT_FUNCTION_NAME)).findFirst(),
-        functions.stream().filter(f -> f.getName().equalsIgnoreCase(
-            RETRIEVE_CHAT_FUNCTION_NAME)).findFirst(),
-        apiExecutors, mapper);
+    FunctionBackend backend = new FunctionBackend(apiExecutors, mapper);
+    for (RuntimeFunctionDefinition function : functions) {
+      if (function.getName().equalsIgnoreCase(SAVE_CHAT_FUNCTION_NAME)) {
+        backend.setSaveChatFct(function);
+      } else if (function.getName().equalsIgnoreCase(RETRIEVE_CHAT_FUNCTION_NAME)) {
+        backend.setGetChatsFct(function);
+      } else {
+        backend.addFunction(function);
+      }
+    }
+    return backend;
   }
 }

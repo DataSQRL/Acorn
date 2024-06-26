@@ -33,6 +33,7 @@
     <commons-beanutil.version>1.9.4</commons-beanutil.version>
     <slf4j.version>2.0.13</slf4j.version>
     <graphql-java.version>22.1</graphql-java.version>
+    <reflections.version>0.10.2</reflections.version>
   </properties>
 
   <dependencies>

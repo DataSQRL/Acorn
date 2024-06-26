@@ -12,7 +12,10 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
+import java.util.HashMap;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -35,25 +38,60 @@ import java.util.stream.Collectors;
  *
  */
 @Slf4j
-@Value
 public class FunctionBackend {
 
-  Map<String, RuntimeFunctionDefinition> functions;
+  @Getter
+  private final Map<String, RuntimeFunctionDefinition> functions = new HashMap<>();
 
-  Optional<RuntimeFunctionDefinition> saveChatFct;
+  Optional<RuntimeFunctionDefinition> saveChatFct = Optional.empty();
 
-  Optional<RuntimeFunctionDefinition> getChatsFct;
+  Optional<RuntimeFunctionDefinition> getChatsFct = Optional.empty();
 
   Map<String,APIExecutor> apiExecutors;
 
   ObjectMapper mapper;
 
+  public FunctionBackend(Map<String,APIExecutor> apiExecutors, ObjectMapper mapper) {
+    this.apiExecutors = apiExecutors;
+    this.mapper = mapper;
+  }
+
+  private void validateFunction(RuntimeFunctionDefinition function) {
+    //Validate functions
+    if (function.getType()==FunctionType.api) {
+      APIQuery query = function.getApi();
+      ErrorHandling.checkArgument(apiExecutors.containsKey(query.getNameOrDefault()),
+          "Function `%s` references API with name [%s] but no such API has been configured",
+          function.getName(), query.getNameOrDefault());
+      APIExecutor executor = apiExecutors.get(query.getNameOrDefault());
+      try {
+        executor.validate(query);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(
+            "Function [" + function.getName() + "] invalid for API [" + query.getNameOrDefault()
+                + "]", e);
+      }
+    } else if (function.getType()==FunctionType.local) {
+      ErrorHandling.checkArgument(function.getExecutable()!=null, "Local function [%s] has no executable", function.getName());
+    }
+  }
+
+  public void setSaveChatFct(RuntimeFunctionDefinition saveChatFct) {
+    validateFunction(saveChatFct);
+    this.saveChatFct = Optional.of(saveChatFct);
+  }
+
+  public void setGetChatsFct(RuntimeFunctionDefinition getChatsFct) {
+    validateFunction(getChatsFct);
+    this.getChatsFct = Optional.of(getChatsFct);
+  }
 
   /**
    * Adds the given function to the backend
    * @param function
    */
   public void addFunction(RuntimeFunctionDefinition function) {
+    validateFunction(function);
     functions.put(function.getName(), function);
   }
 

@@ -18,6 +18,13 @@ public class RestUtil {
 
   static record RestCall(String path, String method, JsonNode body) {}
 
+  /**
+   * Creates a RestCall object based on the APIQuery and JsonNode arguments provided.
+   *
+   * @param  query     the APIQuery object containing query information
+   * @param  arguments the JsonNode object containing arguments for the query
+   * @return           the RestCall object representing the REST call
+   */
   @SneakyThrows
   public static RestCall createRestCall(APIQuery query, JsonNode arguments) {
     DecomposedURL decomposedURL = decomposedURL(query.getPath());

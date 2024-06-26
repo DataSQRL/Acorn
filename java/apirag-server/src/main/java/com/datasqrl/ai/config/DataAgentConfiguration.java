@@ -11,6 +11,7 @@ import com.datasqrl.ai.backend.FunctionType;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.function.UDFConverter;
 import com.datasqrl.ai.function.UserDefinedFunction;
+import com.datasqrl.ai.function.builtin.BuiltinFunctions;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
 import com.datasqrl.ai.util.ConfigurationUtil;
@@ -52,33 +53,24 @@ public class DataAgentConfiguration {
   Configuration modelConfiguration;
   String toolsDefinition;
 
-  private Pair<String,APIExecutor> instantiateAPI(Configuration apiConfig) {
-    BaseConfiguration baseAPIConfig = APIExecutorFactory.readBaseConfiguration(apiConfig);
-    Optional<APIExecutorFactory> providerFact = ServiceLoader.load(APIExecutorFactory.class).stream()
-        .map(Provider::get).filter(cpf -> cpf.getTypeName().equalsIgnoreCase(baseAPIConfig.type()))
-        .findFirst();
-    ErrorHandling.checkArgument(providerFact.isPresent(), "Could not find API executor for API `%s`: %s", APIExecutorFactory.TYPE_KEY, baseAPIConfig.type());
-    return Pair.of(baseAPIConfig.name().trim().toLowerCase(), providerFact.get().create(apiConfig));
-  }
-
   private RuntimeFunctionDefinition loadLocalFunction(String functionClassName) {
     if (!functionClassName.contains(".")) {
       //Assume it's a builtin function
-      functionClassName = "com.datasqrl.ai.functions.builtin" + functionClassName;
+      functionClassName = BuiltinFunctions.PACKAGE_NAME + "." + functionClassName;
     }
     Class<?> functionClass = null;
     try {
       functionClass = Class.forName(functionClassName);
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException("Could not locate user defined function: " +  functionClassName, e);
     }
     ErrorHandling.checkArgument(UserDefinedFunction.class.isAssignableFrom(functionClass), "Not a user defined function: %s", functionClassName);
     return UDFConverter.getRuntimeFunctionDefinition((Class<? extends UserDefinedFunction>)functionClass);
   }
 
   public FunctionBackend getFunctionBackend() {
-    Map<String,APIExecutor> apiExecutors = baseConfiguration.getList(API_KEY).stream().map(Configuration.class::cast).map(this::instantiateAPI).collect(
-        Collectors.toMap(Pair::getKey, Pair::getValue));
+    Map<String,APIExecutor> apiExecutors = APIExecutorFactory.getAPIExecutors(baseConfiguration.subset(API_KEY));
+    ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`", API_KEY);
     FunctionBackend backend;
     try {
       backend = FunctionBackendFactory.of(toolsDefinition, apiExecutors);

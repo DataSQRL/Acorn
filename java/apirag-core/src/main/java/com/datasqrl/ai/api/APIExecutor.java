@@ -9,6 +9,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface APIExecutor {
 
+  void validate(APIQuery query) throws IllegalArgumentException;
+
   /**
    * Executes the given query with the provided arguments against the API and returns
    * the result as a String.

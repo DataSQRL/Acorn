@@ -17,6 +17,11 @@ public class MockAPIExecutor implements APIExecutor {
   }
 
   @Override
+  public void validate(APIQuery query) throws IllegalArgumentException {
+    return;
+  }
+
+  @Override
   public String executeQuery(APIQuery query, JsonNode arguments) throws IOException {
     return queryToResult.apply(query.getQuery());
   }
