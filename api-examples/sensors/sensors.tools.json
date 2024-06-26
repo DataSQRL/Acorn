@@ -1,6 +1,6 @@
 [
   {
-    "type": "graphql",
+    "type": "api",
     "function": {
       "name": "sensor_reading",
       "description": "Returns the sensor temperature readings for each second by most recent for a given sensor id",
@@ -25,7 +25,7 @@
     }
   },
   {
-    "type": "graphql",
+    "type": "api",
     "function": {
       "name": "sensor_max_temp",
       "description": "Returns the maximum temperature recorded by each sensor",
@@ -50,7 +50,7 @@
     }
   },
   {
-    "type": "graphql",
+    "type": "api",
     "function": {
       "name": "sensor_max_temp_last_minute",
       "description": "Returns the maximum temperature recorded by each sensor in the last minute",

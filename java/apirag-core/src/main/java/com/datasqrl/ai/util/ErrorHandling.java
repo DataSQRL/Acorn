@@ -8,5 +8,9 @@ public class ErrorHandling {
     }
   }
 
+  public static void checkArgument(boolean condition) {
+    checkArgument(condition, "Unexpected arguments in method invocation");
+  }
+
 
 }

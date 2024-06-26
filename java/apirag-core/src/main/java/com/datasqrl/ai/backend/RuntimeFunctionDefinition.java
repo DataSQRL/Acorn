@@ -1,5 +1,6 @@
 package com.datasqrl.ai.backend;
 
+import com.datasqrl.ai.api.APIQuery;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,7 @@ public class RuntimeFunctionDefinition {
   private FunctionType type;
   private FunctionDefinition function;
   private List<String> context;
-  private APIFunctionQuery api;
+  private APIQuery api;
   private Function<JsonNode, Object> executable;
   private Integer numTokens;
 

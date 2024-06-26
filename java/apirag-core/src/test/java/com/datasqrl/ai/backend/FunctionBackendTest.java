@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.MockAPIExecutor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +21,7 @@ public class FunctionBackendTest {
     String currentDirectory = System.getProperty("user.dir");
     System.out.println("Current working directory: " + currentDirectory);
     String tools = Files.readString(Path.of("../../api-examples/nutshop/nutshop-c360.tools.json"));
-    FunctionBackend fctExec = FunctionBackend.of(tools, MockAPIExecutor.of("none"));
+    FunctionBackend fctExec = FunctionBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME,MockAPIExecutor.of("none")));
     List<RuntimeFunctionDefinition> chatFcts = new ArrayList<>(fctExec.getFunctions().values());
     assertEquals(3, chatFcts.size());
     for (RuntimeFunctionDefinition function : chatFcts) {
