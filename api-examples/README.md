@@ -4,6 +4,7 @@ This directory contains examples of using apiRAG with publicly accessible APIs. 
 
 Running the examples takes less than a minute, and you can modify them however you'd like.
 
+* [Weather Forecast](weather/): A chatbot that can tell you the current and future weather for any location and visualize it.
 * [Rick and Morty](rickandmorty/): A chatbot that answers questions about the show by looking up the information from the public Rick and Morty GraphQL API.
 * [I'm Bored](activity/): A chatbot that helps you find things to do by looking up activities from a public REST API by App Brewery.
 * [Advice Monster](advice/): A chatbot that dispenses advice retrieved from a REST endpoint.
