@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.SneakyThrows;
+import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.junit.jupiter.api.Test;
 
 public class GraphQLSchemaConverterTest {
@@ -21,7 +22,7 @@ public class GraphQLSchemaConverterTest {
   @Test
   @SneakyThrows
   public void testNutshopSchemaConversion() {
-    GraphQLSchemaConverter converter = new GraphQLSchemaConverter(Set.of());
+    GraphQLSchemaConverter converter = new GraphQLSchemaConverter(new PropertiesConfiguration(), APIExecutorFactory.DEFAULT_NAME);
     String schemaString = ConfigurationUtil.getResourcesFileAsString("nutshop-schema.graphqls");
     List<RuntimeFunctionDefinition> functions = converter.convert(schemaString);
     assertEquals(6, functions.size());

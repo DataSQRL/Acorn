@@ -4,6 +4,7 @@ import com.datasqrl.ai.api.APIExecutor;
 import com.google.common.io.Resources;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
@@ -41,6 +42,15 @@ public class ConfigurationUtil {
   @SneakyThrows
   public static String getResourcesFileAsString(String path) {
     return Resources.toString(getResourceFile(path), StandardCharsets.UTF_8);
+  }
+
+  public static String getFileExtension(Path filePath) {
+    String fileName = filePath.getFileName().toString();
+    int lastIndexOfDot = fileName.lastIndexOf(".");
+    if (lastIndexOfDot == -1) {
+      return ""; // No extension found
+    }
+    return fileName.substring(lastIndexOfDot + 1).trim().toLowerCase();
   }
 
 }

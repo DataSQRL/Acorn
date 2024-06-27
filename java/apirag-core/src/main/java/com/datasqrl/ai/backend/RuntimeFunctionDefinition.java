@@ -46,7 +46,7 @@ public class RuntimeFunctionDefinition {
    * @return A {@link FunctionDefinition} for this function that can be invoked by a language model.
    */
   public FunctionDefinition getChatFunction() {
-    return function.removeContext(Set.copyOf(context));
+    return function.removeContext(context!=null?Set.copyOf(context):Set.of());
   }
 
 

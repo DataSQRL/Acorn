@@ -4,6 +4,7 @@ import com.datasqrl.ai.DataVisualizationFunction;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.APIExecutorFactory.BaseConfiguration;
+import com.datasqrl.ai.api.GraphQLSchemaConverter;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionBackendFactory;
 import com.datasqrl.ai.backend.FunctionDefinition;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Value;
@@ -45,13 +47,17 @@ public class DataAgentConfiguration {
   public static final String PLOT_FCT_KEY = "plot-function";
   public static final String PROMPT_KEY = "prompt";
   public static final String LOCAL_FUNCTIONS_KEY = "local-functions";
+  public static final String CONTEXT_KEY = "context";
+
+  public static final String CONVERTER_PREFIX = "converter";
+
 
   public static final String AUTH_FIELD_KEY = "auth-field";
   public static final String AUTH_FIELD_INTEGER_KEY = "auth-is-integer";
 
   Configuration baseConfiguration;
   Configuration modelConfiguration;
-  String toolsDefinition;
+  List<RuntimeFunctionDefinition> toolFunctions;
 
   private RuntimeFunctionDefinition loadLocalFunction(String functionClassName) {
     if (!functionClassName.contains(".")) {
@@ -73,7 +79,7 @@ public class DataAgentConfiguration {
     ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`", API_KEY);
     FunctionBackend backend;
     try {
-      backend = FunctionBackendFactory.of(toolsDefinition, apiExecutors);
+      backend = FunctionBackendFactory.of(toolFunctions, apiExecutors);
     } catch (IOException e) {
       throw new IllegalArgumentException("Could not parse tools definition", e);
     }
@@ -96,6 +102,13 @@ public class DataAgentConfiguration {
     //Add local functions
     baseConfiguration.getList(LOCAL_FUNCTIONS_KEY).stream().map(String.class::cast)
         .map(this::loadLocalFunction).forEach(backend::addFunction);
+    //Add global context
+    if (baseConfiguration.containsKey(CONTEXT_KEY)) {
+      List<String> context = baseConfiguration.getList(String.class, CONTEXT_KEY);
+      if (!context.isEmpty()) {
+        backend.setGlobalContext(Set.copyOf(context));
+      }
+    }
     return backend;
   }
 
@@ -148,11 +161,21 @@ public class DataAgentConfiguration {
     ErrorHandling.checkArgument(Files.isRegularFile(configPath), "Cannot access configuration file: %s", configPath);
     ErrorHandling.checkArgument(Files.isRegularFile(toolsPath), "Cannot access tools file: %s", toolsPath);
     JSONConfiguration baseConfig = JsonUtil.getConfiguration(configPath);
-    String tools;
+    String toolsContent;
     try {
-      tools = Files.readString(toolsPath);
+      toolsContent = Files.readString(toolsPath);
     } catch (IOException e) {
       throw new IllegalArgumentException("Could not read tools file: %s" + toolsPath, e);
+    }
+    String extension = ConfigurationUtil.getFileExtension(toolsPath);
+    List<RuntimeFunctionDefinition> tools;
+    if (extension.equalsIgnoreCase("graphql") || extension.equalsIgnoreCase("graphqls")) {
+      GraphQLSchemaConverter converter = new GraphQLSchemaConverter(
+          baseConfig.subset(CONVERTER_PREFIX),
+          APIExecutorFactory.DEFAULT_NAME);
+      tools = converter.convert(toolsContent);
+    } else {
+      tools = FunctionBackendFactory.parseTools(toolsContent);
     }
     return new DataAgentConfiguration(baseConfig, baseConfig.subset("model"), tools);
   }

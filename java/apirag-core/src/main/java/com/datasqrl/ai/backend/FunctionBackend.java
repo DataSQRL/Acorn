@@ -95,6 +95,15 @@ public class FunctionBackend {
     functions.put(function.getName(), function);
   }
 
+  public void setGlobalContext(Set<String> context) {
+    functions.values().forEach(fct ->
+    {
+      if (fct.getContext()==null || fct.getContext().isEmpty()) {
+         fct.setContext(fct.getFunction().getParameters().getProperties().keySet().stream().filter(context::contains).toList());
+      }
+    });
+  }
+
 
   /**
    * Saves the {@link GenericChatMessage} with the configured context asynchronously (i.e. does not block)
@@ -104,7 +113,13 @@ public class FunctionBackend {
    */
   public CompletableFuture<String> saveChatMessage(ChatMessageInterface message) {
     if (saveChatFct.isEmpty()) return CompletableFuture.completedFuture("Message saving disabled");
-    JsonNode payload = mapper.valueToTree(message);
+    ObjectNode payload = mapper.valueToTree(message);
+    //Inline context variables
+    payload.remove("context");
+    message.getContext().forEach((k, v) -> {
+      ErrorHandling.checkArgument(!payload.has(k), "Context variable overlaps with message: %s", k);
+      payload.set(k, mapper.valueToTree(v));
+    });
     APIQuery query = saveChatFct.get().getApi();
     return getExecutor(query).executeQueryAsync(query, payload);
   }

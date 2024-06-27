@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -47,12 +49,12 @@ import org.apache.commons.lang3.tuple.Pair;
 @Slf4j
 public class GraphQLSchemaConverter {
 
-  Set<String> globalContext;
+  Configuration configuration;
+  String apiName;
+
   SchemaPrinter schemaPrinter = new SchemaPrinter();
 
-
-
-  public List<RuntimeFunctionDefinition> convert(String schemaString) throws IOException {
+  public List<RuntimeFunctionDefinition> convert(String schemaString) {
     TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(schemaString);
     RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring().build();
     GraphQLSchema graphQLSchema = new SchemaGenerator().makeExecutableSchema(typeRegistry, runtimeWiring);
@@ -94,10 +96,10 @@ public class GraphQLSchemaConverter {
     queryHeader.append(") {\n").append(queryBody).append("\n}");
     APIQuery apiQuery = new APIQuery();
     apiQuery.setQuery(queryHeader.toString());
+    apiQuery.setName(apiName);
     return RuntimeFunctionDefinition.builder()
         .type(FunctionType.api)
         .function(funcDef)
-        .context(params.getProperties().keySet().stream().filter(globalContext::contains).toList())
         .api(apiQuery)
         .build();
   }
@@ -147,7 +149,8 @@ public class GraphQLSchemaConverter {
   }
 
 
-  public void visit(GraphQLFieldDefinition fieldDef, StringBuilder queryBody, StringBuilder queryHeader, Parameters params, Context ctx) {
+  public void visit(GraphQLFieldDefinition fieldDef, StringBuilder queryBody, StringBuilder queryHeader,
+      Parameters params, Context ctx) {
     queryBody.append(fieldDef.getName());
     int numArgs = 0;
     if (!fieldDef.getArguments().isEmpty()) {
