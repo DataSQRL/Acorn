@@ -1,0 +1,27 @@
+query Orders($customerid: Int!, $limit: Int = 10, $offset: Int = 0, $items_limit: Int = 10) {
+    Orders(customerid: $customerid, limit: $limit, offset: $offset) {
+        id
+        customerid
+        timestamp
+        items(limit: $items_limit) {
+            quantity
+            unit_price
+            discount0
+            total
+            product {
+                id
+                name
+                sizing
+                weight_in_gram
+                type
+                category
+                usda_id
+                updated
+            }
+        }
+        total {
+            price
+            discount
+        }
+    }
+}
