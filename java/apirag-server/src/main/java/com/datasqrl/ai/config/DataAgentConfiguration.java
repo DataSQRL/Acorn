@@ -77,12 +77,7 @@ public class DataAgentConfiguration {
   public FunctionBackend getFunctionBackend() {
     Map<String,APIExecutor> apiExecutors = APIExecutorFactory.getAPIExecutors(baseConfiguration.subset(API_KEY));
     ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`", API_KEY);
-    FunctionBackend backend;
-    try {
-      backend = FunctionBackendFactory.of(toolFunctions, apiExecutors);
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Could not parse tools definition", e);
-    }
+    FunctionBackend backend = FunctionBackendFactory.of(toolFunctions, apiExecutors);
     DataVisualizationFunction dataVisualizationFunction = getDataVizFunction();
     if (dataVisualizationFunction.isPresent()) {
       URL url = ConfigurationUtil.getResourceFile(dataVisualizationFunction.getResourceFile().get());
