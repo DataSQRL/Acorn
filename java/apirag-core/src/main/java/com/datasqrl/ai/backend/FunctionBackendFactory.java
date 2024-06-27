@@ -13,10 +13,10 @@ import lombok.NonNull;
 
 public class FunctionBackendFactory {
 
-  public static final String SAVE_CHAT_FUNCTION_NAME = "_saveChatMessage";
-  public static final String RETRIEVE_CHAT_FUNCTION_NAME = "_getChatMessages";
-  public static Set<String> RESERVED_FUNCTION_NAMES = Set.of(SAVE_CHAT_FUNCTION_NAME.toLowerCase(),
-      RETRIEVE_CHAT_FUNCTION_NAME.toLowerCase());
+  public static final String SAVE_CHAT_FUNCTION_NAME = "InternalSaveChatMessage";
+  public static final String RETRIEVE_CHAT_FUNCTION_NAME = "InternalGetChatMessages";
+
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   /**
    * Constructs a {@link FunctionBackend} from the provided configuration file, {@link APIExecutor},
@@ -31,10 +31,13 @@ public class FunctionBackendFactory {
    * @throws IOException if configuration file cannot be read
    */
   public static FunctionBackend of(@NonNull String tools, @NonNull Map<String,APIExecutor> apiExecutors) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
     List<RuntimeFunctionDefinition> functions = mapper.readValue(tools,
         new TypeReference<>() {
         });
+    return of(functions, apiExecutors);
+  }
+
+  public static FunctionBackend of(@NonNull List<RuntimeFunctionDefinition> functions, @NonNull Map<String,APIExecutor> apiExecutors) throws IOException {
     FunctionBackend backend = new FunctionBackend(apiExecutors, mapper);
     for (RuntimeFunctionDefinition function : functions) {
       if (function.getName().equalsIgnoreCase(SAVE_CHAT_FUNCTION_NAME)) {

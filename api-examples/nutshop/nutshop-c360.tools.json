@@ -70,7 +70,7 @@
   {
     "type": "api",
     "function": {
-      "name": "_saveChatMessage",
+      "name": "InternalSaveChatMessage",
       "description": "Saves User Chat Messages",
       "parameters": {
         "type": "object",
@@ -87,7 +87,7 @@
   {
     "type": "api",
     "function": {
-      "name": "_getChatMessages",
+      "name": "InternalGetChatMessages",
       "description": "Retrieves User Chat Messages",
       "parameters": {
         "type": "object",

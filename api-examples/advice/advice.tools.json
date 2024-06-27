@@ -20,13 +20,13 @@
     "type": "api",
     "function": {
       "name": "search_advice",
-      "description": "Returns advice that matches a given search string",
+      "description": "Returns advice that contains the provided single word",
       "parameters": {
         "type": "object",
         "properties": {
           "query": {
             "type": "string",
-            "description": "The search string must be a single word. Generalize user queries to a single, simple word. For example, if the user asks for advice on how to cope with a difficult situation at work, you use the query `work`."
+            "description": "A single word to search for. Use generic words that generally express what the user is looking for."
           }
         },
         "required": ["query"]

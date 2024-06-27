@@ -79,8 +79,7 @@ public class DataAgentConfiguration {
     }
     DataVisualizationFunction dataVisualizationFunction = getDataVizFunction();
     if (dataVisualizationFunction.isPresent()) {
-      URL url = DataAgentConfiguration.class.getClassLoader().getResource(
-          dataVisualizationFunction.getResourceFile().get());
+      URL url = ConfigurationUtil.getResourceFile(dataVisualizationFunction.getResourceFile().get());
       ErrorHandling.checkArgument(url!=null, "Invalid url: %s", url);
       ObjectMapper objectMapper = new ObjectMapper();
       try {
