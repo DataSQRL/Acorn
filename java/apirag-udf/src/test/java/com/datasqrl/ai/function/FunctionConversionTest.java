@@ -17,7 +17,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.reflections.Reflections;
 
-public class TestFunctionConversion {
+public class FunctionConversionTest {
 
   public static final ObjectMapper mapper = new ObjectMapper();
 
