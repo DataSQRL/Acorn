@@ -1,6 +1,7 @@
 package com.datasqrl.ai.models.vertex;
 
 import com.datasqrl.ai.backend.FunctionBackend;
+import com.datasqrl.ai.backend.ModelObservability;
 import com.datasqrl.ai.models.AbstractChatProviderFactory;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
@@ -21,11 +22,11 @@ public class VertexChatProviderFactory extends AbstractChatProviderFactory {
   }
 
   @Override
-  public ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt) {
+  public ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt,  ModelObservability observability) {
     String vertexProjectId = modelConfiguration.getString(VERTEX_PROJECT_ID_KEY);
     ErrorHandling.checkArgument(vertexProjectId != null && !vertexProjectId.isBlank(), "Need to configure vertex-project-id.");
     String vertexLocation = modelConfiguration.getString(VERTEX_LOCATION_KEY);
     ErrorHandling.checkArgument(vertexLocation != null && !vertexLocation.isBlank(), "Need to configure vertex-location.");
-    return new VertexChatProvider(getModel(modelConfiguration, VertexChatModel.class), vertexProjectId, vertexLocation, backend, prompt);
+    return new VertexChatProvider(getModel(modelConfiguration, VertexChatModel.class), vertexProjectId, vertexLocation, backend, prompt, observability);
   }
 }

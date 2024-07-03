@@ -1,11 +1,12 @@
 package com.datasqrl.ai.config;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import com.datasqrl.ai.util.ConfigurationUtil;
-import java.net.URL;
-import java.nio.file.Path;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DataAgentConfigurationTest {
 
@@ -18,9 +19,10 @@ public class DataAgentConfigurationTest {
     Path nutshopGraphQl = GRAPHQL_RESOURCES.resolve("nutshop-schema.graphqls");
     Path nutshopTools = CORE_RESOURCES.resolve("nutshop-c360.tools.json");
     Path nutshopConfig = CONFIG_RESOURCES.resolve("nutshop.config.json");
+    MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
-    DataAgentConfiguration config1 = DataAgentConfiguration.fromFile(nutshopConfig, nutshopTools);
-    DataAgentConfiguration config2 = DataAgentConfiguration.fromFile(nutshopConfig, nutshopGraphQl);
+    DataAgentConfiguration config1 = DataAgentConfiguration.fromFile(nutshopConfig, nutshopTools, meterRegistry);
+    DataAgentConfiguration config2 = DataAgentConfiguration.fromFile(nutshopConfig, nutshopGraphQl, meterRegistry);
 
     assertEquals(4, config1.getFunctionBackend().getFunctions().size());
     assertEquals(5, config2.getFunctionBackend().getFunctions().size());

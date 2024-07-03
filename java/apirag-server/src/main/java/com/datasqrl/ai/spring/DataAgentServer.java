@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +40,12 @@ public class DataAgentServer {
 
     private final ChatClientProvider<?, ?> chatClientProvider;
     private final Function<String,Map<String,Object>> getContextFunction;
-    private final MeterRegistry meterRegistry;
 
     @Autowired
     @SneakyThrows
-    public MessageController(DataAgentServerProperties props, MeterRegistry meterRegistry) {
-      this.meterRegistry = meterRegistry;
+    public MessageController(DataAgentServerProperties props) {
       DataAgentConfiguration configuration = DataAgentConfiguration.fromFile(
-          Path.of(props.getConfig()), Path.of(props.getTools()), meterRegistry);
+          Path.of(props.getConfig()), Path.of(props.getTools()), new SimpleMeterRegistry());
       this.getContextFunction = configuration.getContextFunction();
       this.chatClientProvider = configuration.getChatProvider();
     }

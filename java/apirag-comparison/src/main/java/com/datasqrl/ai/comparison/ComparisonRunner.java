@@ -3,6 +3,7 @@ package com.datasqrl.ai.comparison;
 import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +50,7 @@ public class ComparisonRunner {
           throw new RuntimeException(e);
         }
         if (useCaseConfig.isPresent() && tools.isPresent()) {
-          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get());
+          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), new SimpleMeterRegistry());
           List<TestChatSession> testSessions = loadTestChatSessionsFromFile(scriptFile);
           log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
           new AgentRunner(configuration, testSessions).run();

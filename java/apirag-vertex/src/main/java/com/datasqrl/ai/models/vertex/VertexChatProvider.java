@@ -4,6 +4,7 @@ import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.GenericChatMessage;
+import com.datasqrl.ai.backend.ModelObservability;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.models.ChatClientProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,8 +37,8 @@ public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall
   private final String systemPrompt;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public VertexChatProvider(VertexChatModel model, String projectId, String projectLocation, FunctionBackend backend, String systemPrompt) {
-    super(backend, new VertexModelBindings(model, projectId, projectLocation));
+  public VertexChatProvider(VertexChatModel model, String projectId, String projectLocation, FunctionBackend backend, String systemPrompt,  ModelObservability observability) {
+    super(backend, new VertexModelBindings(model, projectId, projectLocation), observability);
     this.systemPrompt = systemPrompt;
     VertexAI vertexAI = new VertexAI(projectId, projectLocation);
     this.chatModel = new GenerativeModel(model.modelName, vertexAI)

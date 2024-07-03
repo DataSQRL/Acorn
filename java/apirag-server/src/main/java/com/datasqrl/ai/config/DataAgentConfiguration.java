@@ -60,9 +60,8 @@ public class DataAgentConfiguration {
 
   Configuration baseConfiguration;
   Configuration modelConfiguration;
-  String toolsDefinition;
-  MeterRegistry meterRegistry;
   List<RuntimeFunctionDefinition> toolFunctions;
+  MeterRegistry meterRegistry;
 
   private RuntimeFunctionDefinition loadLocalFunction(String functionClassName) {
     if (!functionClassName.contains(".")) {

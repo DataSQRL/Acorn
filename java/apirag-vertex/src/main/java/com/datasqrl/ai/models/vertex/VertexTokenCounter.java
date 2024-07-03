@@ -26,7 +26,8 @@ public record VertexTokenCounter(GenerativeModel model) implements ModelAnalyzer
   }
 
   @SneakyThrows
-  private int countTokens(String message) {
+  @Override
+  public int countTokens(String message) {
     return model.countTokens(message).getTotalTokens();
   }
 
