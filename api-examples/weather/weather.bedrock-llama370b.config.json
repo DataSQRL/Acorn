@@ -6,7 +6,7 @@
   },
   "plot-function": "oneD",
   "model" : {
-    "provider" : "openai",
-    "model": "GPT4"
+    "provider" : "bedrock",
+    "model": "LLAMA3_70B"
   }
 }

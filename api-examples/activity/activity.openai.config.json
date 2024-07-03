@@ -5,7 +5,7 @@
     "url": "https://bored-api.appbrewery.com"
   },
   "model" : {
-    "provider" : "groq",
-    "model": "LLAMA3_70B"
+    "provider" : "openai",
+    "model": "GPT35_TURBO"
   }
 }

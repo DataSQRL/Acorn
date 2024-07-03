@@ -130,7 +130,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
     log.debug("Bedrock prompt: {}", prompt);
     InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
-    log.info("🤖Bedrock Response: {}", jsonObject);
+    log.debug("🤖Bedrock Response: {}", jsonObject);
     return jsonObject;
   }
 }
