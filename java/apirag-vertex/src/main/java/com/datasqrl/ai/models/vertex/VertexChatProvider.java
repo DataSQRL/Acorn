@@ -82,6 +82,7 @@ public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall
       chatSession.setHistory(messageHistory);
 
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
+      log.debug("and message {}", chatMessage);
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
         session.addMessage(chatMessage);
