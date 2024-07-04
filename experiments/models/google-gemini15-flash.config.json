@@ -1,0 +1,6 @@
+{
+    "provider" : "vertex",
+    "model": "GEMINI_1_5_FLASH",
+    "vertex-project-id": "vertex-gemini-424313",
+    "vertex-location": "europe-west4"
+}

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -18,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 /**
  * Implements the {@link APIExecutor} interface for GraphQL APIs using Spring RestTemplate as the client.
  */
+@Slf4j
 @Service
 public class GraphQLExecutor implements APIExecutor {
 
@@ -39,6 +41,7 @@ public class GraphQLExecutor implements APIExecutor {
 
   @Override
   public String executeQuery(APIQuery query, JsonNode arguments) throws IOException {
+    log.info("Executing GraphQL query: {} with arguments: {}", query, arguments);
     HttpEntity<String> request = buildRequest(query.getQuery(), arguments);
     ResponseEntity<String> response = restTemplate.exchange(endpoint, HttpMethod.POST, request, String.class);
 

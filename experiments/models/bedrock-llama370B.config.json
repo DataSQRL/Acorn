@@ -1,0 +1,4 @@
+{
+    "provider" : "bedrock",
+    "model": "LLAMA3_70B"
+}
