@@ -11,44 +11,43 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.text.SimpleDateFormat;
 
 import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PREFIX;
 import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PROVIDER_KEY;
 
 @Slf4j
-public class AgentRunner {
+public class SessionRunner {
 
-  private final List<TestChatSession> testSessions;
+  private final TestChatSession testSession;
   private final ChatClientProvider chatProvider;
   private final Function<String, Map<String, Object>> contextFunction;
   private final String modelName;
+  private final AtomicInteger userId;
   private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public AgentRunner(ComparisonConfiguration configuration, List<TestChatSession> testChatSessions) {
-    this.testSessions = testChatSessions;
+  public SessionRunner(ComparisonConfiguration configuration, TestChatSession testChatSession, AtomicInteger userId) {
+    this.testSession = testChatSession;
+    this.userId = userId;
     contextFunction = configuration.getContextFunction();
     chatProvider = configuration.getChatProvider();
     modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
   }
 
   public void run() {
-    AtomicInteger idCounter = new AtomicInteger(1);
     String fileName = modelName + "-" + getCurrentTime();
     String jsonFileName = fileName + ".json";
     String txtFileName = fileName + ".txt";
-    testSessions.forEach(session -> {
-      log.info("Running session with userId: {}", idCounter.get());
-      Map<String, Object> context = contextFunction.apply(Integer.toString(idCounter.getAndIncrement()));
-      SessionLog sessionLog = runChatSession(session, context, txtFileName);
-      writeToFile(sessionLog, jsonFileName);
-    });
+    log.info("Running session with userId: {}", userId.get());
+    Map<String, Object> context = contextFunction.apply(Integer.toString(userId.get()));
+    SessionLog sessionLog = runChatSession(testSession, context, txtFileName);
+    writeToFile(sessionLog, jsonFileName);
   }
 
   private void writeToFile(String s, String fileName) {

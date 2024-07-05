@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -53,7 +54,11 @@ public class ComparisonRunner {
           ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), new SimpleMeterRegistry());
           List<TestChatSession> testSessions = loadTestChatSessionsFromFile(scriptFile);
           log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
-          new AgentRunner(configuration, testSessions).run();
+          AtomicInteger idCounter = new AtomicInteger(0);
+          testSessions.forEach(session -> {
+            log.info("Running session with userId: {}", idCounter.getAndIncrement());
+            new SessionRunner(configuration, session, idCounter).run();
+          });
         } else {
           log.error("Could not load configuration and UseCase config from folder {}", useCaseFolder);
         }
