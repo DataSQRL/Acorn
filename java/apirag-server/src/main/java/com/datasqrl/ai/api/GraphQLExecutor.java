@@ -44,6 +44,7 @@ public class GraphQLExecutor implements APIExecutor {
     log.info("Executing GraphQL query: {} with arguments: {}", query, arguments);
     HttpEntity<String> request = buildRequest(query.getQuery(), arguments);
     ResponseEntity<String> response = restTemplate.exchange(endpoint, HttpMethod.POST, request, String.class);
+    log.info("Got response: {}", response.getBody());
 
     if (!response.getStatusCode().is2xxSuccessful()) {
       throw new IOException("Query failed: " + response);

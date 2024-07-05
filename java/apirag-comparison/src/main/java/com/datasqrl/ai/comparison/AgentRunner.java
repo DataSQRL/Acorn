@@ -40,15 +40,15 @@ public class AgentRunner {
 
   public void run() {
     AtomicInteger idCounter = new AtomicInteger(1);
-    String fileName = modelName + "-Id" + idCounter.get() + "-" + getCurrentTime() + ".json";
-    writeToFile("[\n", fileName);
+    String fileName = modelName + "-" + getCurrentTime();
+    String jsonFileName = fileName + ".json";
+    String txtFileName = fileName + ".txt";
     testSessions.forEach(session -> {
       log.info("Running session with userId: {}", idCounter.get());
       Map<String, Object> context = contextFunction.apply(Integer.toString(idCounter.getAndIncrement()));
-      SessionLog sessionLog = runChatSession(session, context);
-      writeToFile(sessionLog, fileName);
+      SessionLog sessionLog = runChatSession(session, context, txtFileName);
+      writeToFile(sessionLog, jsonFileName);
     });
-    writeToFile("\n]", fileName);
   }
 
   private void writeToFile(String s, String fileName) {
@@ -76,17 +76,29 @@ public class AgentRunner {
     return sdf.format(timestamp);
   }
 
-  private SessionLog runChatSession(TestChatSession session, Map<String, Object> context) {
+  private SessionLog runChatSession(TestChatSession session, Map<String, Object> context, String fileName) {
     List<SessionLog.LogEntry> sessions = new ArrayList<>();
     session.queries().forEach(query -> {
       log.info("Query: {}", query.query());
       GenericChatMessage response = chatProvider.chat(query.query(), context);
       log.info("Response: {}", response.getContent());
-      sessions.add(logInteraction(query, response));
+      SessionLog.LogEntry logEntry = logInteraction(query, response);
+      String logString = serializeLogEntry(logEntry);
+      writeToFile(logString, fileName);
+      sessions.add(logEntry);
     });
     SessionLog logs = new SessionLog(sessions);
-    log.info("SessionLog: {}", logs);
+//    log.info("SessionLog: {}", logs);
     return logs;
+  }
+
+  private String serializeLogEntry(SessionLog.LogEntry logEntry) {
+    return "Query: " + logEntry.query() + "\n"
+        + "Expected Response: " + logEntry.expectedResponse() + "\n"
+        + "Actual Response: " + logEntry.actualResponse() + "\n"
+        + "Expected Answer Type: " + logEntry.expectedAnswerType() + "\n"
+        + "Actual Answer Type: " + logEntry.actualAnswerType() + "\n\n\n";
+
   }
 
   private SessionLog.LogEntry logInteraction(TestChatSession.ChatQuery query, GenericChatMessage response) {

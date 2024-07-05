@@ -8,8 +8,7 @@ public enum FunctionType {
   api(false),
   rest(false),
   client(true),
-  local(false),
-  fixed(false);
+  local(false);
 
   private boolean isClientExecuted;
 

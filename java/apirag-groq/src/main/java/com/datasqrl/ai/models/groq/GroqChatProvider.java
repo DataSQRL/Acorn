@@ -39,6 +39,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.theokanning.openai.service.OpenAiService.defaultClient;
 import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
@@ -96,6 +97,11 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;
+      try {
+        TimeUnit.SECONDS.sleep(3);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       ModelObservability.Trace modeltrace = observability.start();
       try {
         responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();

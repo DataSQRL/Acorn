@@ -30,6 +30,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
   private final BedrockRuntimeClient client;
   private final ChatMessageEncoder<BedrockChatMessage> encoder;
   private final String systemPrompt;
+  ModelObservability.Trace modeltrace;
 
   private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with JSON text in the following format: "
       + "{\"function\": \"$FUNCTION_NAME\","
@@ -67,13 +68,12 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
 
     int retryCount = 0;
     while (true) {
-      ModelObservability.Trace modeltrace = null;
       ContextWindow<BedrockChatMessage> contextWindow = session.getContextWindow();
       String prompt = contextWindow.getMessages().stream()
           .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
       log.info("Calling Bedrock with model {}", model.getModelName());
-      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength(), modeltrace);
+      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
       String generatedResponse = responseAsJson.get("generation").toString();
       BedrockChatMessage responseMessage = encoder.decodeMessage(generatedResponse, BedrockChatRole.ASSISTANT.getRole());
       modeltrace.complete(tokenCounter.countTokens(prompt), tokenCounter.countTokens(generatedResponse));
@@ -124,7 +124,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
     return systemPrompt + "\n" + functionText + "\n";
   }
 
-  private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens, ModelObservability.Trace modeltrace) {
+  private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens) {
     JSONObject request = new JSONObject()
         .put("prompt", prompt)
         .put("max_gen_len", maxTokens)

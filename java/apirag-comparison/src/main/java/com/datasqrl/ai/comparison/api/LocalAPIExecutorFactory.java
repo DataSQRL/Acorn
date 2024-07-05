@@ -9,9 +9,9 @@ import org.apache.commons.configuration2.Configuration;
 import java.util.Optional;
 
 @AutoService(APIExecutorFactory.class)
-public class StaticAPIExecutorFactory implements APIExecutorFactory {
+public class LocalAPIExecutorFactory implements APIExecutorFactory {
 
-  public static final String TYPE = "fixed";
+  public static final String TYPE = "local";
   static final String USE_CASE_KEY = "use-case";
 
   @Override
@@ -23,6 +23,6 @@ public class StaticAPIExecutorFactory implements APIExecutorFactory {
   public APIExecutor create(Configuration configuration, String name) {
     Optional<String> useCase = Optional.ofNullable(configuration.getString(USE_CASE_KEY));
     ErrorHandling.checkArgument(useCase.isPresent(), "Need to configure `%s` in api configuration.", USE_CASE_KEY, name);
-    return new StaticAPIExecutor(useCase.get());
+    return new LocalAPIExecutor(useCase.get());
   }
 }
