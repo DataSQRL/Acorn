@@ -6,7 +6,6 @@ import com.datasqrl.ai.util.ErrorHandling;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -55,7 +53,7 @@ public class LocalAPIExecutor implements APIExecutor {
         return retrieveChatMessages();
       }
       case "AddChatMsg" -> {
-        chatMessages.add(arguments);
+        chatMessages.add(0, arguments);
         return localResults.get(useCase).get(functionName);
       }
       default -> {
