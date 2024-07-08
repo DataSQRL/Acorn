@@ -10,16 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-
-import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PREFIX;
-import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PROVIDER_KEY;
 
 @Slf4j
 public class SessionRunner {
@@ -27,23 +22,21 @@ public class SessionRunner {
   private final TestChatSession testSession;
   private final ChatClientProvider chatProvider;
   private final Function<String, Map<String, Object>> contextFunction;
-  private final String modelName;
+  private final String logName;
   private final AtomicInteger userId;
-  private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public SessionRunner(ComparisonConfiguration configuration, TestChatSession testChatSession, AtomicInteger userId) {
+  public SessionRunner(ComparisonConfiguration configuration, TestChatSession testChatSession, AtomicInteger userId, String logName) {
     this.testSession = testChatSession;
     this.userId = userId;
+    this.logName = logName;
     contextFunction = configuration.getContextFunction();
     chatProvider = configuration.getChatProvider();
-    modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
   }
 
   public void run() {
-    String fileName = modelName + "-" + getCurrentTime();
-    String jsonFileName = fileName + ".json";
-    String txtFileName = fileName + ".txt";
+    String jsonFileName = logName + ".json";
+    String txtFileName = logName + ".txt";
     log.info("Running session with userId: {}", userId.get());
     Map<String, Object> context = contextFunction.apply(Integer.toString(userId.get()));
     SessionLog sessionLog = runChatSession(testSession, context, txtFileName);
@@ -70,17 +63,18 @@ public class SessionRunner {
     }
   }
 
-  private String getCurrentTime() {
-    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-    return sdf.format(timestamp);
-  }
-
   private SessionLog runChatSession(TestChatSession session, Map<String, Object> context, String fileName) {
     List<SessionLog.LogEntry> sessions = new ArrayList<>();
     session.queries().forEach(query -> {
       log.info("Query: {}", query.query());
-      GenericChatMessage response = chatProvider.chat(query.query(), context);
-      log.info("Response: {}", response.getContent());
+      GenericChatMessage response;
+      try {
+         response = chatProvider.chat(query.query(), context);
+        log.info("Response: {}", response.getContent());
+      } catch (Exception e) {
+        log.error("Query failed", e);
+        response = GenericChatMessage.builder().content("Error: " + e.getMessage()).build();
+      }
       SessionLog.LogEntry logEntry = logInteraction(query, response);
       String logString = serializeLogEntry(logEntry);
       writeToFile(logString, fileName);

@@ -11,10 +11,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
+
+import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PREFIX;
+import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PROVIDER_KEY;
 
 @Slf4j
 @Value
@@ -24,6 +29,7 @@ public class ComparisonRunner {
   List<String> useCaseFolders;
   String scriptFile;
   ObjectMapper mapper = new ObjectMapper();
+  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
   public ComparisonRunner(List<String> modelFiles, List<String> useCaseFolders, String scriptFile) {
     this.modelFiles = modelFiles;
@@ -33,37 +39,45 @@ public class ComparisonRunner {
   }
 
   public void start() throws IOException {
-    modelFiles.forEach(modelConfig -> {
-      log.info("Loading model config from {}", modelConfig);
-      useCaseFolders.forEach(useCaseFolder -> {
+    useCaseFolders.forEach(useCaseFolder -> {
       log.info("Loading use case from {}", useCaseFolder);
-        Optional<Path> useCaseConfig;
-        Optional<Path> tools;
-        Path useCaseDir = Paths.get(useCaseFolder);
-        try (Stream<Path> stream = Files.list(useCaseDir)) {
-          useCaseConfig = stream.filter(path -> !Files.isDirectory(path)).filter(path -> path.getFileName().toString().endsWith(".config.json")).findFirst();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-        try (Stream<Path> stream2 = Files.list(useCaseDir)) {
-          tools = stream2.filter(path -> !Files.isDirectory(path)).filter(path -> path.getFileName().toString().endsWith(".tools.json")).findFirst();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-        if (useCaseConfig.isPresent() && tools.isPresent()) {
+      Path useCaseDir = Paths.get(useCaseFolder);
+      Optional<Path> useCaseConfig = loadUseCaseConfig(useCaseDir);
+      Optional<Path> tools = loadTools(useCaseDir);
+      if (useCaseConfig.isPresent() && tools.isPresent()) {
+        List<TestChatSession> testSessions = loadTestChatSessionsFromFile(scriptFile);
+        log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
+        modelFiles.forEach(modelConfig -> {
+          log.info("Loading model config from {}", modelConfig);
           ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), new SimpleMeterRegistry());
-          List<TestChatSession> testSessions = loadTestChatSessionsFromFile(scriptFile);
-          log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
           AtomicInteger idCounter = new AtomicInteger(0);
+          String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
+          String fileName = modelName + "-" + getCurrentTime();
           testSessions.forEach(session -> {
             log.info("Running session with userId: {}", idCounter.getAndIncrement());
-            new SessionRunner(configuration, session, idCounter).run();
+            new SessionRunner(configuration, session, idCounter, fileName).run();
           });
-        } else {
-          log.error("Could not load configuration and UseCase config from folder {}", useCaseFolder);
-        }
-      });
+        });
+      } else {
+        log.error("Could not load configuration and UseCase config from folder {}", useCaseFolder);
+      }
     });
+  }
+
+  private Optional<Path> loadTools(Path useCaseDir) {
+    try (Stream<Path> stream = Files.list(useCaseDir)) {
+      return stream.filter(path -> !Files.isDirectory(path)).filter(path -> path.getFileName().toString().endsWith(".tools.json")).findFirst();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Optional<Path> loadUseCaseConfig(Path useCaseDir) {
+    try (Stream<Path> stream = Files.list(useCaseDir)) {
+      return stream.filter(path -> !Files.isDirectory(path)).filter(path -> path.getFileName().toString().endsWith(".config.json")).findFirst();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private List<TestChatSession> loadTestChatSessionsFromFile(String fileName) {
@@ -74,6 +88,11 @@ public class ComparisonRunner {
       log.error("Could not read test chat sessions from {}", fileName, ex);
     }
     return List.of();
+  }
+
+  private String getCurrentTime() {
+    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+    return sdf.format(timestamp);
   }
 
   public static void main(String... args) throws Exception {
