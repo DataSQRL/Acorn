@@ -81,7 +81,8 @@ public class VertexModelBindings implements ModelBindings<Content, FunctionCall>
         Optional<FunctionCall> functionCall = content.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
         if (functionCall.isPresent()) {
           FunctionCall call = functionCall.get();
-          builder.functionCall(new GenericFunctionCall(call.getName(), ProtobufUtils.structToJsonNode(call.getArgs())))
+          JsonNode arguments = ProtobufUtils.structToJsonNode(call.getArgs());
+          builder.functionCall(new GenericFunctionCall(call.getName(), arguments))
               .name(call.getName())
               .content(functionCall2String(call));
         } else {
@@ -154,7 +155,7 @@ public class VertexModelBindings implements ModelBindings<Content, FunctionCall>
   private String functionCall2String(FunctionCall fctCall) {
     return "{"
         + "\"function\": \"" + fctCall.getName() + "\", "
-        + "\"parameters\": " + fctCall.getArgs()
+        + "\"parameters\": " + ProtobufUtils.structToJsonNode(fctCall.getArgs())
         + "}";
   }
 
