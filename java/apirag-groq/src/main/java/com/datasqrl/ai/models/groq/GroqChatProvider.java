@@ -98,7 +98,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           .build();
       AssistantMessage responseMessage;
       try {
-        TimeUnit.SECONDS.sleep(3);
+        TimeUnit.SECONDS.sleep(30);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }

@@ -6,6 +6,8 @@ public interface ModelObservability {
 
   Trace start();
 
+  void printMetrics();
+
   public interface Trace {
 
     void stop();
@@ -28,6 +30,11 @@ public interface ModelObservability {
 
         }
       };
+    }
+
+    @Override
+    public void printMetrics() {
+
     }
   };
 

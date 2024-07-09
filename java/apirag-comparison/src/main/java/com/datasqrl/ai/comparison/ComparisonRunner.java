@@ -49,7 +49,8 @@ public class ComparisonRunner {
         log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
         modelFiles.forEach(modelConfig -> {
           log.info("Loading model config from {}", modelConfig);
-          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), new LoggingMeterRegistry());
+          CustomLoggingMeterRegistry meterRegistry = new CustomLoggingMeterRegistry();
+          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), meterRegistry);
           AtomicInteger idCounter = new AtomicInteger(0);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
           String fileName = modelName + "-" + getCurrentTime();
@@ -57,6 +58,9 @@ public class ComparisonRunner {
             log.info("Running session with userId: {}", idCounter.getAndIncrement());
             new SessionRunner(configuration, session, idCounter, fileName).run();
           });
+          meterRegistry.publish();
+          configuration.getChatProvider().getObservability().printMetrics();
+          meterRegistry.close();
         });
       } else {
         log.error("Could not load configuration and UseCase config from folder {}", useCaseFolder);
@@ -117,6 +121,13 @@ public class ComparisonRunner {
 
     ComparisonRunner runner = new ComparisonRunner(modelFiles, useCaseFolders, scriptFile);
     runner.start();
+  }
+
+  private static class CustomLoggingMeterRegistry extends LoggingMeterRegistry {
+    @Override
+    public void publish() {
+      super.publish();
+    }
   }
 
 }

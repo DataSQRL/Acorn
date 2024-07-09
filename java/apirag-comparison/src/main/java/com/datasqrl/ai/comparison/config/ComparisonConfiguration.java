@@ -3,12 +3,12 @@ package com.datasqrl.ai.comparison.config;
 import com.datasqrl.ai.DataVisualizationFunction;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
-import com.datasqrl.ai.api.GraphQLExecutor;
 import com.datasqrl.ai.api.GraphQLSchemaConverter;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionBackendFactory;
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.FunctionType;
+import com.datasqrl.ai.backend.MicrometerModelObservability;
 import com.datasqrl.ai.backend.ModelObservability;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.datasqrl.ai.function.UDFConverter;
@@ -123,10 +123,18 @@ public class ComparisonConfiguration {
     return prompt;
   }
 
+  private ModelObservability getObservability() {
+    if (meterRegistry!=null && !meterRegistry.isClosed()) {
+      return new MicrometerModelObservability(meterRegistry, "chitterchat");
+    } else {
+      return ModelObservability.NOOP;
+    }
+  }
+
   public ChatClientProvider getChatProvider() {
     FunctionBackend backend = getFunctionBackend();
     String systemPrompt = getSystemPrompt();
-    return getChatProviderFactory().create(getModelConfiguration(), backend, systemPrompt, ModelObservability.NOOP);
+    return getChatProviderFactory().create(getModelConfiguration(), backend, systemPrompt, getObservability());
   }
 
   public ChatProviderFactory getChatProviderFactory() {

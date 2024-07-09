@@ -28,7 +28,7 @@ public class ModelObservabilityTest {
       // Stop the trace
       trace.stop();
       // Complete the trace with some token counts
-      trace.complete(10*i, 20*i);
+      trace.complete(10*i, 20*i, false);
     }
 
     // Check the metrics
