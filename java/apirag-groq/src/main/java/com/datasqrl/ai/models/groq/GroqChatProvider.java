@@ -1,5 +1,8 @@
 package com.datasqrl.ai.models.groq;
 
+import static com.theokanning.openai.service.OpenAiService.defaultClient;
+import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
+
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
@@ -17,6 +20,13 @@ import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -30,17 +40,6 @@ import org.jetbrains.annotations.NotNull;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static com.theokanning.openai.service.OpenAiService.defaultClient;
-import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 
 @Slf4j
 public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
@@ -154,7 +153,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       ResponseBody body = response.body();
       int code = response.code();
       if (code == 400 && body != null && body.contentType() != null && body.contentType().subtype() != null
-          && body.contentType().subtype().toLowerCase().equals("json")) {
+          && body.contentType().subtype().equalsIgnoreCase("json")) {
         BufferedSource source = body.source();
         source.request(Long.MAX_VALUE); // Buffer the entire body.
         Buffer buffer = source.buffer();

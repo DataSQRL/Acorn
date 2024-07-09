@@ -35,8 +35,7 @@ public class FunctionDefinition {
     Parameters newParams = Parameters.builder()
         .type(parameters.getType())
         .required(parameters.getRequired().stream()
-            .filter(fieldFilter).collect(
-                Collectors.toUnmodifiableList()))
+            .filter(fieldFilter).toList())
         .properties(parameters.getProperties().entrySet().stream()
             .filter(e -> fieldFilter.test(e.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))

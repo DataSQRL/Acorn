@@ -18,7 +18,6 @@ public class MockAPIExecutor implements APIExecutor {
 
   @Override
   public void validate(APIQuery query) throws IllegalArgumentException {
-    return;
   }
 
   @Override

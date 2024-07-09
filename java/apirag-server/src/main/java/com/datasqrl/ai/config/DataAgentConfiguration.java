@@ -1,9 +1,7 @@
 package com.datasqrl.ai.config;
 
-import com.datasqrl.ai.DataVisualizationFunction;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
-import com.datasqrl.ai.api.APIExecutorFactory.BaseConfiguration;
 import com.datasqrl.ai.api.GraphQLSchemaConverter;
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionBackendFactory;
@@ -31,11 +29,9 @@ import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.Value;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.JSONConfiguration;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Value
 public class DataAgentConfiguration {

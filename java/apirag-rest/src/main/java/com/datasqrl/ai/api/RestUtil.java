@@ -16,7 +16,7 @@ import lombok.SneakyThrows;
 
 public class RestUtil {
 
-  static record RestCall(String path, String method, JsonNode body) {}
+  record RestCall(String path, String method, JsonNode body) {}
 
   /**
    * Creates a RestCall object based on the APIQuery and JsonNode arguments provided.
@@ -80,7 +80,7 @@ public class RestUtil {
     return parameters;
   }
 
-  static record DecomposedURL(String path, Set<String> pathParams, Map<String,String> queryParams, int numStaticFilters) {}
+  record DecomposedURL(String path, Set<String> pathParams, Map<String,String> queryParams, int numStaticFilters) {}
 
   public static DecomposedURL decomposedURL(String url) {
     String[] urlParts = url.split("\\?");

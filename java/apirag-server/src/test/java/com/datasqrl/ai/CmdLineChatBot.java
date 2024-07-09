@@ -16,8 +16,6 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
-import lombok.Value;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -25,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Value;
 
 /**
  * A simple streaming chatbot for the command line.

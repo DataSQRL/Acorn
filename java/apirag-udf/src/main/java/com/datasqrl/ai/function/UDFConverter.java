@@ -5,27 +5,24 @@ import com.datasqrl.ai.backend.FunctionType;
 import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
-import java.lang.reflect.Field;
-import lombok.Data;
 
 
 public class UDFConverter {
 
-  private static ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   public static RuntimeFunctionDefinition getRuntimeFunctionDefinition(Class<? extends UserDefinedFunction> clazz) {
     FunctionDefinition funcDef = null;
@@ -88,8 +85,7 @@ public class UDFConverter {
 
   public static Optional<String> getFunctionDescription(Class<?> clazz) {
     if (clazz.isAnnotationPresent(FunctionDescription.class)) {
-      Annotation annotation = clazz.getAnnotation(FunctionDescription.class);
-      FunctionDescription description = (FunctionDescription) annotation;
+      FunctionDescription description = clazz.getAnnotation(FunctionDescription.class);
       return Optional.of(description.value());
     } else {
       return Optional.empty();

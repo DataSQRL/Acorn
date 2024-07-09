@@ -26,11 +26,9 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.SchemaPrinter;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,7 +36,6 @@ import java.util.stream.Stream;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -76,7 +73,7 @@ public class GraphQLSchemaConverter {
     return functions;
   }
 
-  private static record Context(String prefix, int numArgs) {}
+  private record Context(String prefix, int numArgs) {}
 
   public RuntimeFunctionDefinition convert(String prefix, GraphQLFieldDefinition fieldDef) {
     FunctionDefinition funcDef = new FunctionDefinition();
@@ -109,7 +106,7 @@ public class GraphQLSchemaConverter {
   }
 
 
-  private static record UnwrappedType(GraphQLInputType type, boolean required) {}
+  private record UnwrappedType(GraphQLInputType type, boolean required) {}
 
   private UnwrappedType convertRequired(GraphQLInputType type) {
     boolean required = false;
@@ -124,8 +121,7 @@ public class GraphQLSchemaConverter {
     Argument argument = new Argument();
     if (graphQLInputType instanceof GraphQLScalarType) {
       argument.setType(convertScalarTypeToJsonType((GraphQLScalarType) graphQLInputType));
-    } else if (graphQLInputType instanceof GraphQLEnumType) {
-      GraphQLEnumType enumType = (GraphQLEnumType) graphQLInputType;
+    } else if (graphQLInputType instanceof GraphQLEnumType enumType) {
       argument.setType("string");
       argument.setEnumValues(enumType.getValues().stream().map(GraphQLEnumValueDefinition::getName).collect(Collectors.toSet()));
     } else if (graphQLInputType instanceof GraphQLList) {
@@ -157,35 +153,20 @@ public class GraphQLSchemaConverter {
       queryBody.append("(");
       for (GraphQLArgument arg : fieldDef.getArguments()) {
         UnwrappedType unwrappedType = convertRequired(arg.getType());
-        if (unwrappedType.type() instanceof GraphQLInputObjectType) {
-          GraphQLInputObjectType inputType = (GraphQLInputObjectType) unwrappedType.type();
+        if (unwrappedType.type() instanceof GraphQLInputObjectType inputType) {
           for (GraphQLInputObjectField nestedField : inputType.getFieldDefinitions()) {
             String argName = combineStrings(ctx.prefix(), nestedField.getName());
-            String description = nestedField.getDescription();
             unwrappedType = convertRequired(nestedField.getType());
-            Argument argDef = convert(unwrappedType.type());
-            argDef.setDescription(description);
-            if (numArgs>0) queryBody.append(", ");
-            if (ctx.numArgs() + numArgs > 0) queryHeader.append(", ");
-            if (unwrappedType.required()) params.getRequired().add(argName);
-            params.getProperties().put(argName, argDef);
-            argName = "$" + argName;
-            queryBody.append(nestedField.getName()).append(": ").append(argName);
+            argName = processField(queryBody, queryHeader, params, ctx, numArgs, unwrappedType,
+                argName, nestedField.getName(), nestedField.getDescription());
             String typeString = printFieldType(nestedField);
             queryHeader.append(argName).append(": ").append(typeString);
             numArgs++;
           }
         } else {
           String argName = combineStrings(ctx.prefix(), arg.getName());
-          String description = arg.getDescription();
-          Argument argDef = convert(unwrappedType.type());
-          argDef.setDescription(description);
-          if (numArgs>0) queryBody.append(", ");
-          if (ctx.numArgs() + numArgs > 0) queryHeader.append(", ");
-          if (unwrappedType.required()) params.getRequired().add(argName);
-          params.getProperties().put(argName, argDef);
-          argName = "$" + argName;
-          queryBody.append(arg.getName()).append(": ").append(argName);
+          argName = processField(queryBody, queryHeader, params, ctx, numArgs, unwrappedType, argName,
+              arg.getName(), arg.getDescription());
           String typeString = printArgumentType(arg);
           queryHeader.append(argName).append(": ").append(typeString);
           numArgs++;
@@ -203,6 +184,20 @@ public class GraphQLSchemaConverter {
     } else {
       queryBody.append("\n");
     }
+  }
+
+  private String processField(StringBuilder queryBody, StringBuilder queryHeader, Parameters params,
+      Context ctx, int numArgs, UnwrappedType unwrappedType, String argName, String originalName,
+      String description) {
+    Argument argDef = convert(unwrappedType.type());
+    argDef.setDescription(description);
+    if (numArgs>0) queryBody.append(", ");
+    if (ctx.numArgs() + numArgs > 0) queryHeader.append(", ");
+    if (unwrappedType.required()) params.getRequired().add(argName);
+    params.getProperties().put(argName, argDef);
+    argName = "$" + argName;
+    queryBody.append(originalName).append(": ").append(argName);
+    return argName;
   }
 
   private String printFieldType(GraphQLInputObjectField field) {

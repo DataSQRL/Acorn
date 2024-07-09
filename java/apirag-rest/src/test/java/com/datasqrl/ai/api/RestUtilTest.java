@@ -7,12 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.datasqrl.ai.api.RestUtil.DecomposedURL;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Set;
 
 public class RestUtilTest {
 

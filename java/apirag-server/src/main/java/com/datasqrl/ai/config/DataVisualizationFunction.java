@@ -1,4 +1,4 @@
-package com.datasqrl.ai;
+package com.datasqrl.ai.config;
 
 import java.util.Optional;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,5 @@
 package com.datasqrl.ai.util;
 
-import com.datasqrl.ai.api.APIExecutor;
 import com.google.common.io.Resources;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;

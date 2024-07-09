@@ -2,10 +2,9 @@ package com.datasqrl.ai.models;
 
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.ErrorHandling;
-import org.apache.commons.configuration2.Configuration;
-
 import java.util.Arrays;
 import java.util.Optional;
+import org.apache.commons.configuration2.Configuration;
 
 public abstract class AbstractChatProviderFactory implements ChatProviderFactory {
 

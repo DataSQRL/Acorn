@@ -12,23 +12,20 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
-import java.util.HashMap;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * An {@link FunctionBackend} defines and executes functions that a language model
@@ -161,7 +158,7 @@ public class FunctionBackend {
       Collections.reverse(chatMessages); //newest should be last
       return chatMessages;
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("Could not read chat messages", e);
       return List.of();
     }
   }
@@ -218,9 +215,7 @@ public class FunctionBackend {
     APIQuery query = function.getApi();
     return switch (function.getType()) {
       case local -> function.getExecutable().apply(variables).toString();
-      case api -> {
-        yield getExecutor(query).executeQuery(query, variables);
-      }
+      case api -> getExecutor(query).executeQuery(query, variables);
       default ->
           throw new IllegalArgumentException("Cannot execute function [" + functionName + "] of type: " + function.getType());
     };
@@ -232,7 +227,7 @@ public class FunctionBackend {
     if (arguments == null || arguments.isEmpty()) {
       copyJsonNode = mapper.createObjectNode();
     } else {
-      copyJsonNode = (ObjectNode) arguments.deepCopy();
+      copyJsonNode = arguments.deepCopy();
     }
     // Add context
     for (String contextField : function.getContext()) {

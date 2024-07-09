@@ -13,7 +13,6 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.ToolMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
-
 import java.time.Instant;
 import java.util.Map;
 

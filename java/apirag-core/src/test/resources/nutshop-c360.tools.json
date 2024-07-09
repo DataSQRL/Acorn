@@ -81,7 +81,7 @@
     },
     "context": ["customerid"],
     "api": {
-      "query": "mutation AddChatMsg($role: String!, $content: String!, $name: String, $context: ChatMessageContextInput!) {\n  AddChatMessage(message: {role: $role, content:$content, name: $name, context:$context}) {\n    _source_time\n  }\n}"
+      "query": "mutation AddChatMsg($role: String!, $content: String!, $name: String, $customerid: Int!) {\n  AddChatMessage(message: {role: $role, content:$content, name: $name, customerid: $customerid}) {\n    _source_time\n  }\n}"
     }
   },
   {

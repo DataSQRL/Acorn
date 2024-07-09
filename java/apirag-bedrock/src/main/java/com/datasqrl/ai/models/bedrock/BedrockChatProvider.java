@@ -9,6 +9,8 @@ import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -17,10 +19,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, BedrockFunctionCall> {
