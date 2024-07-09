@@ -1,12 +1,10 @@
 package com.datasqrl.ai.backend;
 
-import java.util.Map;
-
 public interface ModelObservability {
 
   Trace start();
 
-  void printMetrics();
+  String exportToCSV();
 
   public interface Trace {
 
@@ -33,8 +31,8 @@ public interface ModelObservability {
     }
 
     @Override
-    public void printMetrics() {
-
+    public String exportToCSV() {
+      return "";
     }
   };
 

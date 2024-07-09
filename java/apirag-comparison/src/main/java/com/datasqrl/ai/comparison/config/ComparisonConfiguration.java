@@ -59,7 +59,7 @@ public class ComparisonConfiguration {
   Configuration baseConfiguration;
   Configuration modelConfiguration;
   List<RuntimeFunctionDefinition> toolFunctions;
-  MeterRegistry meterRegistry;
+  ModelObservability observability;
 
   private RuntimeFunctionDefinition loadLocalFunction(String functionClassName) {
     if (!functionClassName.contains(".")) {
@@ -123,14 +123,6 @@ public class ComparisonConfiguration {
     return prompt;
   }
 
-  private ModelObservability getObservability() {
-    if (meterRegistry!=null && !meterRegistry.isClosed()) {
-      return new MicrometerModelObservability(meterRegistry, "chitterchat");
-    } else {
-      return ModelObservability.NOOP;
-    }
-  }
-
   public ChatClientProvider getChatProvider() {
     FunctionBackend backend = getFunctionBackend();
     String systemPrompt = getSystemPrompt();
@@ -184,6 +176,6 @@ public class ComparisonConfiguration {
     } else {
       tools = FunctionBackendFactory.parseTools(toolsContent);
     }
-    return new ComparisonConfiguration(baseConfig, modelConfig, tools, meterRegistry);
+    return new ComparisonConfiguration(baseConfig, modelConfig, tools, new MicrometerModelObservability(meterRegistry, "chitterchat"));
   }
 }

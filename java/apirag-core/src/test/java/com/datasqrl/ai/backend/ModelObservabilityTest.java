@@ -21,19 +21,25 @@ public class ModelObservabilityTest {
   @Test
   public void testTrace() throws InterruptedException {
     // Start a trace
-    for (int i = 1; i <= 10; i++) {
+    int number = 1000;
+    for (int i = 1; i <= number; i++) {
       Trace trace = modelObservability.start();
       // Simulate some work
-      Thread.sleep(100);
+      Thread.sleep(5);
       // Stop the trace
       trace.stop();
       // Complete the trace with some token counts
-      trace.complete(10*i, 20*i, false);
+      trace.complete(10*i, 20*i, i%2==0);
     }
 
     // Check the metrics
-    assertEquals(10, modelObservability.getLatencyTimer().count());
-    assertEquals(550, modelObservability.getInputTokenCounter().totalAmount(), 0.001);
-    assertEquals(1100, modelObservability.getOutputTokenCounter().totalAmount(), 0.001);
+    assertEquals(number, modelObservability.getLatencyTimer().count());
+    assertEquals(number, modelObservability.getFunctionRetryCounter().count());
+    assertEquals(number/2, modelObservability.getFunctionRetryCounter().totalAmount());
+    assertEquals(number, modelObservability.getInputTokenCounter().count());
+    assertEquals(number, modelObservability.getOutputTokenCounter().count());
+    assertEquals(number*(number+1)/2*10, modelObservability.getInputTokenCounter().totalAmount(), 0.001);
+    assertEquals(number*(number+1)/2*20, modelObservability.getOutputTokenCounter().totalAmount(), 0.001);
+    System.out.println(modelObservability.exportToCSV());
   }
 }

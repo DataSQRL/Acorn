@@ -4,6 +4,7 @@ import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +50,7 @@ public class ComparisonRunner {
         log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
         modelFiles.forEach(modelConfig -> {
           log.info("Loading model config from {}", modelConfig);
-          CustomLoggingMeterRegistry meterRegistry = new CustomLoggingMeterRegistry();
+          SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
           ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), meterRegistry);
           AtomicInteger idCounter = new AtomicInteger(0);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
@@ -58,8 +59,7 @@ public class ComparisonRunner {
             log.info("Running session with userId: {}", idCounter.getAndIncrement());
             new SessionRunner(configuration, session, idCounter, fileName).run();
           });
-          meterRegistry.publish();
-          configuration.getChatProvider().getObservability().printMetrics();
+          log.info("Metrics results (CSV): {}", configuration.getChatProvider().getObservability().exportToCSV());
           meterRegistry.close();
         });
       } else {

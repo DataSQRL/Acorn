@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class MicrometerModelObservability implements ModelObservability {
     this.latencyTimer = Timer.builder("model.execution.time")
         .tags(APP_NAME_TAG, applicationName)
         .publishPercentileHistogram()
+        .publishPercentiles(0.1, 0.5, 0.9)
         .register(meterRegistry);
     this.inputTokenCounter = DistributionSummary.builder("model.tokens.input")
         .tags(APP_NAME_TAG, applicationName)
@@ -45,30 +47,22 @@ public class MicrometerModelObservability implements ModelObservability {
   }
 
   @Override
-  public void printMetrics() {
-    log.info("Meter LatencyTimer");
-    log.info("Total count: {}", latencyTimer.count());
-    log.info("Total amount: {}", latencyTimer.totalTime(TimeUnit.MILLISECONDS));
-    log.info("Mean: {}", latencyTimer.mean(TimeUnit.MILLISECONDS));
-    log.info("Max: {}", latencyTimer.max(TimeUnit.MILLISECONDS));
-
-    log.info("Meter InputTokenCounter");
-    log.info("Total count: {}", inputTokenCounter.count());
-    log.info("Total amount: {}", inputTokenCounter.totalAmount());
-    log.info("Mean: {}", inputTokenCounter.mean());
-    log.info("Max: {}", inputTokenCounter.max());
-
-    log.info("Meter OutputTokenCounter");
-    log.info("Total count: {}", outputTokenCounter.count());
-    log.info("Total amount: {}", outputTokenCounter.totalAmount());
-    log.info("Mean: {}", outputTokenCounter.mean());
-    log.info("Max: {}", outputTokenCounter.max());
-
-    log.info("Meter FunctionRetryCounter");
-    log.info("Total count: {}", functionRetryCounter.count());
-    log.info("Total amount: {}", functionRetryCounter.totalAmount());
-    log.info("Mean: {}", functionRetryCounter.mean());
-    log.info("Max: {}", functionRetryCounter.max());
+  public String exportToCSV() {
+    StringBuilder s = new StringBuilder();
+    s.append(latencyTimer.count()).append(", ");
+    s.append(latencyTimer.totalTime(TimeUnit.MILLISECONDS)).append(", ");
+    s.append(latencyTimer.mean(TimeUnit.MILLISECONDS)).append(", ");
+//    for (ValueAtPercentile valueAtPercentile : latencyTimer.takeSnapshot().percentileValues()) {
+//      s.append(valueAtPercentile.percentile()).append(":");
+//      s.append(valueAtPercentile.value(TimeUnit.MILLISECONDS)).append(", ");
+//    }
+    s.append(latencyTimer.max(TimeUnit.MILLISECONDS)).append(", ");
+    s.append(inputTokenCounter.totalAmount()).append(", ");
+    s.append(inputTokenCounter.mean()).append(", ");
+    s.append(outputTokenCounter.totalAmount()).append(", ");
+    s.append(outputTokenCounter.mean()).append(", ");
+    s.append(functionRetryCounter.totalAmount());
+    return s.toString();
   }
 
   @Value
