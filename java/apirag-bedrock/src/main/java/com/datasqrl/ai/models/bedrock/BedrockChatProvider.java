@@ -76,16 +76,17 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
       String generatedResponse = responseAsJson.get("generation").toString();
       BedrockChatMessage responseMessage = encoder.decodeMessage(generatedResponse, BedrockChatRole.ASSISTANT.getRole());
-      modeltrace.complete(tokenCounter.countTokens(prompt), tokenCounter.countTokens(generatedResponse));
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
         ChatSession.FunctionExecutionOutcome<BedrockChatMessage> outcome = session.validateAndExecuteFunctionCall(functionCall, true);
         switch (outcome.status()) {
           case EXECUTE_ON_CLIENT -> {
+            modeltrace.complete(tokenCounter.countTokens(prompt), tokenCounter.countTokens(generatedResponse), false);
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
+            modeltrace.complete(tokenCounter.countTokens(prompt), tokenCounter.countTokens(generatedResponse), true);
             if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
@@ -96,6 +97,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
           }
         }
       } else {
+        modeltrace.complete(tokenCounter.countTokens(prompt), tokenCounter.countTokens(generatedResponse), false);
         //The text answer
         return genericResponse;
       }

@@ -16,6 +16,7 @@ public class MicrometerModelObservability implements ModelObservability {
   Timer latencyTimer;
   DistributionSummary inputTokenCounter;
   DistributionSummary outputTokenCounter;
+  DistributionSummary functionRetryCounter;
 
   public MicrometerModelObservability(MeterRegistry meterRegistry, String applicationName) {
     this.meterRegistry = meterRegistry;
@@ -27,6 +28,9 @@ public class MicrometerModelObservability implements ModelObservability {
         .tags(APP_NAME_TAG, applicationName)
         .register(meterRegistry);
     this.outputTokenCounter = DistributionSummary.builder("model.tokens.output")
+        .tags(APP_NAME_TAG, applicationName)
+        .register(meterRegistry);
+    this.functionRetryCounter = DistributionSummary.builder("function.call.retries")
         .tags(APP_NAME_TAG, applicationName)
         .register(meterRegistry);
   }
@@ -48,10 +52,11 @@ public class MicrometerModelObservability implements ModelObservability {
     }
 
     @Override
-    public void complete(int numInputTokens, int numOutputTokens) {
+    public void complete(int numInputTokens, int numOutputTokens, boolean retry) {
       latencyTimer.record(timer.elapsed());
       inputTokenCounter.record(numInputTokens);
       outputTokenCounter.record(numOutputTokens);
+      functionRetryCounter.record(retry ? 1 : 0);
     }
   }
 }

@@ -84,8 +84,10 @@ public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall
 
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       log.debug("and message {}", chatMessage);
+      ModelObservability.Trace modeltrace = observability.start();
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
+        modeltrace.stop();
         session.addMessage(chatMessage);
         Content response = ResponseHandler.getContent(generatedResponse);
         GenericChatMessage genericResponse = session.addMessage(response);
@@ -94,10 +96,15 @@ public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall
           ChatSession.FunctionExecutionOutcome<Content> outcome = session.validateAndExecuteFunctionCall(functionCall.get(), false);
           switch (outcome.status()) {
             case EXECUTE_ON_CLIENT -> {
+              modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response), false);
               return genericResponse;
             }
-            case EXECUTED -> chatMessage = outcome.functionResponse();
+            case EXECUTED -> {
+              modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response), false);
+              chatMessage = outcome.functionResponse();
+            }
             case VALIDATION_ERROR_RETRY -> {
+              modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response), true);
               if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
                 throw new RuntimeException("Too many function call retries for the same function.");
               } else {
@@ -113,6 +120,7 @@ public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall
           return genericResponse;
         }
       } catch (IOException e) {
+        modeltrace.stop();
         throw new RuntimeException(e);
       }
     }

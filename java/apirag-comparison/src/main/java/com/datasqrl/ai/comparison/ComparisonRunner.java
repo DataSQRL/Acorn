@@ -3,7 +3,7 @@ package com.datasqrl.ai.comparison;
 import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +49,7 @@ public class ComparisonRunner {
         log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
         modelFiles.forEach(modelConfig -> {
           log.info("Loading model config from {}", modelConfig);
-          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), new SimpleMeterRegistry());
+          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), new LoggingMeterRegistry());
           AtomicInteger idCounter = new AtomicInteger(0);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
           String fileName = modelName + "-" + getCurrentTime();

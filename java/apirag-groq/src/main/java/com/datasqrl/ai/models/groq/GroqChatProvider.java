@@ -106,13 +106,11 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       try {
         responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
         modeltrace.stop();
-        modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
       } catch (OpenAiHttpException e) {
         modeltrace.stop();
         // Workaround for groq API bug that throws 400 on some function calls
         if (e.statusCode == 400 && errorFunctionCall != null) {
           responseMessage = new AssistantMessage("", "", null, errorFunctionCall);
-          modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
           errorFunctionCall = null;
         } else {
           throw e;
@@ -137,9 +135,11 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
         ChatSession.FunctionExecutionOutcome<ChatMessage> outcome = session.validateAndExecuteFunctionCall(functionCall, true);
         switch (outcome.status()) {
           case EXECUTE_ON_CLIENT -> {
+            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
+            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), true);
             if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
@@ -150,6 +150,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           }
         }
       } else {
+        modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
         // The text answer
         return genericResponse;
       }

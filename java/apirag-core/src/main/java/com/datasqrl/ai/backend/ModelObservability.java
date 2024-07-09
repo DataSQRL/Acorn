@@ -10,7 +10,7 @@ public interface ModelObservability {
 
     void stop();
 
-    void complete(int numInputTokens, int numOutputTokens);
+    void complete(int numInputTokens, int numOutputTokens, boolean retry);
 
   }
 
@@ -24,7 +24,7 @@ public interface ModelObservability {
         }
 
         @Override
-        public void complete(int numInputTokens, int numOutputTokens) {
+        public void complete(int numInputTokens, int numOutputTokens, boolean retry) {
 
         }
       };

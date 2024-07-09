@@ -62,7 +62,6 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
       Trace modeltrace = observability.start();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
       modeltrace.stop();
-      modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
@@ -82,9 +81,11 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
         ChatSession.FunctionExecutionOutcome<ChatMessage> outcome = session.validateAndExecuteFunctionCall(functionCall, true);
         switch (outcome.status()) {
           case EXECUTE_ON_CLIENT -> {
+            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
+            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), true);
             if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
@@ -95,6 +96,7 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
           }
         }
       } else {
+        modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
         // The text answer
         return genericResponse;
       }
