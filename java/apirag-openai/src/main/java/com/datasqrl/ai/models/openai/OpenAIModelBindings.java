@@ -23,7 +23,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
 
   public OpenAIModelBindings(OpenAIModelConfiguration model) {
     this.model = model;
-    this.tokenCounter = OpenAITokenCounter.of(model);
+    this.tokenCounter = OpenAITokenCounter.of(model.getModelType());
   }
 
 
