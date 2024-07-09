@@ -44,15 +44,15 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 @Slf4j
 public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
 
-  private final GroqChatModel model;
+  private final GroqModelConfiguration config;
   private final OpenAiService service;
   private final String systemPrompt;
   private ChatFunctionCall errorFunctionCall = null;
   public static final String GROQ_URL = "https://api.groq.com/openai/v1/";
 
-  public GroqChatProvider(GroqChatModel model, FunctionBackend backend, String systemPrompt) {
-    super(backend, new GroqModelBindings(model));
-    this.model = model;
+  public GroqChatProvider(GroqModelConfiguration config, FunctionBackend backend, String systemPrompt) {
+    super(backend, new GroqModelBindings(config));
+    this.config = config;
     this.systemPrompt = systemPrompt;
     String groqApiKey = System.getenv("GROQ_API_KEY");
     ObjectMapper mapper = defaultObjectMapper();
@@ -79,18 +79,19 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
 
     int retryCount = 0;
     while (true) {
-      log.info("Calling GROQ with model {}", model.getModelName());
+      log.info("Calling GROQ with model {}", config.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
-          .model(model.getModelName())
+          .model(config.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
           .functionCall("auto")
           .n(1)
-          .temperature(0.2)
-          .maxTokens(model.getCompletionLength())
+          .temperature(config.getTemperature())
+          .topP(config.getTopP())
+          .maxTokens(config.getMaxOutputTokens())
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;

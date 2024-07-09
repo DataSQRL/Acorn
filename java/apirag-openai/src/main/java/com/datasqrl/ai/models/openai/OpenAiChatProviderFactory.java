@@ -19,6 +19,6 @@ public class OpenAiChatProviderFactory extends AbstractChatProviderFactory {
 
   @Override
   public ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt) {
-    return new OpenAiChatProvider(getModel(modelConfiguration, OpenAiChatModel.class), backend, prompt);
+    return new OpenAiChatProvider(new OpenAIModelConfiguration(modelConfiguration), backend, prompt);
   }
 }

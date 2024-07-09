@@ -18,10 +18,10 @@ import java.util.Map;
 
 public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctionCall> {
 
-  GroqChatModel model;
+  GroqModelConfiguration model;
   GroqTokenCounter tokenCounter;
 
-  public GroqModelBindings(GroqChatModel model) {
+  public GroqModelBindings(GroqModelConfiguration model) {
     this.model = model;
     this.tokenCounter = GroqTokenCounter.of(model);
   }
@@ -71,7 +71,7 @@ public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctio
 
   @Override
   public int getMaxInputTokens() {
-    return model.getContextWindowLength() - model.getCompletionLength();
+    return model.getMaxInputTokens();
   }
 
   @Override

@@ -8,7 +8,7 @@
   },
   "model" : {
     "provider" : "openai",
-    "model": "GPT35_TURBO"
+    "name": "gpt-3.5-turbo"
   },
   "local-functions": ["CurrentTime"]
 }

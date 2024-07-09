@@ -18,12 +18,12 @@ import java.util.Map;
 
 public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunctionCall> {
 
-  private final OpenAiChatModel model;
+  private final OpenAIModelConfiguration model;
   OpenAITokenCounter tokenCounter;
 
-  public OpenAIModelBindings(OpenAiChatModel model) {
+  public OpenAIModelBindings(OpenAIModelConfiguration model) {
     this.model = model;
-    this.tokenCounter = OpenAITokenCounter.of(model);
+    this.tokenCounter = OpenAITokenCounter.of(model.getModelType());
   }
 
 
@@ -70,7 +70,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
 
   @Override
   public int getMaxInputTokens() {
-    return model.getContextWindowLength() - model.getCompletionLength();
+    return model.getMaxInputTokens();
   }
 
   @Override

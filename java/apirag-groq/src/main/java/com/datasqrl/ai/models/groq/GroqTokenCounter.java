@@ -34,7 +34,7 @@ public class GroqTokenCounter implements ModelAnalyzer<ChatMessage> {
     return countTokens(jsonString);
   }
 
-  public static GroqTokenCounter of(GroqChatModel model) {
-    return new GroqTokenCounter(HuggingFaceTokenizer.newInstance(model.tokenizerName));
+  public static GroqTokenCounter of(GroqModelConfiguration model) {
+    return new GroqTokenCounter(HuggingFaceTokenizer.newInstance(model.getTokenizerName()));
   }
 }

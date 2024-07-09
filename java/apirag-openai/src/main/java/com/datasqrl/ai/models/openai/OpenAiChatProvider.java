@@ -22,13 +22,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
 
-  private final OpenAiChatModel model;
+  private final OpenAIModelConfiguration config;
   private final OpenAiService service;
   private final String systemPrompt;
 
-  public OpenAiChatProvider(OpenAiChatModel model, FunctionBackend backend, String systemPrompt) {
-    super(backend, new OpenAIModelBindings(model));
-    this.model = model;
+  public OpenAiChatProvider(OpenAIModelConfiguration config, FunctionBackend backend, String systemPrompt) {
+    super(backend, new OpenAIModelBindings(config));
+    this.config = config;
     this.systemPrompt = systemPrompt;
     String openAIToken = System.getenv("OPENAI_API_KEY");
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
@@ -41,18 +41,19 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
 
     int retryCount = 0;
     while (true) {
-      log.info("Calling OpenAI with model {}", model.getModelName());
+      log.info("Calling OpenAI with model {}", config.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
-          .model(model.getModelName())
+          .model(config.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
           .functionCall("auto")
           .n(1)
-          .temperature(0.2)
-          .maxTokens(model.getCompletionLength())
+          .topP(config.getTopP())
+          .temperature(config.getTemperature())
+          .maxTokens(config.getMaxOutputTokens())
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();

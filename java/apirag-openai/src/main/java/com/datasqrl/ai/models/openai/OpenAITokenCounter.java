@@ -5,6 +5,7 @@ import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
+import com.knuddels.jtokkit.api.ModelType;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -32,7 +33,7 @@ public class OpenAITokenCounter implements ModelAnalyzer<ChatMessage> {
     return countTokens(jsonString);
   }
 
-  public static OpenAITokenCounter of(OpenAiChatModel model) {
-    return new OpenAITokenCounter(Encodings.newDefaultEncodingRegistry().getEncodingForModel(model.getEncodingModel()));
+  public static OpenAITokenCounter of(ModelType modelType) {
+    return new OpenAITokenCounter(Encodings.newDefaultEncodingRegistry().getEncodingForModel(modelType));
   }
 }
