@@ -35,8 +35,8 @@
             "expectedAnswerType":"TEXT"
          },
          {
-            "query":"And in the week prior to that?",
-            "expectedAnswer":"You have spent $310.35 on groceries and $673.43 on restaurants and dining. Therefore, your total spending on food in the last week is $983.78.",
+            "query":"And how much did I spend on fun in the week prior to that?",
+            "expectedAnswer":"You have spent $310.35 on restaurants and $673.43 on bars. Therefore, your total spending on fun in the last week is $983.78.",
             "expectedAnswerType":"TEXT"
          }
       ]

@@ -76,7 +76,7 @@ public class LocalAPIExecutor implements APIExecutor {
       }
     }).collect(Collectors.joining(","));
     String response = "{\"data\":{\"messages\":[" + messages + "]}}";
-    log.info("Chat Messages: {}", response);
+    log.debug("Chat Messages: {}", response);
     return response;
   }
 

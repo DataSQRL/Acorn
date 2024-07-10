@@ -107,7 +107,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
   private String combineSystemPromptAndFunctions(String systemPrompt) {
     ObjectMapper objectMapper = new ObjectMapper();
 //    Note: This approach does not take into account the context window for the system prompt
-    String functionText = this.FUNCTION_CALLING_PROMPT
+    String functionText = this.FUNCTION_CALLING_PROMPT + "\n"
         + this.backend.getFunctions().values().stream()
         .map(RuntimeFunctionDefinition::getChatFunction)
         .map(f ->
