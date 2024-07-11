@@ -17,9 +17,9 @@ public class OpenAIModelConfiguration extends AbstractModelConfiguration {
 
   public OpenAIModelConfiguration(Configuration configuration) {
     super(configuration);
-    Optional<ModelType> modelType = ModelType.fromName(super.getModelName());
+    Optional<ModelType> modelType = ModelType.fromName(super.getConfiguredModelName());
     if (modelType.isEmpty()) {
-      log.warn("Unrecognized model name: {}. Using [{}] model for token sizing.", super.getModelName(), DEFAULT_MODEL.getName());
+      log.warn("Unrecognized model name: {}. Using [{}] model for token sizing.", super.getConfiguredModelName(), DEFAULT_MODEL.getName());
       this.modelType = DEFAULT_MODEL;
     } else {
       this.modelType = modelType.get();
@@ -36,4 +36,8 @@ public class OpenAIModelConfiguration extends AbstractModelConfiguration {
   }
 
 
+  @Override
+  public String getModelName() {
+    return modelType.getName();
+  }
 }
