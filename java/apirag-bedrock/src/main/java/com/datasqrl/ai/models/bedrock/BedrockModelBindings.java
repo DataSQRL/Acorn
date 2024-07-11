@@ -15,7 +15,7 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, B
 
   public BedrockModelBindings(BedrockModelConfiguration model) {
     this.model = model;
-    this.tokenCounter = BedrockTokenCounter.of(model);
+    this.tokenCounter = BedrockTokenCounter.of(model.getModelType());
   }
 
   @Override
