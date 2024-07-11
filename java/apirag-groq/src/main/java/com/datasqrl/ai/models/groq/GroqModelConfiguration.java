@@ -1,7 +1,7 @@
 package com.datasqrl.ai.models.groq;
 
 import com.datasqrl.ai.models.AbstractModelConfiguration;
-import com.knuddels.jtokkit.api.ModelType;
+
 import java.util.Optional;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,7 @@ import org.apache.commons.configuration2.Configuration;
 @Value
 public class GroqModelConfiguration extends AbstractModelConfiguration {
 
-  public static final GroqModelType DEFAULT_MODEL = GroqModelType.LLAMA3_7B;
+  public static final GroqModelType DEFAULT_MODEL = GroqModelType.LLAMA3_8B;
 
   GroqModelType modelType;
 
