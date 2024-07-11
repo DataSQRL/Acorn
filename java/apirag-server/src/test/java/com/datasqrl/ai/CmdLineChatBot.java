@@ -7,7 +7,6 @@ import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.config.DataAgentConfiguration;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
 import com.datasqrl.ai.models.openai.OpenAIModelConfiguration;
-import com.datasqrl.ai.models.openai.OpenAiChatModel;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
@@ -17,6 +16,9 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
+import lombok.Value;
+import org.apache.commons.configuration2.MapConfiguration;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -24,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
-import lombok.Value;
 
 /**
  * A simple streaming chatbot for the command line.
@@ -43,7 +44,10 @@ public class CmdLineChatBot {
 
   OpenAiService service;
   FunctionBackend backend;
-  OpenAIModelConfiguration chatConfig = OpenAIModelConfiguration.forModel(OpenAIModelConfiguration.DEFAULT_MODEL);
+  OpenAIModelConfiguration chatConfig = new OpenAIModelConfiguration(
+      new MapConfiguration(Map.of(
+          "name", "gpt-3.5-turbo",
+          "temperature", 0.7)));
 
   /**
    * Initializes a command line chat bot
