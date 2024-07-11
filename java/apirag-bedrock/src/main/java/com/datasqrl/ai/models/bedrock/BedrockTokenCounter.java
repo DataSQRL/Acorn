@@ -10,7 +10,7 @@ import lombok.Value;
 // Added `BedrockTokenCounter` in order to keep the class separation, although it's the same as the `GroqTokenCounter`.
 // Think of merging these two into a `HuggingFaceTokenCounter` in the future
 @Value
-public class BedrockTokenCounter implements ModelAnalyzer<BedrockChatMessage> {
+public class  BedrockTokenCounter implements ModelAnalyzer<BedrockChatMessage> {
 
   HuggingFaceTokenizer tokenizer;
 
@@ -35,7 +35,7 @@ public class BedrockTokenCounter implements ModelAnalyzer<BedrockChatMessage> {
     return countTokens(jsonString);
   }
 
-  public static BedrockTokenCounter of(BedrockChatModel model) {
+  public static BedrockTokenCounter of(BedrockModelType model) {
     return new BedrockTokenCounter(HuggingFaceTokenizer.newInstance(model.tokenizerName));
   }
 }

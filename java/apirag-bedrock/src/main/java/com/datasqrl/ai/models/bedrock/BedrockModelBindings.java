@@ -10,12 +10,12 @@ import java.util.Map;
 
 public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, BedrockFunctionCall> {
 
-  private final BedrockChatModel model;
+  private final BedrockModelConfiguration model;
   BedrockTokenCounter tokenCounter;
 
-  public BedrockModelBindings(BedrockChatModel model) {
+  public BedrockModelBindings(BedrockModelConfiguration model) {
     this.model = model;
-    this.tokenCounter = BedrockTokenCounter.of(model);
+    this.tokenCounter = BedrockTokenCounter.of(model.getModelType());
   }
 
   @Override
@@ -75,7 +75,7 @@ public class BedrockModelBindings implements ModelBindings<BedrockChatMessage, B
 
   @Override
   public int getMaxInputTokens() {
-    return model.getContextWindowLength() - model.getCompletionLength();
+    return model.getMaxInputTokens();
   }
 
   @Override
