@@ -14,7 +14,7 @@ public abstract class AbstractModelConfiguration implements ModelConfiguration {
   public static final String MAX_OUTPUT_TOKENS_KEY = "max_output_tokens";
   public static final String TEMPERATURE_KEY = "temperature";
   public static final double TEMPERATURE_DEFAULT = 0.5;
-  public static final String TOP_P_KEY = "top-p";
+  public static final String TOP_P_KEY = "top_p";
   public static final double TOP_P_DEFAULT = 0.9;
   public static final String TOKENIZER_KEY = "tokenizer";
 
