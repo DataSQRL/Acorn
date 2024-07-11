@@ -37,10 +37,6 @@ public abstract class AbstractModelConfiguration implements ModelConfiguration {
     return configuration.getDouble(TOP_P_KEY, TOP_P_DEFAULT);
   }
 
-  public static Configuration getConfigurationFor(String modelName) {
-    return new MapConfiguration(Map.of(MODEL_NAME_KEY, modelName));
-  }
-
   protected abstract int getMaxTokensForModel();
 
   @Override

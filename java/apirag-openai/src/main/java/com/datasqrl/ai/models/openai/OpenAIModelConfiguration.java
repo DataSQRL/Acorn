@@ -26,10 +26,6 @@ public class OpenAIModelConfiguration extends AbstractModelConfiguration {
     }
   }
 
-  public static OpenAIModelConfiguration forModel(ModelType modelType) {
-    return new OpenAIModelConfiguration(getConfigurationFor(modelType.getName()));
-  }
-
   @Override
   protected int getMaxTokensForModel() {
     return modelType.getMaxContextLength();
