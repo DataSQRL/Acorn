@@ -37,7 +37,6 @@ import org.apache.commons.configuration2.JSONConfiguration;
 public class DataAgentConfiguration {
 
   public static final String MODEL_PREFIX = "model";
-  public static final String MODEL_PROVIDER_KEY = "provider";
 
   public static final String API_KEY = "apis";
   public static final String PLOT_FCT_KEY = "plot-function";
@@ -120,17 +119,7 @@ public class DataAgentConfiguration {
   public ChatClientProvider getChatProvider() {
     FunctionBackend backend = getFunctionBackend();
     String systemPrompt = getSystemPrompt();
-    return getChatProviderFactory().create(getModelConfiguration(), backend, systemPrompt);
-  }
-
-  public ChatProviderFactory getChatProviderFactory() {
-    String provider = modelConfiguration.getString(MODEL_PROVIDER_KEY);
-    ErrorHandling.checkArgument(provider!=null && !provider.isBlank(), "Need to configure `[%s.%s]` in configuration file.", MODEL_PREFIX, MODEL_PROVIDER_KEY);
-    Optional<ChatProviderFactory> providerFact = ServiceLoader.load(ChatProviderFactory.class).stream()
-        .map(Provider::get).filter(cpf -> cpf.getProviderName().equalsIgnoreCase(provider))
-        .findFirst();
-    ErrorHandling.checkArgument(providerFact.isPresent(), "Could not find model provider: " + provider);
-    return providerFact.get();
+    return ChatProviderFactory.fromConfiguration(modelConfiguration).create(getModelConfiguration(), backend, systemPrompt);
   }
 
   public Function<String,Map<String,Object>> getContextFunction() {
@@ -148,16 +137,12 @@ public class DataAgentConfiguration {
     return baseConfiguration.containsKey(AUTH_FIELD_KEY);
   }
 
-  public static DataAgentConfiguration fromFile(Path configPath, Path toolsPath) {
+  public static DataAgentConfiguration fromFile(Path configPath, Path toolsPath) throws IOException {
     ErrorHandling.checkArgument(Files.isRegularFile(configPath), "Cannot access configuration file: %s", configPath);
     ErrorHandling.checkArgument(Files.isRegularFile(toolsPath), "Cannot access tools file: %s", toolsPath);
     JSONConfiguration baseConfig = JsonUtil.getConfiguration(configPath);
     String toolsContent;
-    try {
-      toolsContent = Files.readString(toolsPath);
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Could not read tools file: %s" + toolsPath, e);
-    }
+    toolsContent = Files.readString(toolsPath);
     String extension = ConfigurationUtil.getFileExtension(toolsPath);
     List<RuntimeFunctionDefinition> tools;
     if (extension.equalsIgnoreCase("graphql") || extension.equalsIgnoreCase("graphqls")) {
@@ -166,7 +151,7 @@ public class DataAgentConfiguration {
           APIExecutorFactory.DEFAULT_NAME);
       tools = converter.convert(toolsContent);
     } else {
-      tools = FunctionBackendFactory.parseTools(toolsContent);
+      tools = FunctionBackendFactory.readTools(toolsContent);
     }
     return new DataAgentConfiguration(baseConfig, baseConfig.subset("model"), tools);
   }

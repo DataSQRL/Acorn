@@ -24,7 +24,7 @@ public class FunctionBackendTest {
   @SneakyThrows
   public static List<RuntimeFunctionDefinition> getNutshopFunctions() {
     String tools = Files.readString(Path.of("src" , "test", "resources", "nutshop-c360.tools.json"));
-    return FunctionBackendFactory.parseTools(tools);
+    return FunctionBackendFactory.readTools(tools);
   }
 
   @Test

@@ -54,7 +54,7 @@ public class GraphQLSchemaConverterTest {
     String expectedResult = ConfigurationUtil.getResourcesFileAsString(
       "graphql/nutshop-schema.tools.json");
     assertEquals(expectedResult, result);
-    List<RuntimeFunctionDefinition> functions = FunctionBackendFactory.parseTools(result);
+    List<RuntimeFunctionDefinition> functions = FunctionBackendFactory.readTools(result);
     assertEquals(6, functions.size());
   }
 

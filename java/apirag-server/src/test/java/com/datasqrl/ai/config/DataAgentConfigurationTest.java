@@ -2,6 +2,7 @@ package com.datasqrl.ai.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,7 @@ public class DataAgentConfigurationTest {
   public static final Path CONFIG_RESOURCES = Path.of("src", "test", "resources", "config");
 
   @Test
-  public void testNutshopConfiguration() {
+  public void testNutshopConfiguration() throws IOException {
     Path nutshopGraphQl = GRAPHQL_RESOURCES.resolve("nutshop-schema.graphqls");
     Path nutshopTools = CORE_RESOURCES.resolve("nutshop-c360.tools.json");
     Path nutshopConfig = CONFIG_RESOURCES.resolve("nutshop.config.json");

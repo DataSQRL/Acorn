@@ -3,7 +3,13 @@ package com.datasqrl.ai.backend;
 import com.datasqrl.ai.api.APIExecutor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import lombok.NonNull;
@@ -15,14 +21,20 @@ public class FunctionBackendFactory {
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
-  public static List<RuntimeFunctionDefinition> parseTools(@NonNull String tools) {
-    try {
-      return mapper.readValue(tools,
-          new TypeReference<>() {
-          });
-    } catch (IOException e) {
-      throw new RuntimeException("Could not parse tools file", e);
-    }
+  public static List<RuntimeFunctionDefinition> readTools(@NonNull URL uri) throws IOException {
+    String content = Resources.toString(uri, StandardCharsets.UTF_8);
+    return readTools(content);
+  }
+
+  public static List<RuntimeFunctionDefinition> readTools(@NonNull Path path) throws IOException {
+    String tools = Files.readString(path);
+    return readTools(tools);
+  }
+
+  public static List<RuntimeFunctionDefinition> readTools(@NonNull String tools) throws IOException {
+    return mapper.readValue(tools,
+        new TypeReference<>() {
+        });
   }
 
   public static FunctionBackend of(@NonNull List<RuntimeFunctionDefinition> functions, @NonNull Map<String,APIExecutor> apiExecutors) {
