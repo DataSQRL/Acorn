@@ -21,9 +21,9 @@ public class BedrockModelConfiguration extends AbstractModelConfiguration {
 
   public BedrockModelConfiguration(Configuration configuration) {
     super(configuration);
-    Optional<BedrockModelType> modelType = BedrockModelType.fromName(super.getConfiguredModelName());
+    Optional<BedrockModelType> modelType = BedrockModelType.fromName(super.getModelName());
     if (modelType.isEmpty()) {
-      log.warn("Unrecognized model name: {}. Using [{}] model for token sizing.", super.getConfiguredModelName(), DEFAULT_MODEL.getModelName());
+      log.warn("Unrecognized model name: {}. Using [{}] model for token sizing.", super.getModelName(), DEFAULT_MODEL.getModelName());
       this.modelType = DEFAULT_MODEL;
     } else {
       this.modelType = modelType.get();
@@ -33,11 +33,6 @@ public class BedrockModelConfiguration extends AbstractModelConfiguration {
   @Override
   protected int getMaxTokensForModel() {
     return modelType.getContextWindowLength();
-  }
-
-  @Override
-  public String getModelName() {
-    return modelType.getModelName();
   }
 
   @Override

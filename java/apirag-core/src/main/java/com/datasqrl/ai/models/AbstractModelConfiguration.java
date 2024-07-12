@@ -1,10 +1,8 @@
 package com.datasqrl.ai.models;
 
 import com.datasqrl.ai.util.ErrorHandling;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 
 @AllArgsConstructor
 public abstract class AbstractModelConfiguration implements ModelConfiguration {
@@ -22,7 +20,7 @@ public abstract class AbstractModelConfiguration implements ModelConfiguration {
 
   protected final Configuration configuration;
 
-  protected String getConfiguredModelName() {
+  public String getModelName() {
     ErrorHandling.checkArgument(configuration.containsKey(MODEL_NAME_KEY), "Need to configure model %s", MODEL_NAME_KEY);
     return configuration.getString(MODEL_NAME_KEY);
   }

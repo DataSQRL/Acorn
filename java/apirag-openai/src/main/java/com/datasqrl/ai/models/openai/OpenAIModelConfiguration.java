@@ -2,7 +2,9 @@ package com.datasqrl.ai.models.openai;
 
 import com.datasqrl.ai.models.AbstractModelConfiguration;
 import com.knuddels.jtokkit.api.ModelType;
+
 import java.util.Optional;
+
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
@@ -17,9 +19,9 @@ public class OpenAIModelConfiguration extends AbstractModelConfiguration {
 
   public OpenAIModelConfiguration(Configuration configuration) {
     super(configuration);
-    Optional<ModelType> modelType = ModelType.fromName(super.getConfiguredModelName());
+    Optional<ModelType> modelType = ModelType.fromName(super.getModelName());
     if (modelType.isEmpty()) {
-      log.warn("Unrecognized model name: {}. Using [{}] model for token sizing.", super.getConfiguredModelName(), DEFAULT_MODEL.getName());
+      log.warn("Unrecognized model name: {}. Using [{}] model for token sizing.", super.getModelName(), DEFAULT_MODEL.getName());
       this.modelType = DEFAULT_MODEL;
     } else {
       this.modelType = modelType.get();
@@ -31,9 +33,4 @@ public class OpenAIModelConfiguration extends AbstractModelConfiguration {
     return modelType.getMaxContextLength();
   }
 
-
-  @Override
-  public String getModelName() {
-    return modelType.getName();
-  }
 }
