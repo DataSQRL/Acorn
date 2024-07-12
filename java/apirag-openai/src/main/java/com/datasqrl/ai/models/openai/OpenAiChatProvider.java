@@ -43,7 +43,7 @@ public class OpenAiChatProvider extends ChatClientProvider<ChatMessage, ChatFunc
     while (true) {
       log.info("Calling OpenAI with model {}", config.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
-      log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
+      log.debug("Calling OpenAI with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
           .model(config.getModelName())

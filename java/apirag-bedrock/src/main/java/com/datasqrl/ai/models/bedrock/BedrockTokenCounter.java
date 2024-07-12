@@ -5,14 +5,12 @@ import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 // Added `BedrockTokenCounter` in order to keep the class separation, although it's the same as the `GroqTokenCounter`.
 // Think of merging these two into a `HuggingFaceTokenCounter` in the future
-@Value
-public class  BedrockTokenCounter implements ModelAnalyzer<BedrockChatMessage> {
-
-  HuggingFaceTokenizer tokenizer;
+@Slf4j
+public record BedrockTokenCounter(HuggingFaceTokenizer tokenizer) implements ModelAnalyzer<BedrockChatMessage> {
 
   @Override
   public int countTokens(BedrockChatMessage message) {
@@ -35,7 +33,13 @@ public class  BedrockTokenCounter implements ModelAnalyzer<BedrockChatMessage> {
     return countTokens(jsonString);
   }
 
-  public static BedrockTokenCounter of(BedrockModelType model) {
-    return new BedrockTokenCounter(HuggingFaceTokenizer.newInstance(model.tokenizerName));
+  public static BedrockTokenCounter of(BedrockModelConfiguration modelConfig) {
+    try (HuggingFaceTokenizer huggingFaceTokenizer = HuggingFaceTokenizer.newInstance(modelConfig.getTokenizerName())) {
+      return new BedrockTokenCounter(huggingFaceTokenizer);
+    } catch (Exception e) {
+      log.warn("Unrecognized tokenizer name: {}. Using [{}] tokenizer as backup.",
+          modelConfig.getTokenizerName(), BedrockModelConfiguration.DEFAULT_MODEL.getTokenizerName());
+      return new BedrockTokenCounter(HuggingFaceTokenizer.newInstance(BedrockModelConfiguration.DEFAULT_MODEL.getTokenizerName()));
+    }
   }
 }

@@ -6,12 +6,10 @@ import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;
-import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
-@Value
-public class GroqTokenCounter implements ModelAnalyzer<ChatMessage> {
-
-  HuggingFaceTokenizer tokenizer;
+@Slf4j
+public record GroqTokenCounter(HuggingFaceTokenizer tokenizer) implements ModelAnalyzer<ChatMessage> {
 
   @Override
   public int countTokens(ChatMessage message) {
@@ -34,7 +32,13 @@ public class GroqTokenCounter implements ModelAnalyzer<ChatMessage> {
     return countTokens(jsonString);
   }
 
-  public static GroqTokenCounter of(GroqModelConfiguration model) {
-    return new GroqTokenCounter(HuggingFaceTokenizer.newInstance(model.getTokenizerName()));
+  public static GroqTokenCounter of(GroqModelConfiguration modelConfig) {
+    try (HuggingFaceTokenizer huggingFaceTokenizer = HuggingFaceTokenizer.newInstance(modelConfig.getTokenizerName())) {
+      return new GroqTokenCounter(huggingFaceTokenizer);
+    } catch (Exception e) {
+      log.warn("Unrecognized tokenizer name: {}. Using [{}] tokenizer as backup.",
+          modelConfig.getTokenizerName(), GroqModelConfiguration.DEFAULT_MODEL.getTokenizerName());
+      return new GroqTokenCounter(HuggingFaceTokenizer.newInstance(GroqModelConfiguration.DEFAULT_MODEL.getTokenizerName()));
+    }
   }
 }

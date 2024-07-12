@@ -32,6 +32,7 @@ public class GroqModelConfiguration extends AbstractModelConfiguration {
     return modelType.getContextWindowLength();
   }
 
+  @Override
   public String getTokenizerName() {
     return configuration.getString(AbstractModelConfiguration.TOKENIZER_KEY, modelType.getTokenizerName());
   }

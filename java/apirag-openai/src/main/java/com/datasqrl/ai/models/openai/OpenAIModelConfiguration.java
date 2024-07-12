@@ -33,4 +33,8 @@ public class OpenAIModelConfiguration extends AbstractModelConfiguration {
     return modelType.getMaxContextLength();
   }
 
+  @Override
+  public String getTokenizerName() {
+    return configuration.getString(AbstractModelConfiguration.TOKENIZER_KEY, modelType.getEncodingType().getName());
+  }
 }

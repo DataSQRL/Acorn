@@ -36,6 +36,11 @@ public class BedrockModelConfiguration extends AbstractModelConfiguration {
   }
 
   @Override
+  public String getTokenizerName() {
+    return configuration.getString(AbstractModelConfiguration.TOKENIZER_KEY, modelType.getTokenizerName());
+  }
+
+  @Override
   public int getMaxOutputTokens() {
     if (configuration.containsKey(MAX_GENERATION_LENGTH_KEY)) return configuration.getInt(MAX_GENERATION_LENGTH_KEY);
     if (configuration.containsKey(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY))
