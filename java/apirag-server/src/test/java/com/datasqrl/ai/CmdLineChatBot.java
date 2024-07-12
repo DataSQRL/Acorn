@@ -6,7 +6,7 @@ import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.backend.FunctionValidation;
 import com.datasqrl.ai.config.DataAgentConfiguration;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
-import com.datasqrl.ai.models.openai.OpenAiChatModel;
+import com.datasqrl.ai.models.openai.OpenAIModelConfiguration;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
@@ -17,6 +17,7 @@ import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
 import lombok.Value;
+import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,7 +44,10 @@ public class CmdLineChatBot {
 
   OpenAiService service;
   FunctionBackend backend;
-  OpenAiChatModel chatModel = OpenAiChatModel.GPT35_TURBO;
+  OpenAIModelConfiguration chatConfig = new OpenAIModelConfiguration(
+      new MapConfiguration(Map.of(
+          "name", "gpt-3.5-turbo",
+          "temperature", 0.7)));
 
   /**
    * Initializes a command line chat bot
@@ -64,7 +68,7 @@ public class CmdLineChatBot {
    */
   public void start(String instructionMessage, Map<String, Object> context) throws IOException {
     Scanner scanner = new Scanner(System.in);
-    OpenAIModelBindings modelBindings = new OpenAIModelBindings(chatModel);
+    OpenAIModelBindings modelBindings = new OpenAIModelBindings(chatConfig);
     ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, instructionMessage, modelBindings);
 
     System.out.print("First Query: ");
@@ -75,12 +79,12 @@ public class CmdLineChatBot {
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
-          .model(chatModel.getModelName())
+          .model(chatConfig.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
           .functionCall("auto")
           .n(1)
-          .maxTokens(chatModel.getContextWindowLength())
+          .maxTokens(chatConfig.getMaxOutputTokens())
           .logitBias(new HashMap<>())
           .build();
       Flowable<ChatCompletionChunk> flowable = service.streamChatCompletion(chatCompletionRequest);

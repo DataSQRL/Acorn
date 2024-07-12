@@ -1,7 +1,6 @@
 package com.datasqrl.ai.backend;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.Map;
 
 public interface ModelBindings<Message, FunctionCall> {

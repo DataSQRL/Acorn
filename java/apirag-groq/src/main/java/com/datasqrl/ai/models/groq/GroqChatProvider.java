@@ -1,5 +1,8 @@
 package com.datasqrl.ai.models.groq;
 
+import static com.theokanning.openai.service.OpenAiService.defaultClient;
+import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
+
 import com.datasqrl.ai.backend.ChatSession;
 import com.datasqrl.ai.backend.ContextWindow;
 import com.datasqrl.ai.backend.FunctionBackend;
@@ -17,6 +20,13 @@ import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -31,29 +41,18 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static com.theokanning.openai.service.OpenAiService.defaultClient;
-import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
-
 @Slf4j
 public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFunctionCall> {
 
-  private final GroqChatModel model;
+  private final GroqModelConfiguration config;
   private final OpenAiService service;
   private final String systemPrompt;
   private ChatFunctionCall errorFunctionCall = null;
   public static final String GROQ_URL = "https://api.groq.com/openai/v1/";
 
-  public GroqChatProvider(GroqChatModel model, FunctionBackend backend, String systemPrompt) {
-    super(backend, new GroqModelBindings(model));
-    this.model = model;
+  public GroqChatProvider(GroqModelConfiguration config, FunctionBackend backend, String systemPrompt) {
+    super(backend, new GroqModelBindings(config));
+    this.config = config;
     this.systemPrompt = systemPrompt;
     String groqApiKey = System.getenv("GROQ_API_KEY");
     ObjectMapper mapper = defaultObjectMapper();
@@ -80,18 +79,19 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
 
     int retryCount = 0;
     while (true) {
-      log.info("Calling GROQ with model {}", model.getModelName());
+      log.info("Calling GROQ with model {}", config.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
       ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
           .builder()
-          .model(model.getModelName())
+          .model(config.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
           .functionCall("auto")
           .n(1)
-          .temperature(0.2)
-          .maxTokens(model.getCompletionLength())
+          .temperature(config.getTemperature())
+          .topP(config.getTopP())
+          .maxTokens(config.getMaxOutputTokens())
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;
@@ -106,7 +106,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           throw e;
         }
       }
-      log.info("Response:\n{}", responseMessage);
+      log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
       if (res != null) {
@@ -154,7 +154,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
       ResponseBody body = response.body();
       int code = response.code();
       if (code == 400 && body != null && body.contentType() != null && body.contentType().subtype() != null
-          && body.contentType().subtype().toLowerCase().equals("json")) {
+          && body.contentType().subtype().equalsIgnoreCase("json")) {
         BufferedSource source = body.source();
         source.request(Long.MAX_VALUE); // Buffer the entire body.
         Buffer buffer = source.buffer();

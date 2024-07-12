@@ -13,16 +13,15 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.SystemMessage;
 import com.theokanning.openai.completion.chat.ToolMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
-
 import java.time.Instant;
 import java.util.Map;
 
 public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunctionCall> {
 
-  private final OpenAiChatModel model;
+  private final OpenAIModelConfiguration model;
   OpenAITokenCounter tokenCounter;
 
-  public OpenAIModelBindings(OpenAiChatModel model) {
+  public OpenAIModelBindings(OpenAIModelConfiguration model) {
     this.model = model;
     this.tokenCounter = OpenAITokenCounter.of(model);
   }
@@ -71,7 +70,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
 
   @Override
   public int getMaxInputTokens() {
-    return model.getContextWindowLength() - model.getCompletionLength();
+    return model.getMaxInputTokens();
   }
 
   @Override

@@ -9,6 +9,8 @@ import com.datasqrl.ai.models.ChatClientProvider;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -18,14 +20,10 @@ import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 @Slf4j
 public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, BedrockFunctionCall> {
 
-  private final BedrockChatModel model;
+  private final BedrockModelConfiguration config;
   private final BedrockRuntimeClient client;
   private final ChatMessageEncoder<BedrockChatMessage> encoder;
   private final String systemPrompt;
@@ -43,16 +41,16 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       + "}\n"
       + "Here are the functions you can use:";
 
-  public BedrockChatProvider(BedrockChatModel model, FunctionBackend backend, String systemPrompt) {
-    super(backend, new BedrockModelBindings(model));
-    this.model = model;
+  public BedrockChatProvider(BedrockModelConfiguration config, FunctionBackend backend, String systemPrompt) {
+    super(backend, new BedrockModelBindings(config));
+    this.config = config;
     this.systemPrompt = combineSystemPromptAndFunctions(systemPrompt);
     EnvironmentVariableCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
     this.client = BedrockRuntimeClient.builder()
-        .region(Region.US_WEST_2)
+        .region(Region.of(config.getRegion()))
         .credentialsProvider(credentialsProvider)
         .build();
-    this.encoder = switch (model) {
+    this.encoder = switch (config.getModelType()) {
       case LLAMA3_70B, LLAMA3_8B -> new Llama3MessageEncoder();
     };
   }
@@ -69,8 +67,8 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       String prompt = contextWindow.getMessages().stream()
           .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
-      log.info("Calling Bedrock with model {}", model.getModelName());
-      JSONObject responseAsJson = promptBedrock(client, model.getModelName(), prompt, model.getCompletionLength());
+      log.info("Calling Bedrock with model {}", config.getModelName());
+      JSONObject responseAsJson = promptBedrock(client, config.getModelName(), prompt);
       BedrockChatMessage responseMessage = encoder.decodeMessage(responseAsJson.get("generation").toString(), BedrockChatRole.ASSISTANT.getRole());
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
@@ -119,11 +117,12 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
     return systemPrompt + "\n" + functionText + "\n";
   }
 
-  private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt, int maxTokens) {
+  private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt) {
     JSONObject request = new JSONObject()
         .put("prompt", prompt)
-        .put("max_gen_len", maxTokens)
-        .put("temperature", 0F);
+        .put("max_gen_len", config.getMaxOutputTokens())
+        .put("top_p", config.getTopP())
+        .put("temperature", config.getTemperature());
     InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
         .modelId(modelId)
         .body(SdkBytes.fromUtf8String(request.toString()))
@@ -131,7 +130,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
     log.debug("Bedrock prompt: {}", prompt);
     InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
-    log.info("🤖Bedrock Response: {}", jsonObject);
+    log.debug("Bedrock Response: {}", jsonObject);
     return jsonObject;
   }
 }

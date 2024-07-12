@@ -9,7 +9,7 @@ public enum BedrockChatRole {
   ASSISTANT("assistant"),
   FUNCTION("function");
 
-  private String role;
+  private final String role;
 
   BedrockChatRole(String role) {
     this.role = role;
