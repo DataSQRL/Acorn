@@ -6,8 +6,8 @@
   },
   "model" : {
     "provider" : "vertex",
-    "model": "GEMINI_1_5_FLASH",
-    "vertex-project-id": "vertex-gemini-424313",
-    "vertex-location": "europe-west4"
+    "name": "gemini-1.5-flash",
+    "project_id": "vertex-gemini-424313",
+    "location": "europe-west4"
   }
 }
