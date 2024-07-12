@@ -106,7 +106,7 @@ public class GroqChatProvider extends ChatClientProvider<ChatMessage, ChatFuncti
           throw e;
         }
       }
-      log.info("Response:\n{}", responseMessage);
+      log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
       if (res != null) {
