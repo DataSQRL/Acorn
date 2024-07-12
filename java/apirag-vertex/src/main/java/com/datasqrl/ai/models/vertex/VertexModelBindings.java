@@ -20,16 +20,13 @@ import java.util.Optional;
 
 public class VertexModelBindings implements ModelBindings<Content, FunctionCall> {
 
-  private final VertexChatModel model;
-  private final GenerativeModel generativeModel;
+  private final VertexModelConfiguration model;
   private final VertexTokenCounter tokenCounter;
 
 
-  public VertexModelBindings(VertexChatModel model, String vertexProjectId, String vertexProjectLocation) {
+  public VertexModelBindings(VertexModelConfiguration model) {
     this.model = model;
-    VertexAI vertexAI = new VertexAI(vertexProjectId, vertexProjectLocation);
-    this.generativeModel = new GenerativeModel(model.modelName, vertexAI);
-    this.tokenCounter = VertexTokenCounter.of(generativeModel);
+    this.tokenCounter = VertexTokenCounter.of(model);
   }
 
   @Override
@@ -110,7 +107,7 @@ public class VertexModelBindings implements ModelBindings<Content, FunctionCall>
   //  TODO: This method is the same in all bindings
   @Override
   public int getMaxInputTokens() {
-    return model.getContextWindowLength() - model.getCompletionLength();
+    return model.getMaxInputTokens();
   }
 
   @Override

@@ -36,11 +36,11 @@ public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall
   private final String systemPrompt;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public VertexChatProvider(VertexChatModel model, String projectId, String projectLocation, FunctionBackend backend, String systemPrompt) {
-    super(backend, new VertexModelBindings(model, projectId, projectLocation));
+  public VertexChatProvider(VertexModelConfiguration config, FunctionBackend backend, String systemPrompt) {
+    super(backend, new VertexModelBindings(config));
     this.systemPrompt = systemPrompt;
-    VertexAI vertexAI = new VertexAI(projectId, projectLocation);
-    this.chatModel = new GenerativeModel(model.modelName, vertexAI)
+    VertexAI vertexAI = new VertexAI(config.getProjectId(), config.getLocation());
+    this.chatModel = new GenerativeModel(config.getModelName(), vertexAI)
         .withSystemInstruction(ContentMaker.fromString(systemPrompt))
         .withTools(getTools());
   }

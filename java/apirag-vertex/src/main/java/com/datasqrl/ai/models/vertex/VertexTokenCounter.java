@@ -3,10 +3,13 @@ package com.datasqrl.ai.models.vertex;
 import com.datasqrl.ai.backend.FunctionDefinition;
 import com.datasqrl.ai.backend.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public record VertexTokenCounter(GenerativeModel model) implements ModelAnalyzer<Content> {
 
   @SneakyThrows
@@ -30,7 +33,15 @@ public record VertexTokenCounter(GenerativeModel model) implements ModelAnalyzer
     return model.countTokens(message).getTotalTokens();
   }
 
-  public static VertexTokenCounter of(GenerativeModel model) {
-    return new VertexTokenCounter(model);
+  public static VertexTokenCounter of(VertexModelConfiguration modelConfig) {
+    VertexAI vertexAI = new VertexAI(modelConfig.getProjectId(), modelConfig.getLocation());
+    try {
+      GenerativeModel model = new GenerativeModel(modelConfig.getTokenizerName(), vertexAI);
+      return new VertexTokenCounter(model);
+    } catch (Exception e) {
+      log.warn("Unrecognized model name: {}. Using [{}] model for tokenizing as backup.",
+          modelConfig.getTokenizerName(), VertexModelConfiguration.DEFAULT_MODEL.getModelName());
+      return new VertexTokenCounter(new GenerativeModel(VertexModelConfiguration.DEFAULT_MODEL.getModelName(), vertexAI));
+    }
   }
 }
