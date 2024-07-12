@@ -118,7 +118,12 @@ public class FunctionBackend {
       payload.set(k, mapper.valueToTree(v));
     });
     APIQuery query = saveChatFct.get().getApi();
-    return getExecutor(query).executeQueryAsync(query, payload);
+    try {
+      return getExecutor(query).executeQueryAsync(query, payload);
+    } catch (IOException e) {
+      log.error("Could not save message: {}", message, e);
+      return CompletableFuture.failedFuture(e);
+    }
   }
 
   private APIExecutor getExecutor(APIQuery query) {

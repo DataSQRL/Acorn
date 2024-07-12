@@ -1,5 +1,6 @@
 package com.datasqrl.ai.api;
 
+import com.datasqrl.ai.api.RestUtil.RestCall;
 import com.datasqrl.ai.util.ErrorHandling;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +8,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,18 +17,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Implements the {@link APIExecutor} interface for GraphQL APIs using Spring RestTemplate as the client.
+ * Implements the {@link APIExecutor} interface for REST APIs using Spring RestTemplate as the client.
  */
-@Slf4j
 @Service
-public class GraphQLExecutor implements APIExecutor {
+public class SpringRESTExecutor implements APIExecutor {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private final RestTemplate restTemplate;
   private final String endpoint;
   private final Optional<String> authHeader;
 
-  public GraphQLExecutor(@NonNull String endpoint, @NonNull Optional<String> authHeader) {
+  public SpringRESTExecutor(@NonNull String endpoint, @NonNull Optional<String> authHeader) {
     this.restTemplate = new RestTemplate();
     this.endpoint = endpoint;
     this.authHeader = authHeader;
@@ -36,16 +35,19 @@ public class GraphQLExecutor implements APIExecutor {
 
   @Override
   public void validate(APIQuery query) throws IllegalArgumentException {
-    ErrorHandling.checkNotNullOrEmpty(query.getQuery(), "`query` cannot be empty");
+    ErrorHandling.checkNotNullOrEmpty(query.getMethod(), "`method` cannot be empty");
+    ErrorHandling.checkArgument(getMethod(query.getMethod())!=null);
+    ErrorHandling.checkNotNullOrEmpty(query.getPath(), "`path` cannot be empty");
   }
+
 
   @Override
   public String executeQuery(APIQuery query, JsonNode arguments) throws IOException {
-    HttpEntity<String> request = buildRequest(query.getQuery(), arguments);
-    log.debug("Executing query:  {}", request);
-    ResponseEntity<String> response = restTemplate.exchange(endpoint, HttpMethod.POST, request, String.class);
+    RestCall call = RestUtil.createRestCall(query, arguments);
+    HttpEntity<String> request = buildRequest(call.body());
+    ResponseEntity<String> response = restTemplate.exchange(endpoint + call.path(), getMethod(query.getMethod()), request, String.class);
+
     if (!response.getStatusCode().is2xxSuccessful()) {
-      log.error("Query failed: {}", response);
       throw new IOException("Query failed: " + response);
     }
 
@@ -63,15 +65,20 @@ public class GraphQLExecutor implements APIExecutor {
     });
   }
 
-  private HttpEntity<String> buildRequest(String query, JsonNode arguments) throws IOException {
-    JsonNode requestBody = objectMapper.createObjectNode()
-        .put("query", query)
-        .set("variables", arguments);
-
+  private HttpEntity<String> buildRequest(JsonNode requestBody) throws IOException {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
     authHeader.ifPresent(h -> headers.set("Authorization", h));
+    return new HttpEntity<>(!requestBody.isEmpty()?objectMapper.writeValueAsString(requestBody):null, headers);
+  }
 
-    return new HttpEntity<>(objectMapper.writeValueAsString(requestBody), headers);
+  private static HttpMethod getMethod(String method) {
+    return switch (method.trim().toUpperCase()) {
+      case "GET" -> HttpMethod.GET;
+      case "POST" -> HttpMethod.POST;
+      case "PUT" -> HttpMethod.PUT;
+      case "DELETE" -> HttpMethod.DELETE;
+      default -> throw new IllegalArgumentException("Unsupported REST method: " + method);
+    };
   }
 }

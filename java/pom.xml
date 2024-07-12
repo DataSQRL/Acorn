@@ -17,6 +17,7 @@
     <module>apirag-vertex</module>
     <module>apirag-graphql</module>
     <module>apirag-rest</module>
+    <module>apirag-api</module>
     <module>apirag-server</module>
   </modules>
 
@@ -34,6 +35,7 @@
     <slf4j.version>2.0.13</slf4j.version>
     <graphql-java.version>22.1</graphql-java.version>
     <reflections.version>0.10.2</reflections.version>
+    <okhttp.version>4.12.0</okhttp.version>
   </properties>
 
   <dependencies>

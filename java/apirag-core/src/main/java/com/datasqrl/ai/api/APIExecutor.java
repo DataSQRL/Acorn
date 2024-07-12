@@ -29,7 +29,7 @@ public interface APIExecutor {
    * @param arguments the arguments for the query
    * @return A future for the result
    */
-  default CompletableFuture<String> executeQueryAsync(APIQuery query, JsonNode arguments) {
+  default CompletableFuture<String> executeQueryAsync(APIQuery query, JsonNode arguments) throws IOException {
     return CompletableFuture.supplyAsync(() -> {
       try {
         return executeQuery(query, arguments);

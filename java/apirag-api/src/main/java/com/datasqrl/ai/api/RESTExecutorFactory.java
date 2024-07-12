@@ -5,9 +5,9 @@ import java.util.Optional;
 import org.apache.commons.configuration2.Configuration;
 
 @AutoService(APIExecutorFactory.class)
-public class GraphQLExecutorFactory implements APIExecutorFactory {
+public class RESTExecutorFactory implements APIExecutorFactory {
 
-  public static final String TYPE = "graphql";
+  public static final String TYPE = "rest";
   public static final String AUTH_HEADERS_KEY = "auth";
 
   @Override
@@ -18,7 +18,6 @@ public class GraphQLExecutorFactory implements APIExecutorFactory {
   @Override
   public APIExecutor create(Configuration configuration, String name) {
     BaseConfiguration baseConfiguration = APIExecutorFactory.readBaseConfiguration(configuration, name);
-    Optional<String> authHeaders = Optional.ofNullable(configuration.getString(AUTH_HEADERS_KEY));
-    return new GraphQLExecutor(baseConfiguration.url(), authHeaders);
+    return new RESTExecutor(baseConfiguration.url(), configuration.getString(AUTH_HEADERS_KEY));
   }
 }
