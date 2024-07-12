@@ -2,10 +2,12 @@ package com.datasqrl.ai.models;
 
 import com.datasqrl.ai.backend.FunctionBackend;
 import com.datasqrl.ai.util.ErrorHandling;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.MapConfiguration;
 
 public interface ChatProviderFactory {
 
@@ -23,6 +25,10 @@ public interface ChatProviderFactory {
         .findFirst();
     ErrorHandling.checkArgument(providerFact.isPresent(), "Could not find model provider: " + provider);
     return providerFact.get();
+  }
+
+  static ChatProviderFactory fromConfiguration(Map<String, Object> modelConfiguration) {
+    return fromConfiguration(new MapConfiguration(modelConfiguration));
   }
 
 }

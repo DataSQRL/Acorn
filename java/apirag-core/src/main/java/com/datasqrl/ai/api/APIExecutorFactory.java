@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.MapConfiguration;
 
 public interface APIExecutorFactory {
 
@@ -37,26 +38,30 @@ public interface APIExecutorFactory {
     Map<String, APIExecutor> apiExecutors = new HashMap<>();
     if (configuration.containsKey(TYPE_KEY) && configuration.containsKey(URL_KEY)) {
       //Read single API configuration
-      APIExecutor apiSpec = instantiateAPI(configuration, DEFAULT_NAME);
+      APIExecutor apiSpec = getAPIExecutor(configuration, DEFAULT_NAME);
       apiExecutors.put(DEFAULT_NAME.trim().toLowerCase(), apiSpec);
     } else {
       //Read multiple API configurations
       for (String key : ConfigurationUtil.getSubKeys(configuration)) {
         Configuration apiConfig = configuration.subset(key);
-        APIExecutor apiSpec = instantiateAPI(apiConfig, key);
+        APIExecutor apiSpec = getAPIExecutor(apiConfig, key);
         apiExecutors.put(key.trim().toLowerCase(), apiSpec);
       }
     }
     return apiExecutors;
   }
 
-  private static APIExecutor instantiateAPI(Configuration apiConfig, String name) {
+  static APIExecutor getAPIExecutor(Configuration apiConfig, String name) {
     BaseConfiguration baseAPIConfig = readBaseConfiguration(apiConfig, name);
     Optional<APIExecutorFactory> providerFact = ServiceLoader.load(APIExecutorFactory.class).stream()
         .map(Provider::get).filter(cpf -> cpf.getTypeName().equalsIgnoreCase(baseAPIConfig.type()))
         .findFirst();
     ErrorHandling.checkArgument(providerFact.isPresent(), "Could not find API executor for API `%s`: %s", APIExecutorFactory.TYPE_KEY, baseAPIConfig.type());
     return providerFact.get().create(apiConfig, name);
+  }
+
+  static APIExecutor getAPIExecutor(Map<String, Object> apiConfig, String name) {
+    return getAPIExecutor(new MapConfiguration(apiConfig), name);
   }
 
 }
