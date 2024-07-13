@@ -1,20 +1,19 @@
 package com.datasqrl.ai.models;
 
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.GenericChatMessage;
-import com.datasqrl.ai.backend.ModelBindings;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.GenericChatMessage;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public abstract class ChatClientProvider<Message, FunctionCall> {
+public abstract class ChatProvider<Message, FunctionCall> {
 
   public static int DEFAULT_HISTORY_LIMIT = 50;
   public static final int FUNCTION_CALL_RETRIES_LIMIT = 5;
 
-  protected final FunctionBackend backend;
+  protected final ToolsBackend backend;
   @Getter
   protected final ModelBindings<Message, FunctionCall> bindings;
 

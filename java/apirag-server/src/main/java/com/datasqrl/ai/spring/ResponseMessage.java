@@ -1,7 +1,7 @@
 package com.datasqrl.ai.spring;
 
-import com.datasqrl.ai.backend.GenericChatMessage;
-import com.datasqrl.ai.backend.GenericFunctionCall;
+import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.GenericFunctionCall;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;

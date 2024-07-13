@@ -1,9 +1,9 @@
 package com.datasqrl.ai;
 
-import com.datasqrl.ai.backend.ChatSession;
-import com.datasqrl.ai.backend.ContextWindow;
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionValidation;
+import com.datasqrl.ai.models.ChatSession;
+import com.datasqrl.ai.models.ContextWindow;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.FunctionValidation;
 import com.datasqrl.ai.config.DataAgentConfiguration;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
 import com.datasqrl.ai.models.openai.OpenAIModelConfiguration;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * A simple streaming chatbot for the command line.
  * The implementation uses OpenAI's GPT models with a default configuration
- * and {@link FunctionBackend} to call APIs that pull in requested data
+ * and {@link ToolsBackend} to call APIs that pull in requested data
  * as well as save and restore chat messages across sessions.
  *
  * This implementation is based on <a href="https://github.com/TheoKanning/openai-java/blob/main/example/src/main/java/example/OpenAiApiFunctionsWithStreamExample.java">https://github.com/TheoKanning/openai-java</a>
@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class CmdLineChatBot {
 
   OpenAiService service;
-  FunctionBackend backend;
+  ToolsBackend tools;
   OpenAIModelConfiguration chatConfig = new OpenAIModelConfiguration(
       new MapConfiguration(Map.of(
           "name", "gpt-3.5-turbo",
@@ -53,11 +53,11 @@ public class CmdLineChatBot {
    * Initializes a command line chat bot
    *
    * @param openAIKey The OpenAI API key to call the API
-   * @param backend An initialized backend to use for function execution and chat message persistence
+   * @param tools An initialized backend to use for function execution and chat message persistence
    */
-  public CmdLineChatBot(String openAIKey, FunctionBackend backend) {
+  public CmdLineChatBot(String openAIKey, ToolsBackend tools) {
     service = new OpenAiService(openAIKey, Duration.ofSeconds(60));
-    this.backend = backend;
+    this.tools = tools;
   }
 
   /**
@@ -69,7 +69,7 @@ public class CmdLineChatBot {
   public void start(String instructionMessage, Map<String, Object> context) throws IOException {
     Scanner scanner = new Scanner(System.in);
     OpenAIModelBindings modelBindings = new OpenAIModelBindings(chatConfig);
-    ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, instructionMessage, modelBindings);
+    ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(tools, context, instructionMessage, modelBindings);
 
     System.out.print("First Query: ");
     ChatMessage firstMsg = new UserMessage(scanner.nextLine());
@@ -113,10 +113,11 @@ public class CmdLineChatBot {
 
       if (chatMessage.getFunctionCall() != null) {
         ChatFunctionCall fctCall = chatMessage.getFunctionCall();
-        FunctionValidation<String> fctValid = backend.validateFunctionCall(fctCall.getName(), fctCall.getArguments());
+        FunctionValidation<String> fctValid = tools.validateFunctionCall(fctCall.getName(), fctCall.getArguments());
         if (fctValid.isValid()) {
           System.out.println("Trying to execute " + fctCall.getName() + " with arguments " + fctCall.getArguments().toPrettyString());
-          ChatMessage functionResponse = new FunctionMessage(backend.executeFunctionCall(fctCall.getName(), fctCall.getArguments(), context), fctCall.getName());
+          ChatMessage functionResponse = new FunctionMessage(
+              tools.executeFunctionCall(fctCall.getName(), fctCall.getArguments(), context), fctCall.getName());
           System.out.println("Executed " + fctCall.getName() + " with response: " + functionResponse.getTextContent());
           session.addMessage(functionResponse);
         } else {
@@ -148,7 +149,7 @@ public class CmdLineChatBot {
       context = configuration.getContextFunction().apply(userid);
     }
 
-    FunctionBackend backend = configuration.getFunctionBackend();
+    ToolsBackend backend = configuration.getFunctionBackend();
     String openAIToken = System.getenv("OPENAI_API_KEY");
     CmdLineChatBot chatBot = new CmdLineChatBot(openAIToken, backend);
     chatBot.start(configuration.getSystemPrompt(), context);

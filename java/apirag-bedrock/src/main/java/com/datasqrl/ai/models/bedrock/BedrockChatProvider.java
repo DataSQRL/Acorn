@@ -1,11 +1,11 @@
 package com.datasqrl.ai.models.bedrock;
 
-import com.datasqrl.ai.backend.ChatSession;
-import com.datasqrl.ai.backend.ContextWindow;
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.GenericChatMessage;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
-import com.datasqrl.ai.models.ChatClientProvider;
+import com.datasqrl.ai.models.ChatSession;
+import com.datasqrl.ai.models.ContextWindow;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
+import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
 @Slf4j
-public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, BedrockFunctionCall> {
+public class BedrockChatProvider extends ChatProvider<BedrockChatMessage, BedrockFunctionCall> {
 
   private final BedrockModelConfiguration config;
   private final BedrockRuntimeClient client;
@@ -41,7 +41,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
       + "}\n"
       + "Here are the functions you can use:";
 
-  public BedrockChatProvider(BedrockModelConfiguration config, FunctionBackend backend, String systemPrompt) {
+  public BedrockChatProvider(BedrockModelConfiguration config, ToolsBackend backend, String systemPrompt) {
     super(backend, new BedrockModelBindings(config));
     this.config = config;
     this.systemPrompt = combineSystemPromptAndFunctions(systemPrompt);
@@ -79,7 +79,7 @@ public class BedrockChatProvider extends ChatClientProvider<BedrockChatMessage, 
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+            if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
               retryCount++;

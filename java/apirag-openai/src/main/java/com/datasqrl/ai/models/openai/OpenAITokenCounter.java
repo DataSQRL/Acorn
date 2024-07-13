@@ -1,14 +1,13 @@
 package com.datasqrl.ai.models.openai;
 
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.ModelAnalyzer;
+import com.datasqrl.ai.tool.FunctionDefinition;
+import com.datasqrl.ai.models.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.knuddels.jtokkit.api.EncodingType;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Optional;

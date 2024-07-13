@@ -1,7 +1,7 @@
 package com.datasqrl.ai.models.openai;
 
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.models.ChatClientProvider;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
 import com.google.auto.service.AutoService;
 import org.apache.commons.configuration2.Configuration;
@@ -17,7 +17,7 @@ public class OpenAiChatProviderFactory implements ChatProviderFactory {
   }
 
   @Override
-  public ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt) {
+  public ChatProvider<?, ?> create(Configuration modelConfiguration, ToolsBackend backend, String prompt) {
     return new OpenAiChatProvider(new OpenAIModelConfiguration(modelConfiguration), backend, prompt);
   }
 }

@@ -1,5 +1,8 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.models;
 
+import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.FunctionValidation;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,13 +18,13 @@ public class ChatSession<Message, FunctionCall> {
 
   private static final int MESSAGE_HISTORY_LIMIT = 100;
 
-  private final FunctionBackend backend;
+  private final ToolsBackend backend;
   private final Map<String, Object> context;
   private final String systemMessage;
   private final ModelBindings<Message, FunctionCall> bindings;
   private final List<GenericChatMessage> messages = new ArrayList<>();
 
-  public ChatSession(FunctionBackend backend, Map<String, Object> context, String systemMessage,
+  public ChatSession(ToolsBackend backend, Map<String, Object> context, String systemMessage,
                      ModelBindings<Message, FunctionCall> bindings) {
     this.backend = backend;
     this.context = context;

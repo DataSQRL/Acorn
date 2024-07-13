@@ -1,6 +1,7 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.tool;
 
 import com.datasqrl.ai.api.APIQuery;
+import com.datasqrl.ai.models.ModelAnalyzer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;

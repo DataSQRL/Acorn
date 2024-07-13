@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.datasqrl.ai.backend.FunctionType;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.FunctionType;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.function.builtin.BuiltinFunctions;
 import com.datasqrl.ai.function.builtin.CurrentTime;
 import com.fasterxml.jackson.databind.JsonNode;

@@ -3,20 +3,17 @@ package com.datasqrl.ai.config;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.GraphQLSchemaConverter;
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionBackendFactory;
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.FunctionType;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.ToolsBackendFactory;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.function.UDFConverter;
 import com.datasqrl.ai.function.UserDefinedFunction;
 import com.datasqrl.ai.function.builtin.BuiltinFunctions;
-import com.datasqrl.ai.models.ChatClientProvider;
+import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.ErrorHandling;
 import com.datasqrl.ai.util.JsonUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -24,9 +21,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.ServiceLoader.Provider;
 import java.util.Set;
 import java.util.function.Function;
 import lombok.Value;
@@ -69,25 +63,14 @@ public class DataAgentConfiguration {
     return UDFConverter.getRuntimeFunctionDefinition((Class<? extends UserDefinedFunction>)functionClass);
   }
 
-  public FunctionBackend getFunctionBackend() {
+  public ToolsBackend getFunctionBackend() {
     Map<String,APIExecutor> apiExecutors = APIExecutorFactory.getAPIExecutors(baseConfiguration.subset(API_KEY));
     ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`", API_KEY);
-    FunctionBackend backend = FunctionBackendFactory.of(toolFunctions, apiExecutors);
+    ToolsBackend backend = ToolsBackendFactory.of(toolFunctions, apiExecutors);
     DataVisualizationFunction dataVisualizationFunction = getDataVizFunction();
     if (dataVisualizationFunction.isPresent()) {
       URL url = ConfigurationUtil.getResourceFile(dataVisualizationFunction.getResourceFile().get());
-      ErrorHandling.checkArgument(url!=null, "Invalid url: %s", url);
-      ObjectMapper objectMapper = new ObjectMapper();
-      try {
-        FunctionDefinition plotFunctionDef = objectMapper.readValue(url, FunctionDefinition.class);
-        backend.addFunction(RuntimeFunctionDefinition.builder()
-            .type(FunctionType.client)
-            .function(plotFunctionDef)
-            .context(List.of())
-            .build());
-      } catch (IOException e) {
-        throw new IllegalArgumentException("Could not read plot function definition at: " + url, e);
-      }
+      UDFConverter.addClientFunction(backend, url);
     }
     //Add local functions
     baseConfiguration.getList(LOCAL_FUNCTIONS_KEY).stream().map(String.class::cast)
@@ -116,8 +99,8 @@ public class DataAgentConfiguration {
     return prompt;
   }
 
-  public ChatClientProvider getChatProvider() {
-    FunctionBackend backend = getFunctionBackend();
+  public ChatProvider getChatProvider() {
+    ToolsBackend backend = getFunctionBackend();
     String systemPrompt = getSystemPrompt();
     return ChatProviderFactory.fromConfiguration(modelConfiguration).create(getModelConfiguration(), backend, systemPrompt);
   }
@@ -151,7 +134,7 @@ public class DataAgentConfiguration {
           APIExecutorFactory.DEFAULT_NAME);
       tools = converter.convert(toolsContent);
     } else {
-      tools = FunctionBackendFactory.readTools(toolsContent);
+      tools = ToolsBackendFactory.readTools(toolsContent);
     }
     return new DataAgentConfiguration(baseConfig, baseConfig.subset("model"), tools);
   }

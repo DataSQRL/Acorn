@@ -1,4 +1,4 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.tool;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,19 +27,19 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
-public class FunctionBackendTest {
+public class ToolsBackendTest {
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   @SneakyThrows
   public static List<RuntimeFunctionDefinition> getNutshopFunctions() {
     String tools = Files.readString(Path.of("src" , "test", "resources", "nutshop-c360.tools.json"));
-    return FunctionBackendFactory.readTools(tools);
+    return ToolsBackendFactory.readTools(tools);
   }
 
   @Test
   public void readNutshop() throws Exception {
-    FunctionBackend fctExec = FunctionBackendFactory.of(getNutshopFunctions(),
+    ToolsBackend fctExec = ToolsBackendFactory.of(getNutshopFunctions(),
         Map.of(APIExecutorFactory.DEFAULT_NAME,MockAPIExecutor.of("none")));
     List<RuntimeFunctionDefinition> chatFcts = new ArrayList<>(fctExec.getFunctions().values());
     assertEquals(3, chatFcts.size());
@@ -63,7 +63,7 @@ public class FunctionBackendTest {
   @Test
   @SneakyThrows
   public void testMessageWriting() {
-    FunctionBackend fctExec = FunctionBackendFactory.of(getNutshopFunctions(),
+    ToolsBackend fctExec = ToolsBackendFactory.of(getNutshopFunctions(),
         Map.of(APIExecutorFactory.DEFAULT_NAME, new APIExecutor() {
           @Override
           public void validate(APIQuery query) throws IllegalArgumentException {

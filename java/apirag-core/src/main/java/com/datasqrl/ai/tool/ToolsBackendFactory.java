@@ -1,11 +1,10 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.tool;
 
 import com.datasqrl.ai.api.APIExecutor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.NonNull;
 
-public class FunctionBackendFactory {
+public class ToolsBackendFactory {
 
   public static final String SAVE_CHAT_FUNCTION_NAME = "InternalSaveChatMessage";
   public static final String RETRIEVE_CHAT_FUNCTION_NAME = "InternalGetChatMessages";
@@ -37,8 +36,8 @@ public class FunctionBackendFactory {
         });
   }
 
-  public static FunctionBackend of(@NonNull List<RuntimeFunctionDefinition> functions, @NonNull Map<String,APIExecutor> apiExecutors) {
-    FunctionBackend backend = new FunctionBackend(apiExecutors, mapper);
+  public static ToolsBackend of(@NonNull List<RuntimeFunctionDefinition> functions, @NonNull Map<String,APIExecutor> apiExecutors) {
+    ToolsBackend backend = new ToolsBackend(apiExecutors, mapper);
     for (RuntimeFunctionDefinition function : functions) {
       if (function.getName().equalsIgnoreCase(SAVE_CHAT_FUNCTION_NAME)) {
         backend.setSaveChatFct(function);

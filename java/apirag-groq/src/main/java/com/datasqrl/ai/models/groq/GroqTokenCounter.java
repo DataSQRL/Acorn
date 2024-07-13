@@ -1,8 +1,8 @@
 package com.datasqrl.ai.models.groq;
 
 import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.ModelAnalyzer;
+import com.datasqrl.ai.tool.FunctionDefinition;
+import com.datasqrl.ai.models.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.SneakyThrows;

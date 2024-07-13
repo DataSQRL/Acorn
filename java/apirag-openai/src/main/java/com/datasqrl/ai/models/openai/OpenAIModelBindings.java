@@ -1,9 +1,9 @@
 package com.datasqrl.ai.models.openai;
 
-import com.datasqrl.ai.backend.GenericChatMessage;
-import com.datasqrl.ai.backend.GenericFunctionCall;
-import com.datasqrl.ai.backend.ModelAnalyzer;
-import com.datasqrl.ai.backend.ModelBindings;
+import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.GenericFunctionCall;
+import com.datasqrl.ai.models.ModelAnalyzer;
+import com.datasqrl.ai.models.ModelBindings;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;

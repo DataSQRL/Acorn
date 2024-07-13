@@ -1,4 +1,4 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.tool;
 
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIQuery;
@@ -28,14 +28,14 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * An {@link FunctionBackend} defines and executes functions that a language model
+ * An {@link ToolsBackend} defines and executes functions that a language model
  * can use. In addition, it provides methods to save and retrieve chat messages to give
  * the language model a "memory".
  *
  *
  */
 @Slf4j
-public class FunctionBackend {
+public class ToolsBackend {
 
   @Getter
   private final Map<String, RuntimeFunctionDefinition> functions = new HashMap<>();
@@ -48,7 +48,7 @@ public class FunctionBackend {
 
   ObjectMapper mapper;
 
-  public FunctionBackend(Map<String,APIExecutor> apiExecutors, ObjectMapper mapper) {
+  public ToolsBackend(Map<String,APIExecutor> apiExecutors, ObjectMapper mapper) {
     this.apiExecutors = apiExecutors;
     this.mapper = mapper;
   }

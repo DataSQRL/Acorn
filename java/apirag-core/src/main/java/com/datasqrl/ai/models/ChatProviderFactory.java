@@ -1,6 +1,6 @@
 package com.datasqrl.ai.models;
 
-import com.datasqrl.ai.backend.FunctionBackend;
+import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.util.ErrorHandling;
 import java.util.Map;
 import java.util.Optional;
@@ -15,7 +15,7 @@ public interface ChatProviderFactory {
 
   String getProviderName();
 
-  ChatClientProvider<?, ?> create(Configuration modelConfiguration, FunctionBackend backend, String prompt);
+  ChatProvider<?, ?> create(Configuration modelConfiguration, ToolsBackend backend, String prompt);
 
   static ChatProviderFactory fromConfiguration(Configuration modelConfiguration) {
     String provider = modelConfiguration.getString(MODEL_PROVIDER_KEY);

@@ -3,9 +3,9 @@ package com.datasqrl.ai.api;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.FunctionBackendFactory;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.ToolsBackendFactory;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class GraphQLSchemaConverterTest {
     assertEquals(6, functions.size());
 //    functions.forEach(System.out::println);
 
-    FunctionBackend backend = FunctionBackendFactory.of(functions, Map.of(
+    ToolsBackend backend = ToolsBackendFactory.of(functions, Map.of(
         APIExecutorFactory.DEFAULT_NAME, new APIExecutor() {
           @Override
           public void validate(APIQuery query) throws IllegalArgumentException {
@@ -54,7 +54,7 @@ public class GraphQLSchemaConverterTest {
     String expectedResult = ConfigurationUtil.getResourcesFileAsString(
       "graphql/nutshop-schema.tools.json");
     assertEquals(expectedResult, result);
-    List<RuntimeFunctionDefinition> functions = FunctionBackendFactory.readTools(result);
+    List<RuntimeFunctionDefinition> functions = ToolsBackendFactory.readTools(result);
     assertEquals(6, functions.size());
   }
 

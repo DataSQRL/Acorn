@@ -1,8 +1,10 @@
 package com.datasqrl.ai.function;
 
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.FunctionType;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.FunctionDefinition;
+import com.datasqrl.ai.tool.FunctionType;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
+import com.datasqrl.ai.util.ErrorHandling;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,8 +13,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
-import java.lang.annotation.Annotation;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +26,35 @@ import javax.annotation.Nonnull;
 public class UDFConverter {
 
   private static final ObjectMapper mapper = new ObjectMapper();
+
+  /**
+   * Adds a user defined function to the provided repository.
+   *
+   * @param backend The backend
+   * @param clazz
+   */
+  public static void addUserDefinedFunction(ToolsBackend backend, Class<? extends UserDefinedFunction> clazz) {
+    backend.addFunction(getRuntimeFunctionDefinition(clazz));
+  }
+
+  public static void addClientFunction(ToolsBackend backend, URL functionDefinitionURL) {
+    ErrorHandling.checkArgument(functionDefinitionURL!=null, "Invalid url: %s", functionDefinitionURL);
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      FunctionDefinition plotFunctionDef = objectMapper.readValue(functionDefinitionURL, FunctionDefinition.class);
+      addClientFunction(backend, plotFunctionDef);
+    } catch (IOException e) {
+      throw new IllegalArgumentException("Could not read client function definition at: " + functionDefinitionURL, e);
+    }
+  }
+
+  public static void addClientFunction(ToolsBackend backend, FunctionDefinition clientFunction) {
+    backend.addFunction(RuntimeFunctionDefinition.builder()
+        .type(FunctionType.client)
+        .function(clientFunction)
+        .context(List.of())
+        .build());
+  }
 
   public static RuntimeFunctionDefinition getRuntimeFunctionDefinition(Class<? extends UserDefinedFunction> clazz) {
     FunctionDefinition funcDef = null;

@@ -1,8 +1,33 @@
-# apiRAG 🤖🔌
+# Acorn Agent
 
-apiRAG makes it easy to augment Large Language Models with (semi-)structured data provided by APIs.
+Acorn Agent is a simple and flexible framework for building AI Agents, Chat Bots, and generative AI applications on the JVM.
 
-[![Watch how apiRAG works](img/apiRAG-video.jpg)](https://youtu.be/Mx-slh6h42c)
+Acorn Agent builds on tooling support that most LLMs provide to seamlessly integrate (semi-)structured data from external data sources like APIs, databases, and generic function calls with generative AI for high quality results against your own data.
+
+# What is Acorn Agent for?
+
+
+
+
+# Why Acorn Agent?
+
+Most agent frameworks are either too complex with lots of connectors, configurations, and options or abstract too much away from the actual LLM calls which doesn't give you enough control to fine-tune and cost-optimize your agents.
+
+We wanted to build an agent framework that makes it easy to get started and experiment with different models but doesn't leave you hanging when you need low-level control to optimize performance and cost.
+
+* Acorn Agent is simple: It manages and invokes tools for LLMs. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs.
+* Acorn Agent is flexible: you can use the lightweight abstraction layers that Acorn agent provides to get started quickly and swap out models easily, but you can also use the tooling framework with any model client library or model API for full control over each model invocation.
+
+# Acorn Agent Features
+
+
+# Getting Started with Acorn Agent
+
+
+
+
+# How Does Acorn Agent Work?
+
 
 apiRAG solves the following use cases for Large Language Models (LLM), Generative AI, and ChatBots:
 * Use structured or semi-structured data for augmentation, e.g. the data you want to pull into the context with RAG is tabular, JSON, or has any other type of internal structure. For example, if you want to augment an LLM with user information as we do in our [Credit Card example](api-examples/finance).
@@ -47,6 +72,11 @@ Each apiRAG language implementation is a mapping of the configuration format to 
 apiRAG also introduces the notion of a "context", such as a user id, which is used to constrain the API calls to retrieve
 information that pertains to the given context. That allows you to use apiRAG within an authenticated user session
 and allowing the LLM to retrieve user-specific information without any danger of leaking information.
+
+## Tools Are All You Need
+
+
+
 
 ## Current Limitations
 

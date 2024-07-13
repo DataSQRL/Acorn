@@ -1,6 +1,6 @@
 package com.datasqrl.ai.api;
 
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.util.ErrorHandling;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;

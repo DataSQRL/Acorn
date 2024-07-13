@@ -1,8 +1,8 @@
 package com.datasqrl.ai.models.bedrock;
 
 import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.ModelAnalyzer;
+import com.datasqrl.ai.tool.FunctionDefinition;
+import com.datasqrl.ai.models.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

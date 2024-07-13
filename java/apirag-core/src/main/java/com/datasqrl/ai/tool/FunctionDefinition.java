@@ -1,4 +1,4 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.tool;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

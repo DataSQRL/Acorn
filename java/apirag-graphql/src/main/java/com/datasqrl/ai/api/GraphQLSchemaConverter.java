@@ -2,11 +2,11 @@ package com.datasqrl.ai.api;
 
 import static graphql.Scalars.GraphQLString;
 
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.FunctionDefinition.Argument;
-import com.datasqrl.ai.backend.FunctionDefinition.Parameters;
-import com.datasqrl.ai.backend.FunctionType;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.FunctionDefinition;
+import com.datasqrl.ai.tool.FunctionDefinition.Argument;
+import com.datasqrl.ai.tool.FunctionDefinition.Parameters;
+import com.datasqrl.ai.tool.FunctionType;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.util.ErrorHandling;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
@@ -40,7 +40,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Converts a given GraphQL Schema to a tools configuration for the function backend.
- * It extracts all queries and mutations and converts them into {@link com.datasqrl.ai.backend.RuntimeFunctionDefinition}.
+ * It extracts all queries and mutations and converts them into {@link com.datasqrl.ai.tool.RuntimeFunctionDefinition}.
  */
 @Value
 @Slf4j

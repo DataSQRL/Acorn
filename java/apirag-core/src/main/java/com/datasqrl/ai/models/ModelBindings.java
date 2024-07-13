@@ -1,5 +1,6 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.models;
 
+import com.datasqrl.ai.tool.GenericChatMessage;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 

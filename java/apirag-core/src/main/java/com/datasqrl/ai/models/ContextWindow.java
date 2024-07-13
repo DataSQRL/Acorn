@@ -1,5 +1,6 @@
-package com.datasqrl.ai.backend;
+package com.datasqrl.ai.models;
 
+import com.datasqrl.ai.tool.FunctionDefinition;
 import java.util.List;
 import lombok.Builder;
 import lombok.Singular;

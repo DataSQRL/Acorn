@@ -1,7 +1,7 @@
 package com.datasqrl.ai.spring;
 
 import com.datasqrl.ai.config.DataAgentConfiguration;
-import com.datasqrl.ai.models.ChatClientProvider;
+import com.datasqrl.ai.models.ChatProvider;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -29,31 +29,30 @@ public class DataAgentServer {
     }
   }
 
-  @CrossOrigin(origins = "*")
   @RestController
   public static class MessageController {
 
-    private final ChatClientProvider<?, ?> chatClientProvider;
+    private final ChatProvider<?, ?> chatProvider;
     private final Function<String,Map<String,Object>> getContextFunction;
 
     @SneakyThrows
     public MessageController(DataAgentServerProperties props) {
       DataAgentConfiguration configuration = DataAgentConfiguration.fromFile(Path.of(props.getConfig()), Path.of(props.getTools()));
       this.getContextFunction = configuration.getContextFunction();
-      this.chatClientProvider = configuration.getChatProvider();
+      this.chatProvider = configuration.getChatProvider();
     }
 
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
       Map<String, Object> context = getContextFunction.apply(userId);
-      return chatClientProvider.getHistory(context, false).stream().map(ResponseMessage::from).toList();
+      return chatProvider.getHistory(context, false).stream().map(ResponseMessage::from).toList();
     }
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
       log.info("\nUser #{}: {}", message.getUserId(), message.getContent());
       Map<String, Object> context = getContextFunction.apply(message.getUserId());
-      return ResponseMessage.from(chatClientProvider.chat(message.getContent(), context));
+      return ResponseMessage.from(chatProvider.chat(message.getContent(), context));
     }
   }
 }

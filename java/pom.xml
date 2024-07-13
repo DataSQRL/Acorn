@@ -36,6 +36,7 @@
     <graphql-java.version>22.1</graphql-java.version>
     <reflections.version>0.10.2</reflections.version>
     <okhttp.version>4.12.0</okhttp.version>
+    <h2.version>2.2.224</h2.version>
   </properties>
 
   <dependencies>
