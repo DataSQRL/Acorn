@@ -4,63 +4,63 @@ Acorn Agent is a simple and flexible framework for building AI Agents, Chat Bots
 
 Acorn Agent builds on tooling support that most LLMs provide to seamlessly integrate (semi-)structured data from external data sources like APIs, databases, and generic function calls with generative AI for high quality results against your own data.
 
-# What is Acorn Agent for?
+[visual of data in - acorn agent in the middle - use cases out (like llamaindex)]
 
+# What can You Build with Acorn Agent?
 
+* Chat Bots that retrieve question-specific information from APIs, databases, and other sources on demand.
+* AI frontend applications for GraphQL and REST APIs that customize and visualize responses.
+* AI Agents that plan and execute actions against existing APIs.
+* Semantic search engines structured, semi-structured, and unstructured data that use LLMs for targeted information retrieval.
+* AI powered dashboards
+* Agents that extract structured data for planning and actions.
 
+Take a look at the [examples](/api-examples) for agents built with Acorn Agent.
 
 # Why Acorn Agent?
 
 Most agent frameworks are either too complex with lots of connectors, configurations, and options or abstract too much away from the actual LLM calls which doesn't give you enough control to fine-tune and cost-optimize your agents.
 
-We wanted to build an agent framework that makes it easy to get started and experiment with different models but doesn't leave you hanging when you need low-level control to optimize performance and cost.
+We wanted to build an agent framework that makes it easy to get started and experiment with different models but doesn't leave you hanging when you need low-level control to optimize performance and cost. In addition, we wanted an agent framework that automatically benefits from the rapid innovation on LLMs without requiring rewriting your agent.
 
-* Acorn Agent is simple: It manages and invokes tools for LLMs. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs.
+* Acorn Agent is simple: It manages and invokes tools for LLMs efficiently and safely. That's it. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs. And it future-proofs your agent as LLMs get better and better at using tools.
 * Acorn Agent is flexible: you can use the lightweight abstraction layers that Acorn agent provides to get started quickly and swap out models easily, but you can also use the tooling framework with any model client library or model API for full control over each model invocation.
 
 # Acorn Agent Features
 
+* Efficient Data Retrieval
+* UI integration through dynamic data visualization or UI updates.
+* Pluggable models and model providers: OpenAI, Bedrock, Google Vertex, Groq
+* Sandboxing and Safety controls
+* Message history for context preservation
 
 # Getting Started with Acorn Agent
 
+Examples for demos and pocs and no-code
 
+-> examples
 
+Spring boot application
 
-# How Does Acorn Agent Work?
+-> server module
 
+Custom development framework
 
-apiRAG solves the following use cases for Large Language Models (LLM), Generative AI, and ChatBots:
-* Use structured or semi-structured data for augmentation, e.g. the data you want to pull into the context with RAG is tabular, JSON, or has any other type of internal structure. For example, if you want to augment an LLM with user information as we do in our [Credit Card example](api-examples/finance).
-* Improve the breadth, depth, and accuracy of knowledge to answer user queries intelligently. For example, if you want to connect an LLM to an existing API or database to look up information as we do in our [Rick and Morty example](api-examples/rickandmorty).
-* Access user specific or access controlled information to provided personalized answers in a secure manner. For example, allow the LLM to answer customer questions about their profile and transaction history as we do in our [Nutshop example](api-examples/nutshop).
-* Include realtime information that updates frequently. For example, have an LLM analyze realtime sensor information as we do in our [Sensors example](api-examples/sensors).
+-> starter module (rename "api" to "starter")
+test case
 
-apiRAG has the following benefits:
-* (Semi-)Structured Data: Works great with structured and semi-structured data for data analysis and visualization.
-* High Quality: Benefits from the intelligence of the LLM to retrieve exactly the needed data.
-* Efficiency: Retrieves only the data the LLM needs when it needs it.
-* Simplicity: It's essentially just a mapping layer between LLM function calls and API queries.
-* Modularity: Separates the LLM instrumentation from the data augmentation providing a separation between "frontend" and "backend" and allows you to reuse your existing APIs.
+Low-level control
 
-To see a demo of apiRAG and how it works exactly, [watch this video](https://youtu.be/Mx-slh6h42c).
+-> starter module
 
-If you want to try out apiRAG yourself, check out the [examples](api-examples) for some example use cases and how they are implemented with apiRAG. Take a look at the language implementations for how to run the examples:
-* [Java](java/)
-* Python (coming soon - please help!)
-* JavaScript (coming soon - please help!)
-
-## How does this compare to RAG?
-
-Currently, the most popular approach for augmenting LLMs with custom data is "Retrieval Augmented Generation". The basic idea behind RAG is to take a user query, retrieve information related to the query (usually by way of a vector embedding and vector database), and then put that information into the context for the LLM.
-
-In other words, RAG is essentially a guess as to what the LLM might need to generate a good answer and loading it into the context. Because it relies on text or vector search, it only works effectively for use cases where the user question can be easily mapped to a good retrieval query.
-And even for use cases where RAG works reasonably well - such as semantic search - it can be very inefficient. For example, if a user asks to "find all information on the 'nightfall' project from last December" RAG may find information on the project but has no way to limit it to the given timeframe. 
-
-apiRAG does not suffer from these shortcomings because it relies on the LLM to determine what information it needs and relies on the intelligence of LLMs to translate user queries into efficient and relevant retrieval requests.
-
-## How does apiRAG Work?
+## How does Acorn Agent Work?
 
 ![Diagram of how apiRAG executes user requests](img/apiRAG-diagram.png)
+
+3 types of tools:
+- api
+- user defined function
+- client-call
 
 At it's core, apiRAG is a configuration format that defines a set of LLM functions and how they map to API queries.
 It extends OpenAI's function call configuration with additional information on how to execute the function against an existing API.
@@ -75,22 +75,27 @@ and allowing the LLM to retrieve user-specific information without any danger of
 
 ## Tools Are All You Need
 
+We build Acorn Agent after we had the following "aha" moments:
+* Advanced LLMs are better at figuring out what a user is asking for than any augmentation approaches we can build around them.
+* LLMs are specifically trained on tool usage which is a great way for LLMs to invoke actions and pull information they need to satisfy a user request.
 
+As LLMs rapidly improve and get better at using tools, we believe that "tooling" will become the primary interface through which LLMs interact with the outside world. They can use tools to retrieve information, trigger actions, present information to the user through visualizations, update the UI, etc. In other words, building GenAI applications comes down to providing LLMs with the best tools for the job.
 
+That's why we build Acorn Agent as a tool-centric framework, because tools are all you need to turn an LLM into a full-featured AI agent.
 
-## Current Limitations
-
-apiRAG is currently a proof-of-concept to demonstrate the utility and efficiency of the approach.
-It is currently limited to OpenAI LLMs, GraphQL APIs, and only has a Java implementation.
-
-We plan to overcome these limitations soon and are working on the following roadmap:
-* Support for Python and JavaScript/TypeScript
-* Support for REST APIs
-* Support for open-source and additional LLMs (like Llama2)
-* Support for additional API authentication modes
+Building AI applications around tooling is not only simpler (everything is a tool) and more flexible (the interface between the LLM and your agent is just a tool repository), but it also future-proves your GenAI application as LLMs will get better and better at using tools. The last thing you want to do is compete with LLMs on who is smarter in the long-run: your application or the LLM.
 
 ## Community
 
-[Join our Discord](https://discord.gg/49AnhVY2w9) to ask questions or share your feedback.
+[Join our Slack]() to ask questions or share your feedback.
 
 We welcome community contributions to the project.
+Acorn Agent is currently limited to JVM applications. We'd love to bring the idea of a tool-centric agent framework to other languages. If you want to help with a Python or JavaScript implementation, please reach out.
+
+## When Should You NOT Use Acorn Agent
+
+We believe that tooling-centric agent frameworks like Acorn Agent are superior to other approaches of augmenting LLMs with custom data sources like RAG, FLARE, or prompt engineering because LLMs are specifically trained on tool usage and their ability to use tools will dramatically increase over the next few years.
+
+However, there are scenarios where a tool-centric approach is currently not ideal:
+* You need to use a model that has not been trained on tool usage (see [above](#acorn-agent-features) which models Acorn Agent already supports). In this case, you have to build instrumentation around the LLM using a complex agent framework.
+* You are dealing with entirely unstructured data and vector similarity is your primary method of retrieving augmenting information. In this case, you are better off using a general-purpose semantic search engine.

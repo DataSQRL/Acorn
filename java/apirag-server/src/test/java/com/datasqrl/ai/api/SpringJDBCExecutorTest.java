@@ -68,9 +68,9 @@ class SpringJDBCExecutorTest {
   }
 
   @Test
-  void executeQuery_TwoArgs() {
+  void executeQuery_TwoArgsOutOfOrder() {
     APIQuery query = new APIQuery();
-    query.setQuery("SELECT * FROM USERS WHERE NAME = :name AND ID = :id");
+    query.setQuery("SELECT * FROM USERS WHERE ID >= :id AND NAME = :name AND ID = :id");
 
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode args = mapper.createObjectNode();

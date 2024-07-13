@@ -8,7 +8,7 @@
     <version>0.1-SNAPSHOT</version>
   </parent>
   <artifactId>apirag-server</artifactId>
-  <name>apiRAG - Example Server</name>
+  <name>apiRAG - SpringBoot Server</name>
   <packaging>jar</packaging>
 
   <properties>
