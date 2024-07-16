@@ -33,7 +33,8 @@ public record GroqTokenCounter(HuggingFaceTokenizer tokenizer) implements ModelA
   }
 
   public static GroqTokenCounter of(GroqModelConfiguration modelConfig) {
-    try (HuggingFaceTokenizer huggingFaceTokenizer = HuggingFaceTokenizer.newInstance(modelConfig.getTokenizerName())) {
+    try {
+      HuggingFaceTokenizer huggingFaceTokenizer = HuggingFaceTokenizer.newInstance(modelConfig.getTokenizerName());
       return new GroqTokenCounter(huggingFaceTokenizer);
     } catch (Exception e) {
       log.warn("Unrecognized tokenizer name: {}. Using [{}] tokenizer as backup.",

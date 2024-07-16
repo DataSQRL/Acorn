@@ -34,7 +34,8 @@ public record BedrockTokenCounter(HuggingFaceTokenizer tokenizer) implements Mod
   }
 
   public static BedrockTokenCounter of(BedrockModelConfiguration modelConfig) {
-    try (HuggingFaceTokenizer huggingFaceTokenizer = HuggingFaceTokenizer.newInstance(modelConfig.getTokenizerName())) {
+    try {
+      HuggingFaceTokenizer huggingFaceTokenizer = HuggingFaceTokenizer.newInstance(modelConfig.getTokenizerName());
       return new BedrockTokenCounter(huggingFaceTokenizer);
     } catch (Exception e) {
       log.warn("Unrecognized tokenizer name: {}. Using [{}] tokenizer as backup.",
