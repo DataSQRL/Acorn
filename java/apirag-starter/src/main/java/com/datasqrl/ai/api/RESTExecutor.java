@@ -15,7 +15,7 @@ import okhttp3.RequestBody;
 @SuperBuilder
 public class RESTExecutor extends AbstractOkhttpExecutor {
 
-  public RESTExecutor(@NonNull String endpoint, @NonNull String authHeader) {
+  public RESTExecutor(@NonNull String endpoint, String authHeader) {
     super(endpoint, authHeader);
   }
 

@@ -1,7 +1,10 @@
 package com.datasqrl.ai.spring;
 
-import com.datasqrl.ai.config.DataAgentConfiguration;
+import com.datasqrl.ai.config.AcornAgentConfiguration;
+import com.datasqrl.ai.config.ContextConversion;
 import com.datasqrl.ai.models.ChatProvider;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -32,25 +35,25 @@ public class AcornAgentServer {
   public static class MessageController {
 
     private final ChatProvider<?, ?> chatProvider;
-    private final Function<String,Map<String,Object>> getContextFunction;
+    private final List<String> contextKeys;
 
     @SneakyThrows
     public MessageController(AcornAgentServerProperties props) {
-      DataAgentConfiguration configuration = DataAgentConfiguration.fromFile(Path.of(props.getConfig()), Path.of(props.getTools()));
-      this.getContextFunction = configuration.getContextFunction();
+      AcornAgentConfiguration configuration = AcornAgentConfiguration.fromFile(Path.of(props.getConfig()), Path.of(props.getTools()));
+      this.contextKeys = configuration.getContext();
       this.chatProvider = configuration.getChatProvider();
     }
 
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
-      Map<String, Object> context = getContextFunction.apply(userId);
+      Map<String, Object> context = ContextConversion.getContextFromUserId(userId, contextKeys);
       return chatProvider.getHistory(context, false).stream().map(ResponseMessage::from).toList();
     }
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
       log.info("\nUser #{}: {}", message.getUserId(), message.getContent());
-      Map<String, Object> context = getContextFunction.apply(message.getUserId());
+      Map<String, Object> context = ContextConversion.getContextFromUserId(message.getUserId(), contextKeys);
       return ResponseMessage.from(chatProvider.chat(message.getContent(), context));
     }
   }

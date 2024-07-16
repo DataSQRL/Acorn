@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import lombok.Value;
@@ -28,7 +29,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.JSONConfiguration;
 
 @Value
-public class DataAgentConfiguration {
+public class AcornAgentConfiguration {
 
   public static final String MODEL_PREFIX = "model";
 
@@ -76,11 +77,9 @@ public class DataAgentConfiguration {
     baseConfiguration.getList(LOCAL_FUNCTIONS_KEY).stream().map(String.class::cast)
         .map(this::loadLocalFunction).forEach(backend::addFunction);
     //Add global context
-    if (baseConfiguration.containsKey(CONTEXT_KEY)) {
-      List<String> context = baseConfiguration.getList(String.class, CONTEXT_KEY);
-      if (!context.isEmpty()) {
-        backend.setGlobalContext(Set.copyOf(context));
-      }
+    List<String> context = getContext();
+    if (!context.isEmpty()) {
+      backend.setGlobalContext(Set.copyOf(context));
     }
     return backend;
   }
@@ -105,14 +104,11 @@ public class DataAgentConfiguration {
     return ChatProviderFactory.fromConfiguration(modelConfiguration).create(getModelConfiguration(), backend, systemPrompt);
   }
 
-  public Function<String,Map<String,Object>> getContextFunction() {
-    String fieldname = baseConfiguration.getString(AUTH_FIELD_KEY, "").trim();
-    if (fieldname.isEmpty()) return s -> Map.of();
-    boolean parseToInt = baseConfiguration.getBoolean(AUTH_FIELD_INTEGER_KEY, false);
-    if (parseToInt) {
-      return s -> Map.of(fieldname, Integer.parseInt(s));
+  public List<String> getContext() {
+    if (baseConfiguration.containsKey(CONTEXT_KEY)) {
+      return baseConfiguration.getList(String.class, CONTEXT_KEY);
     } else {
-      return s -> Map.of(fieldname, s);
+      return List.of();
     }
   }
 
@@ -120,7 +116,7 @@ public class DataAgentConfiguration {
     return baseConfiguration.containsKey(AUTH_FIELD_KEY);
   }
 
-  public static DataAgentConfiguration fromFile(Path configPath, Path toolsPath) throws IOException {
+  public static AcornAgentConfiguration fromFile(Path configPath, Path toolsPath) throws IOException {
     ErrorHandling.checkArgument(Files.isRegularFile(configPath), "Cannot access configuration file: %s", configPath);
     ErrorHandling.checkArgument(Files.isRegularFile(toolsPath), "Cannot access tools file: %s", toolsPath);
     JSONConfiguration baseConfig = JsonUtil.getConfiguration(configPath);
@@ -136,7 +132,7 @@ public class DataAgentConfiguration {
     } else {
       tools = ToolsBackendFactory.readTools(toolsContent);
     }
-    return new DataAgentConfiguration(baseConfig, baseConfig.subset("model"), tools);
+    return new AcornAgentConfiguration(baseConfig, baseConfig.subset("model"), tools);
   }
 
 }

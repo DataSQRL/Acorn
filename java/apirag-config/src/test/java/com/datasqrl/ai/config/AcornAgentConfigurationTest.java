@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
-public class DataAgentConfigurationTest {
+public class AcornAgentConfigurationTest {
 
   public static final Path GRAPHQL_RESOURCES = Path.of("..", "apirag-graphql", "src", "test", "resources", "graphql");
   public static final Path CORE_RESOURCES = Path.of("..", "apirag-core", "src" , "test", "resources");
@@ -18,8 +18,8 @@ public class DataAgentConfigurationTest {
     Path nutshopTools = CORE_RESOURCES.resolve("nutshop-c360.tools.json");
     Path nutshopConfig = CONFIG_RESOURCES.resolve("nutshop.config.json");
 
-    DataAgentConfiguration config1 = DataAgentConfiguration.fromFile(nutshopConfig, nutshopTools);
-    DataAgentConfiguration config2 = DataAgentConfiguration.fromFile(nutshopConfig, nutshopGraphQl);
+    AcornAgentConfiguration config1 = AcornAgentConfiguration.fromFile(nutshopConfig, nutshopTools);
+    AcornAgentConfiguration config2 = AcornAgentConfiguration.fromFile(nutshopConfig, nutshopGraphQl);
 
     assertEquals(4, config1.getFunctionBackend().getFunctions().size());
     assertEquals(6, config2.getFunctionBackend().getFunctions().size());

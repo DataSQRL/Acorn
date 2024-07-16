@@ -1,10 +1,11 @@
 package com.datasqrl.ai;
 
+import com.datasqrl.ai.config.ContextConversion;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.FunctionValidation;
-import com.datasqrl.ai.config.DataAgentConfiguration;
+import com.datasqrl.ai.config.AcornAgentConfiguration;
 import com.datasqrl.ai.models.openai.OpenAIModelBindings;
 import com.datasqrl.ai.models.openai.OpenAIModelConfiguration;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -16,6 +17,7 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
+import java.util.List;
 import lombok.Value;
 import org.apache.commons.configuration2.MapConfiguration;
 
@@ -138,7 +140,7 @@ public class CmdLineChatBot {
 
   public static void main(String... args) throws Exception {
     if (args==null || args.length!=2) throw new IllegalArgumentException("Please provide a configuration file and a tools file");
-    DataAgentConfiguration configuration = DataAgentConfiguration.fromFile(Path.of(args[0]), Path.of(args[1]));
+    AcornAgentConfiguration configuration = AcornAgentConfiguration.fromFile(Path.of(args[0]), Path.of(args[1]));
 
 
     Map<String,Object> context = Map.of();
@@ -146,7 +148,7 @@ public class CmdLineChatBot {
       Scanner scanner = new Scanner(System.in);
       System.out.print("Enter the User ID: ");
       String userid = scanner.nextLine();
-      context = configuration.getContextFunction().apply(userid);
+      context = ContextConversion.getContextFromUserId(userid, configuration.getContext());
     }
 
     ToolsBackend backend = configuration.getFunctionBackend();
