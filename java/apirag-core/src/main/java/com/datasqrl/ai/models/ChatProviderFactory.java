@@ -27,8 +27,9 @@ public interface ChatProviderFactory {
     return providerFact.get();
   }
 
-  static ChatProviderFactory fromConfiguration(Map<String, Object> modelConfiguration) {
-    return fromConfiguration(new MapConfiguration(modelConfiguration));
+  static ChatProvider<?,?> fromConfiguration(Map<String, Object> modelConfiguration, ToolsBackend backend, String prompt) {
+    MapConfiguration configuration = new MapConfiguration(modelConfiguration);
+    return fromConfiguration(configuration).create(configuration,backend, prompt);
   }
 
 }
