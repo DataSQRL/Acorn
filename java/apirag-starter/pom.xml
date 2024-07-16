@@ -24,9 +24,15 @@
     </dependency>
     <dependency>
       <groupId>com.datasqrl</groupId>
+      <artifactId>apirag-graphql</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.datasqrl</groupId>
       <artifactId>apirag-udf</artifactId>
       <version>${project.version}</version>
     </dependency>
+
 
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
@@ -39,16 +45,25 @@
       <groupId>com.datasqrl</groupId>
       <artifactId>apirag-openai</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.datasqrl</groupId>
       <artifactId>apirag-bedrock</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.datasqrl</groupId>
       <artifactId>apirag-groq</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.datasqrl</groupId>
+      <artifactId>apirag-config</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

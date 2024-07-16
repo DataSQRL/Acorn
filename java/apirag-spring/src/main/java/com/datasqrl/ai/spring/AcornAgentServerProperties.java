@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "agent")
 @Data
-public class DataAgentServerProperties {
+public class AcornAgentServerProperties {
 
   private String config;
   private String tools;

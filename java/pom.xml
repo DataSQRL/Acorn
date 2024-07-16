@@ -17,8 +17,9 @@
     <module>apirag-vertex</module>
     <module>apirag-graphql</module>
     <module>apirag-rest</module>
+    <module>apirag-config</module>
     <module>apirag-starter</module>
-    <module>apirag-server</module>
+    <module>apirag-spring</module>
   </modules>
 
   <properties>

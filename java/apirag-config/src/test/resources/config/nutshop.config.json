@@ -2,7 +2,7 @@
   "prompt": "You are a sales assistant at a Nutshop.",
   "apis": {
     "default" : {
-      "type": "graphql",
+      "type": "mock",
       "url": "https://localhost:8080/graphql"
     }
   },

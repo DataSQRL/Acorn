@@ -7,7 +7,7 @@
     <artifactId>apirag</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>apirag-server</artifactId>
+  <artifactId>apirag-spring</artifactId>
   <name>apiRAG - SpringBoot Server</name>
   <packaging>jar</packaging>
 
@@ -24,6 +24,11 @@
     <dependency>
       <groupId>com.datasqrl</groupId>
       <artifactId>apirag-udf</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.datasqrl</groupId>
+      <artifactId>apirag-config</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -80,6 +85,13 @@
       <version>${h2.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.datasqrl</groupId>
+      <artifactId>apirag-core</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -92,7 +104,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>com.datasqrl.ai.spring.DataAgentServer</mainClass>
+              <mainClass>com.datasqrl.ai.spring.AcornAgentServer</mainClass>
             </manifest>
           </archive>
         </configuration>

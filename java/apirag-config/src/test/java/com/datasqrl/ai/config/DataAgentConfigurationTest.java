@@ -22,7 +22,7 @@ public class DataAgentConfigurationTest {
     DataAgentConfiguration config2 = DataAgentConfiguration.fromFile(nutshopConfig, nutshopGraphQl);
 
     assertEquals(4, config1.getFunctionBackend().getFunctions().size());
-    assertEquals(5, config2.getFunctionBackend().getFunctions().size());
+    assertEquals(6, config2.getFunctionBackend().getFunctions().size());
   }
 
 }

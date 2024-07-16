@@ -10,7 +10,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,11 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @Slf4j
-public class DataAgentServer {
+public class AcornAgentServer {
 
   public static void main(String[] args) {
     try {
-      SpringApplication.run(DataAgentServer.class, args);
+      SpringApplication.run(AcornAgentServer.class, args);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -36,7 +35,7 @@ public class DataAgentServer {
     private final Function<String,Map<String,Object>> getContextFunction;
 
     @SneakyThrows
-    public MessageController(DataAgentServerProperties props) {
+    public MessageController(AcornAgentServerProperties props) {
       DataAgentConfiguration configuration = DataAgentConfiguration.fromFile(Path.of(props.getConfig()), Path.of(props.getTools()));
       this.getContextFunction = configuration.getContextFunction();
       this.chatProvider = configuration.getChatProvider();

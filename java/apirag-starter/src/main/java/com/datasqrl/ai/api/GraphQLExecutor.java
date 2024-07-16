@@ -16,7 +16,7 @@ import okhttp3.RequestBody;
 @SuperBuilder
 public class GraphQLExecutor extends AbstractOkhttpExecutor {
 
-  public GraphQLExecutor(@NonNull String endpoint, @NonNull String authHeader) {
+  public GraphQLExecutor(@NonNull String endpoint, String authHeader) {
     super(endpoint, authHeader);
   }
 
