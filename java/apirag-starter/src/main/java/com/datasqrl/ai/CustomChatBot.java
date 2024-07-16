@@ -37,7 +37,7 @@ public class CustomChatBot {
   }
 
   /**
-   * Starts the chatbot on the command line which will accepts questions and produce responses.
+   * Starts the chatbot on the command line which will accepts questions and producez responses.
    * Type "exit" to terminate.
    *
    * @param context        The user context that might be needed to execute functions
@@ -58,15 +58,12 @@ public class CustomChatBot {
   }
 
   public static void main(String... args) throws Exception {
-    System.out.println(Path.of("").toAbsolutePath());
     String systemPrompt = "You are a huge fan of the Ricky and Morty TV show and help users answer questions about the show. You always try to look up the information a user is asking for via one of the available functions. Only if you cannot find the information do you use general knowledge to answer it. Retrieved information always takes precedence. You answer in the voice of Jerry Smith.";
-    String toolsText = Files.readString(Path.of("java", "apirag-starter", "src", "main", "resources", "tools", "rickandmorty.tools.json"));
-    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(toolsText);
-    MapConfiguration apiConfig = new MapConfiguration(Map.of(
+    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(Path.of("java", "apirag-starter", "src", "main", "resources", "tools", "rickandmorty.tools.json"));
+    APIExecutor apiExecutor = new GraphQLExecutorFactory().create(new MapConfiguration(Map.of(
         "type", "graphql",
         "url", "https://rickandmortyapi.com/graphql"
-    ));
-    APIExecutor apiExecutor = new GraphQLExecutorFactory().create(apiConfig, "rickandmortyapi");
+    )), "rickandmortyapi");
     ToolsBackend toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
     ChatProvider<?, ?> chatProvider = ChatProviderFactory.fromConfiguration(Map.of(
         "provider", "openai",
@@ -75,7 +72,7 @@ public class CustomChatBot {
     ), toolsBackend, systemPrompt);
 
     CustomChatBot chatBot = new CustomChatBot(chatProvider);
-    Map<String,Object> context = Map.of("userid", 1);
+    Map<String, Object> context = Map.of("userid", 1);
     chatBot.start(context);
   }
 
