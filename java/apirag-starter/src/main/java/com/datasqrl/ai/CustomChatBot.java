@@ -5,6 +5,7 @@ import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.GraphQLExecutorFactory;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
+import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
@@ -47,7 +48,8 @@ public class CustomChatBot {
     System.out.print("First Query: ");
     String message = scanner.nextLine();
     while (true) {
-      chatProvider.chat(message, context);
+      GenericChatMessage response = chatProvider.chat(message, context);
+      System.out.println("Response: " + response.getContent());
       System.out.print("Next Query: ");
       String nextLine = scanner.nextLine();
       if (nextLine.equalsIgnoreCase("exit")) {
@@ -62,7 +64,8 @@ public class CustomChatBot {
     List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(Path.of("java", "apirag-starter", "src", "main", "resources", "tools", "rickandmorty.tools.json"));
     APIExecutor apiExecutor = new GraphQLExecutorFactory().create(new MapConfiguration(Map.of(
         "type", "graphql",
-        "url", "https://rickandmortyapi.com/graphql"
+        "url", "https://rickandmortyapi.com/graphql",
+        "auth", "customerid"
     )), "rickandmortyapi");
     ToolsBackend toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
     ChatProvider<?, ?> chatProvider = ChatProviderFactory.fromConfiguration(Map.of(
