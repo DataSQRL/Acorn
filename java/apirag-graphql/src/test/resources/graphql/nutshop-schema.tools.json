@@ -88,6 +88,37 @@
 }, {
   "type" : "api",
   "function" : {
+    "name" : "OrdersByTimeRange",
+    "description" : "Retrieves orders for a given customer within the specified time range",
+    "parameters" : {
+      "type" : "object",
+      "properties" : {
+        "customerid" : {
+          "type" : "integer",
+          "description" : "The unique identifier for the customer"
+        },
+        "fromTime" : {
+          "type" : "string",
+          "description" : "Returns orders where the order timestamp is larger than this RFC-3339 compliant fromTime timestamp"
+        },
+        "items_limit" : {
+          "type" : "integer"
+        },
+        "toTime" : {
+          "type" : "string",
+          "description" : "Returns orders where the order timestamp is smaller than this RFC-3339 compliant toTime timestamp"
+        }
+      },
+      "required" : [ "customerid", "fromTime", "toTime" ]
+    }
+  },
+  "api" : {
+    "name" : "default",
+    "query" : "query OrdersByTimeRange($customerid: Int!, $fromTime: DateTime!, $toTime: DateTime!, $items_limit: Int = 10) {\nOrdersByTimeRange(customerid: $customerid, fromTime: $fromTime, toTime: $toTime) {\nid\ncustomerid\ntimestamp\nitems(limit: $items_limit) {\nquantity\nunit_price\ndiscount0\ntotal\nproduct {\nid\nname\nsizing\nweight_in_gram\ntype\ncategory\nusda_id\nupdated\n}\n}\ntotal {\nprice\ndiscount\n}\n}\n\n}"
+  }
+}, {
+  "type" : "api",
+  "function" : {
     "name" : "OrderAgain",
     "description" : " Suggest products for a customer to order again based on their previous orders.",
     "parameters" : {

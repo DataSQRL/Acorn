@@ -30,5 +30,11 @@
       <version>${graphql-java.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java-extended-scalars</artifactId>
+      <version>${graphql-java.version}</version>
+    </dependency>
+
   </dependencies>
 </project>

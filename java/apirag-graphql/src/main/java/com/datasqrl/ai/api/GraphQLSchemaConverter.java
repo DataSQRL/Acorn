@@ -26,6 +26,9 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.SchemaPrinter;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.scalars.ExtendedScalars;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,8 +56,9 @@ public class GraphQLSchemaConverter {
 
   public List<RuntimeFunctionDefinition> convert(String schemaString) {
     TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(schemaString);
-    RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring().build();
-    GraphQLSchema graphQLSchema = new SchemaGenerator().makeExecutableSchema(typeRegistry, runtimeWiring);
+    RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
+    getExtendedScalars().forEach(runtimeWiringBuilder::scalar);
+    GraphQLSchema graphQLSchema = new SchemaGenerator().makeExecutableSchema(typeRegistry, runtimeWiringBuilder.build());
 
     List<RuntimeFunctionDefinition> functions = new ArrayList<>();
 
@@ -71,6 +75,25 @@ public class GraphQLSchemaConverter {
       }
     }).forEach(functions::add);
     return functions;
+  }
+
+  public static List<GraphQLScalarType> getExtendedScalars() {
+    List<GraphQLScalarType> scalars = new ArrayList<>();
+
+    Field[] fields = ExtendedScalars.class.getFields();
+    for (Field field : fields) {
+      if (Modifier.isPublic(field.getModifiers()) &&
+          Modifier.isStatic(field.getModifiers()) &&
+          GraphQLScalarType.class.isAssignableFrom(field.getType())) {
+        try {
+          scalars.add((GraphQLScalarType) field.get(null));
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    return scalars;
   }
 
   private record Context(String prefix, int numArgs) {}
@@ -140,7 +163,7 @@ public class GraphQLSchemaConverter {
       case "String" -> "string";
       case "Boolean" -> "boolean";
       case "ID" -> "string"; // Typically treated as a string in JSON Schema
-      default -> throw new IllegalArgumentException("Unknown scalar type: " + scalarType.getName());
+      default -> "string"; //We assume that type can be cast from string.
     };
   }
 

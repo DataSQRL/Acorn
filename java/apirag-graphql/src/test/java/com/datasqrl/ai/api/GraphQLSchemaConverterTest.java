@@ -25,7 +25,7 @@ public class GraphQLSchemaConverterTest {
     String schemaString = ConfigurationUtil.getResourcesFileAsString(
         "graphql/nutshop-schema.graphqls");
     List<RuntimeFunctionDefinition> functions = converter.convert(schemaString);
-    assertEquals(6, functions.size());
+    assertEquals(7, functions.size());
 //    functions.forEach(System.out::println);
 
     ToolsBackend backend = ToolsBackendFactory.of(functions, Map.of(
@@ -41,7 +41,7 @@ public class GraphQLSchemaConverterTest {
           }
         }));
     //Save and get messages aren't counted as functions
-    assertEquals(4, backend.getFunctions().size());
+    assertEquals(5, backend.getFunctions().size());
   }
 
 
@@ -55,7 +55,7 @@ public class GraphQLSchemaConverterTest {
       "graphql/nutshop-schema.tools.json");
     assertEquals(expectedResult, result);
     List<RuntimeFunctionDefinition> functions = ToolsBackendFactory.readTools(result);
-    assertEquals(6, functions.size());
+    assertEquals(7, functions.size());
   }
 
 
