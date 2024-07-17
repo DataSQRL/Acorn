@@ -15,7 +15,7 @@ Acorn Agent builds on tooling support that most LLMs provide to seamlessly integ
 * AI powered dashboards
 * Agents that extract structured data for planning and actions.
 
-Take a look at the [examples](/api-examples) for agents built with Acorn Agent.
+Take a look at the [examples](/examples) for agents built with Acorn Agent.
 
 # Why Acorn Agent?
 
