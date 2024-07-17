@@ -40,35 +40,33 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Value
 public class LowLevelAgent {
 
+  OpenAIModelConfiguration chatConfig;
   String systemPrompt;
   OpenAiService service;
   ToolsBackend toolsBackend;
-  OpenAIModelConfiguration chatConfig = new OpenAIModelConfiguration(
-      new MapConfiguration(Map.of(
-          "name", "gpt-3.5-turbo",
-          "temperature", 0.3)));
+
 
   /**
-   * Initializes a command line chat bot using OpenAI
+   * Initializes a command line chatbot using OpenAI
    *
-   * @param toolsPath     A path to a tools file in JSON format
-   * @param apiExecutor   An APIExecutor for the tools
-   * @param systemPrompt  The system message for the LLM
-   * @param openAIKey     The OpenAI API key to call the API
+   * @param toolsBackend The tools backend to use for function execution.
+   * @param chatConfig   The openAI model configuration
+   * @param systemPrompt The system message for the LLM
+   * @param openAIKey    The OpenAI API key to call the API
    */
 
-  public LowLevelAgent(Path toolsPath, APIExecutor apiExecutor, String systemPrompt, String openAIKey) throws IOException {
+  public LowLevelAgent(ToolsBackend toolsBackend, OpenAIModelConfiguration chatConfig, String systemPrompt, String openAIKey) throws IOException {
+    this.toolsBackend = toolsBackend;
+    this.chatConfig = chatConfig;
     this.systemPrompt = systemPrompt;
     this.service = new OpenAiService(openAIKey, Duration.ofSeconds(60));
-    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(toolsPath);
-    this.toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
   }
 
   /**
    * Starts the chatbot on the command line which will accepts questions and produce responses.
    * Type "exit" to terminate.
    */
-  public void start(Map<String, Object> context) throws IOException {
+  public void start(Map<String, Object> context) {
     Scanner scanner = new Scanner(System.in);
     OpenAIModelBindings modelBindings = new OpenAIModelBindings(chatConfig);
     ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(toolsBackend, context, systemPrompt, modelBindings);
@@ -142,14 +140,19 @@ public class LowLevelAgent {
   public static void main(String... args) throws Exception {
     String systemPrompt = "You are an incredibly enthusiastic and joyous life coach. You provide advice to people. You look up any and all advice you give via the provided functions.";
     Path toolsPath = Path.of("java", "apirag-starter", "src", "main", "resources", "tools", "advice.tools.json");
-    String openaiKey = System.getenv("OPENAI_API_KEY");
     APIExecutor apiExecutor = new RESTExecutorFactory().create(new MapConfiguration(Map.of(
         "type", "rest",
         "url", "https://api.adviceslip.com"
     )), "adviceapi");
+    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(toolsPath);
+    ToolsBackend toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
+    String openaiKey = System.getenv("OPENAI_API_KEY");
+    OpenAIModelConfiguration chatConfig = new OpenAIModelConfiguration(
+        new MapConfiguration(Map.of(
+            "name", "gpt-3.5-turbo",
+            "temperature", 0.3)));
 
-    LowLevelAgent agent = new LowLevelAgent(toolsPath, apiExecutor, systemPrompt, openaiKey);
-    Map<String, Object> context = Map.of("userid", 1);
-    agent.start(context);
+    LowLevelAgent agent = new LowLevelAgent(toolsBackend, chatConfig, systemPrompt, openaiKey);
+    agent.start(Map.of());
   }
 }

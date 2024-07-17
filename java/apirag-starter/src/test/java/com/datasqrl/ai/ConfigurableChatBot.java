@@ -75,8 +75,7 @@ public class ConfigurableChatBot {
     ), toolsBackend, systemPrompt);
 
     ConfigurableChatBot chatBot = new ConfigurableChatBot(chatProvider);
-    Map<String, Object> context = Map.of("userid", 1);
-    chatBot.start(context);
+    chatBot.start(Map.of());
   }
 
 }
