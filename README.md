@@ -6,7 +6,7 @@ Acorn Agent builds on tooling support that most LLMs provide to seamlessly integ
 
 [visual of data in - acorn agent in the middle - use cases out (like llamaindex)]
 
-# What can You Build with Acorn Agent?
+## What can You Build with Acorn Agent?
 
 * Chat Bots that retrieve question-specific information from APIs, databases, and other sources on demand.
 * AI frontend applications for GraphQL and REST APIs that customize and visualize responses.
@@ -17,7 +17,7 @@ Acorn Agent builds on tooling support that most LLMs provide to seamlessly integ
 
 Take a look at the [examples](/examples) for agents built with Acorn Agent.
 
-# Why Acorn Agent?
+## Why Acorn Agent?
 
 Most agent frameworks are either too complex with lots of connectors, configurations, and options or abstract too much away from the actual LLM calls which doesn't give you enough control to fine-tune and cost-optimize your agents.
 
@@ -26,56 +26,62 @@ We wanted to build an agent framework that makes it easy to get started and expe
 * Acorn Agent is simple: It manages and invokes tools for LLMs efficiently and safely. That's it. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs. And it future-proofs your agent as LLMs get better and better at using tools.
 * Acorn Agent is flexible: you can use the lightweight abstraction layers that Acorn agent provides to get started quickly and swap out models easily, but you can also use the tooling framework with any model client library or model API for full control over each model invocation.
 
-# Acorn Agent Features
+## Acorn Agent Features
 
-* Efficient Data Retrieval
-* UI integration through dynamic data visualization or UI updates.
-* Pluggable models and model providers: OpenAI, Bedrock, Google Vertex, Groq
-* Sandboxing and Safety controls
-* Message history for context preservation
+* On-Demand Data Retrieval from GraphQL APIs, REST APIs, or JDBC-compatible databases.
+* Pluggable models and model providers like OpenAI (GPT models), Bedrock (Llama, and others), Google Vertex (Gemini), and Groq (Llama, Mixtral, and others).
+* Message history to preserve context between agent interactions.
+* Custom data visualizations.
+* Easy integration with Spring Boot and other web development frameworks with in-code or file-based configuration.
+* UI integration through function callbacks.
+* Secure sandboxing of external system calls by injecting authentication information outside the LLM callstack.
+* Ability to fine-tune context window for quality and cost optimization.
 
-# Getting Started with Acorn Agent
+## Getting Started with Acorn Agent
 
-Examples for demos and pocs and no-code
+### No Code
 
--> examples
+Invoke the Acorn Agent docker image with an agent and a tools configuration file. 
 
-Spring boot application
+```bash
+command example [AGENT_CONFIGURATION] [TOOLS_CONFIGURATION]
+```
 
--> server module
+* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/apirag-config/) for all options.
+* Tools Configuration File: Configures the tools that the LLM can invoke to retrieve information, trigger actions, execute a function, or send a callback to the client. See the [tools configuration](TOOLS_CONFIG.md) for more information. As a simpler alternative, you can also provide a GraphQL schema with documentation which Acorn Agent automatically translates to tools.
 
-Custom development framework
+Take a look at the [Acorn Agent examples](examples/) for inspiration and ready-to-run examples that you can use as a starting point.
 
--> starter module (rename "api" to "starter")
-test case
+### JVM (Java, Scala, Groovy, Clojure)
 
-Low-level control
+Check out the [Getting Started Documentation](java/README.md) for how to build your own custom agent with Acorn Agent:
 
--> starter module
+* as a Spring Boot web application
+* using the Model-abstraction interface
+* or with low-level access to the model
 
 ## How does Acorn Agent Work?
 
 ![Diagram of how apiRAG executes user requests](img/apiRAG-diagram.png)
 
-3 types of tools:
-- api
-- user defined function
-- client-call
+Acorn Agent is essentially just a tools management framework with some convenient (and optional) abstraction layers for faster development.
 
-At it's core, apiRAG is a configuration format that defines a set of LLM functions and how they map to API queries.
-It extends OpenAI's function call configuration with additional information on how to execute the function against an existing API.
+You define the tools through a [configuration file](TOOLS_CONFIG.md) or in-code and Acorn Agent instruments those tools into the LLM and manages tool call validation and tool execution. To make sure that tools are executed safely and securely, you can define a "context" based on authentication or session information (e.g. a user id) which gets injected into the tool call outside the callstack of the LLM to eliminate injection attacks.
 
-For more information on apiRAG's configuration format, check out the [format documentation](FORMAT.md).
+In addition, Acorn Agents provides features for message persistence and retrieval to preserve message context between invocations.
 
-Each apiRAG language implementation is a mapping of the configuration format to the LLM instrumentation for that language. That means, you retain complete control over how the language model gets configured and executed and only need a very lightweight library for pulling in custom data.
-
-apiRAG also introduces the notion of a "context", such as a user id, which is used to constrain the API calls to retrieve
-information that pertains to the given context. That allows you to use apiRAG within an authenticated user session
-and allowing the LLM to retrieve user-specific information without any danger of leaking information.
+On top of that, Acorn Agents provides abstraction layers that make it simple and easy to replace models for fast experimentation.
 
 ## Acorn Agent Concepts
 
-
+* Tools: Tools (sometimes also called "functions") are executables that can be invoked by the LLM to retrieve information or trigger an action. Many LLMs are specifically trained to use tools which makes this a natural interface between the LLM and other systems. Acorn Agent distinguishes 3 types of tools and provides the infrastructure to manage and invoke them:
+  * API: An API tools executes as a query against another system through an API like GraphQL, REST, or JDBC (i.e. databases). Each API type has an associated APIExecutor that executes the queries.
+  * Local: A tool that executes as a local function within the same instance that runs Acorn Agent.
+  * Client: A tool that is a callback to the client (e.g. for data visualization, UI updates, or other actions).
+* Message: The communication between the user/application and an LLM is through messages. The sequence of messages is the message history.
+* ToolsBackend: Is a repository for tools that manages tool invocation as well as message persistence and history retrieval.
+* ChatSession: A ChatSession manages the interaction between the user/application and the LLM. It uses the ToolsBackend to add, validate and invoke tools. The primary purpose of the ChatSession is to determine the ContextWindow which defines the input to the LLM.
+* ChatProvider: Is an abstraction layer that provides a message interface on top of various LLM models that makes it easy to swap out models while sacrificing some level of control over model invocations.
 
 ## Tools Are All You Need
 
@@ -91,9 +97,12 @@ Building AI applications around tooling is not only simpler (everything is a too
 
 ## Community
 
-[Join our Slack]() to ask questions or share your feedback.
+[Join our Slack](https://join.slack.com/t/datasqrlcommunity/shared_invite/zt-2l3rl1g6o-im6YXYCqU7t55CNaHqz_Kg) to ask questions or share your feedback.
 
-We welcome community contributions to the project.
+If you encounter an issue or have an idea for a new feature, please create an issue.
+
+We welcome community contributions to the project. Feel free to open a PR to fix an issue or add a feature. Hop on the Slack channel for support and guidance.
+
 Acorn Agent is currently limited to JVM applications. We'd love to bring the idea of a tool-centric agent framework to other languages. If you want to help with a Python or JavaScript implementation, please reach out.
 
 ## When Should You NOT Use Acorn Agent
