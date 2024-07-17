@@ -25,7 +25,7 @@ import java.util.Scanner;
  */
 @Slf4j
 @Value
-public class CustomChatBot {
+public class ConfigurableChatBot {
 
   ChatProvider chatProvider;
 
@@ -34,7 +34,7 @@ public class CustomChatBot {
    *
    * @param chatProvider    The ChatProvider to take care of the communication with the LLM and the function execution
    */
-  public CustomChatBot(ChatProvider chatProvider) {
+  public ConfigurableChatBot(ChatProvider chatProvider) {
     this.chatProvider = chatProvider;
   }
 
@@ -74,7 +74,7 @@ public class CustomChatBot {
         "temperature", 0.8
     ), toolsBackend, systemPrompt);
 
-    CustomChatBot chatBot = new CustomChatBot(chatProvider);
+    ConfigurableChatBot chatBot = new ConfigurableChatBot(chatProvider);
     Map<String, Object> context = Map.of("userid", 1);
     chatBot.start(context);
   }
