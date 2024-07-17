@@ -31,7 +31,7 @@ public class RESTExecutor extends AbstractOkhttpExecutor {
     RestCall call = RestUtil.createRestCall(query, arguments);
     Request.Builder requestBuilder = new Request.Builder()
         .url(endpoint + call.path())
-        .method(query.getMethod(), buildRequestBody(call.body()));
+        .method(query.getMethod(), buildRequestBody(call.body(), query.getMethod()));
 
     if (!Strings.isNullOrEmpty(authHeader)) {
       requestBuilder.addHeader("Authorization", authHeader);
@@ -39,8 +39,8 @@ public class RESTExecutor extends AbstractOkhttpExecutor {
     return requestBuilder.build();
   }
 
-  private RequestBody buildRequestBody(JsonNode requestBody) throws IOException {
-    if (requestBody == null || requestBody.isEmpty()) {
+  private RequestBody buildRequestBody(JsonNode requestBody, String method) throws IOException {
+    if (requestBody == null || requestBody.isEmpty() || method.equalsIgnoreCase("GET")) {
       return RequestBody.create("", null);
     }
     return RequestBody.create(objectMapper.writeValueAsString(requestBody), MediaType.get("application/json; charset=utf-8"));
