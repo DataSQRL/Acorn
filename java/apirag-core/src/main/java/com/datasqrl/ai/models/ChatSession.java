@@ -18,11 +18,11 @@ public class ChatSession<Message, FunctionCall> {
 
   private static final int MESSAGE_HISTORY_LIMIT = 100;
 
-  private final ToolsBackend backend;
-  private final Map<String, Object> context;
-  private final String systemMessage;
-  private final ModelBindings<Message, FunctionCall> bindings;
-  private final List<GenericChatMessage> messages = new ArrayList<>();
+  protected final ToolsBackend backend;
+  protected final Map<String, Object> context;
+  protected final String systemMessage;
+  protected final ModelBindings<Message, FunctionCall> bindings;
+  protected final List<GenericChatMessage> messages = new ArrayList<>();
 
   public ChatSession(ToolsBackend backend, Map<String, Object> context, String systemMessage,
                      ModelBindings<Message, FunctionCall> bindings) {
