@@ -6,6 +6,9 @@ Acorn Agent builds on tooling support that most LLMs provide to seamlessly integ
 
 [visual of data in - acorn agent in the middle - use cases out (like llamaindex)]
 
+![Acorn Agent Connects Data with LLMs](img/overview.png)
+
+
 ## What can You Build with Acorn Agent?
 
 * Chat Bots that retrieve question-specific information from APIs, databases, and other sources on demand.
@@ -62,7 +65,7 @@ Check out the [Getting Started Documentation](java/README.md) for how to build y
 
 ## How does Acorn Agent Work?
 
-![Diagram of how apiRAG executes user requests](img/apiRAG-diagram.png)
+![Diagram of how apiRAG executes user requests](img/how_diagram.png)
 
 Acorn Agent is essentially just a tools management framework with some convenient (and optional) abstraction layers for faster development.
 
