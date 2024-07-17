@@ -144,7 +144,7 @@ public class CmdLineChatBot {
 
 
     Map<String,Object> context = Map.of();
-    if (configuration.hasAuth()) {
+    if (!configuration.getContext().isEmpty()) {
       Scanner scanner = new Scanner(System.in);
       System.out.print("Enter the User ID: ");
       String userid = scanner.nextLine();

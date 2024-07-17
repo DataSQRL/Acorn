@@ -21,9 +21,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import lombok.Value;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.JSONConfiguration;
@@ -40,10 +38,6 @@ public class AcornAgentConfiguration {
   public static final String CONTEXT_KEY = "context";
 
   public static final String CONVERTER_PREFIX = "converter";
-
-
-  public static final String AUTH_FIELD_KEY = "auth-field";
-  public static final String AUTH_FIELD_INTEGER_KEY = "auth-is-integer";
 
   Configuration baseConfiguration;
   Configuration modelConfiguration;
@@ -110,10 +104,6 @@ public class AcornAgentConfiguration {
     } else {
       return List.of();
     }
-  }
-
-  public boolean hasAuth() {
-    return baseConfiguration.containsKey(AUTH_FIELD_KEY);
   }
 
   public static AcornAgentConfiguration fromFile(Path configPath, Path toolsPath) throws IOException {
