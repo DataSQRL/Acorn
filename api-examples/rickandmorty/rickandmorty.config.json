@@ -10,5 +10,5 @@
     "provider" : "openai",
     "name": "gpt-3.5-turbo"
   },
-  "local-functions": ["CurrentTime"]
+  "local_functions": ["CurrentTime"]
 }

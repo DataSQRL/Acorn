@@ -30,14 +30,13 @@ import org.apache.commons.configuration2.JSONConfiguration;
 public class AcornAgentConfiguration {
 
   public static final String MODEL_PREFIX = "model";
-
-  public static final String API_KEY = "apis";
-  public static final String PLOT_FCT_KEY = "plot-function";
-  public static final String PROMPT_KEY = "prompt";
-  public static final String LOCAL_FUNCTIONS_KEY = "local-functions";
-  public static final String CONTEXT_KEY = "context";
-
+  public static final String API_PREFIX = "apis";
   public static final String CONVERTER_PREFIX = "converter";
+
+  public static final String CLIENT_FUNCTIONS_KEY = "client_functions";
+  public static final String PROMPT_KEY = "prompt";
+  public static final String LOCAL_FUNCTIONS_KEY = "local_functions";
+  public static final String CONTEXT_KEY = "context";
 
   Configuration baseConfiguration;
   Configuration modelConfiguration;
@@ -59,14 +58,19 @@ public class AcornAgentConfiguration {
   }
 
   public ToolsBackend getFunctionBackend() {
-    Map<String,APIExecutor> apiExecutors = APIExecutorFactory.getAPIExecutors(baseConfiguration.subset(API_KEY));
-    ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`", API_KEY);
+    Map<String,APIExecutor> apiExecutors = APIExecutorFactory.getAPIExecutors(baseConfiguration.subset(
+        API_PREFIX));
+    ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`",
+        API_PREFIX);
     ToolsBackend backend = ToolsBackendFactory.of(toolFunctions, apiExecutors);
-    DataVisualizationFunction dataVisualizationFunction = getDataVizFunction();
-    if (dataVisualizationFunction.isPresent()) {
-      URL url = ConfigurationUtil.getResourceFile(dataVisualizationFunction.getResourceFile().get());
-      UDFConverter.addClientFunction(backend, url);
-    }
+    //Add client functions
+    baseConfiguration.getList(CLIENT_FUNCTIONS_KEY).stream().map(String.class::cast)
+        .forEach(fctName -> {
+          ClientSideFunctions clientFct = ClientSideFunctions.forName(fctName).orElseThrow(() ->
+              new IllegalArgumentException(String.format("Not a valid client function: %s. Should be one of: %s", fctName, Arrays.toString(ClientSideFunctions.values()))));
+          URL url = ConfigurationUtil.getResourceFile(clientFct.getResourceFile());
+          UDFConverter.addClientFunction(backend, url);
+        });
     //Add local functions
     baseConfiguration.getList(LOCAL_FUNCTIONS_KEY).stream().map(String.class::cast)
         .map(this::loadLocalFunction).forEach(backend::addFunction);
@@ -76,13 +80,6 @@ public class AcornAgentConfiguration {
       backend.setGlobalContext(Set.copyOf(context));
     }
     return backend;
-  }
-
-  public DataVisualizationFunction getDataVizFunction() {
-    return ConfigurationUtil.getEnumFromString(
-            DataVisualizationFunction.class,baseConfiguration.getString(PLOT_FCT_KEY, DataVisualizationFunction.none.name()))
-        .orElseThrow(() -> new IllegalArgumentException("Not a valid configuration value for ["+PLOT_FCT_KEY+"]. Expected one of: " + Arrays.toString(
-            DataVisualizationFunction.values())));
   }
 
   public String getSystemPrompt() {

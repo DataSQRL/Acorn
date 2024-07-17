@@ -1,16 +1,87 @@
-# Java Implementation of apiRAG
+# Java Implementation of Acorn Agent
 
-This is the Java implementation of apiRAG.
+This is the Java implementation of Acorn Agent which provides the libraries you need to implement an AI agent on the JVM.
 
-It is based on the [OpenAI Java library](https://github.com/TheoKanning/openai-java) by Theo Kanning.
+## Getting Started
 
-You can run the examples in one of two ways:
-1. Using the [`CmdLineChatBot`](test/java/com/datasqrl/ai/CmdLineChatBot.java) which is a simple ChatBot command line application
-2. Using the [`SimpleServer`](test/java/com/datasqrl/ai/spring/SimpleServer.java) which provides the ChatBot as a Spring Boot application exposed through REST and can be accessed via the frontend defined in `../html/chatbot.html`.
+### Spring Boot
 
-For either one you need:
-1. To set `OPENAI_API_KEY` as an environment variable that contains your OPENAI API key. In the terminal, run `export OPENAI_API_KEY={YOUR TOKEN}`.
-2. Provide the name of the example you want to run as a command line argument (for the server, provide the argument as `--example=[NAME]`). You can find all example definitions in the [`Examples`](test/java/com/datasqrl/ai/Examples.java) enum. 
-3. For many examples, you need to run the API locally. Check the [api-examples](/api-examples) directory for more information on how to run the APIs.
+To build an AI agent as a web application with Spring Boot, include the following dependency in your project and use the generic implementation in [AcornAgentServer](apirag-spring/src/main/java/com/datasqrl/ai/spring/AcornAgentServer.java) as a starting point for your own.
 
-This is a proof-of-concept implementation and the library has not yet been published to Maven Central. Test coverage is minimal. We are working on it.
+#### Gradle
+
+```text
+dependencies {
+    implementation 'com.datasqrl:apirag-spring:0.5.0'
+}
+```
+
+#### Maven
+
+```text
+    <dependency>
+        <groupId>com.datasqrl</groupId>
+        <artifactId>apirag-spring</artifactId>
+        <version>0.5.0</version>
+    </dependency>
+```
+
+### Generic
+
+If you prefer a different web development framework or want to use Acorn Agent in a different context (e.g. a command line application), use the following dependency and take a look at the [command line agent implementation examples](apirag-starter/src/test/java/com/datasqrl/ai) for inspiration.
+
+#### Gradle
+
+```text
+dependencies {
+    implementation 'com.datasqrl:apirag-starter:0.5.0'
+}
+```
+
+#### Maven
+
+```text
+    <dependency>
+        <groupId>com.datasqrl</groupId>
+        <artifactId>apirag-starter</artifactId>
+        <version>0.5.0</version>
+    </dependency>
+```
+
+## Modules
+
+The implementation is divided into multiple modules, so you can include exactly the modules you need in your agent implementation without pulling in unneeded dependencies.
+
+* **acorn-core**: The core module contains the implementation of the `ToolsBackend`, `ChatSession`, `ChatProvider`, and model configuration. Those are the core components of Acorn Agent.
+* **acorn-udf**: Adds support for user defined functions. Add this module if you want to add a tool that executes locally by invoking a function.
+* **acorn-openai**: Implements OpenAI as a model provider with support for the GPT-class of large-language models.
+* **acorn-bedrock**: Implements AWS Bedrock as a model provider with support for LLMs like Llama3 and others.
+* **acorn-vertex**: Implements Google Vertex as a model provider with support for Gemini-class of LLMs.
+* **acorn-groq**: Implements Groq as a model provider with support for models like Llama3, Mixtral, etc.
+* **acorn-graphql**: Supports mapping GraphQL schemas to tool configurations to simplify integration of GraphQL APIs as a tool.
+* **acorn-rest**: Utilities for calling REST APIs as a tool. Supports mapping OpenAPI schemas to tool configurations to simplify integration of REST APIs.
+* **acorn-config**: Utilities for file-based configuration of Acorn Agent and it's components (i.e. models, provider, tools, and APIs)
+* **acorn-starter**: Sample API executors and example implementations of AI agents.
+* **acorn-spring**: Integrates Acorn Agent with the Spring Boot web development framework.
+
+To include a module into your project, use a dependency management tool like Gradle or Maven as follows. Replace `[MODULE_NAME]` with the name of the module and configure `{acorn.version}` to the current version of Acorn Agent.
+
+### Gradle
+
+```text title='Gradle'
+dependencies {
+    implementation 'com.datasqrl:apirag-[MODULE_NAME]:${acorn.version}'
+}
+```
+
+### Maven
+
+```text title='Maven'
+<dependencies>
+    <dependency>
+        <groupId>com.datasqrl</groupId>
+        <artifactId>apirag-[MODULE_NAME]</artifactId>
+        <version>${acorn.version}</version>
+    </dependency>
+</dependencies>
+```

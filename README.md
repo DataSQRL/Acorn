@@ -73,6 +73,10 @@ apiRAG also introduces the notion of a "context", such as a user id, which is us
 information that pertains to the given context. That allows you to use apiRAG within an authenticated user session
 and allowing the LLM to retrieve user-specific information without any danger of leaking information.
 
+## Acorn Agent Concepts
+
+
+
 ## Tools Are All You Need
 
 We build Acorn Agent after we had the following "aha" moments:
