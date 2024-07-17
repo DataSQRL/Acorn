@@ -50,7 +50,7 @@
       <groupId>com.datasqrl</groupId>
       <artifactId>apirag-openai</artifactId>
       <version>${project.version}</version>
-<!--      <scope>test</scope>-->
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.datasqrl</groupId>
