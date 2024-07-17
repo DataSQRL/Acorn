@@ -10,10 +10,10 @@ import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +23,7 @@ import java.util.Scanner;
  * A simple chatbot for the command line.
  * Uses a fully contained ChatProvider, configured manually.
  */
+@Slf4j
 @Value
 public class CustomChatBot {
 
@@ -64,8 +65,7 @@ public class CustomChatBot {
     List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(Path.of("java", "apirag-starter", "src", "main", "resources", "tools", "rickandmorty.tools.json"));
     APIExecutor apiExecutor = new GraphQLExecutorFactory().create(new MapConfiguration(Map.of(
         "type", "graphql",
-        "url", "https://rickandmortyapi.com/graphql",
-        "auth", "customerid"
+        "url", "https://rickandmortyapi.com/graphql"
     )), "rickandmortyapi");
     ToolsBackend toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
     ChatProvider<?, ?> chatProvider = ChatProviderFactory.fromConfiguration(Map.of(

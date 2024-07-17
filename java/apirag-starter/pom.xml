@@ -39,13 +39,18 @@
       <artifactId>okhttp</artifactId>
       <version>${okhttp.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>2.0.13</version>
+    </dependency>
 
     <!-- Testing -->
     <dependency>
       <groupId>com.datasqrl</groupId>
       <artifactId>apirag-openai</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+<!--      <scope>test</scope>-->
     </dependency>
     <dependency>
       <groupId>com.datasqrl</groupId>
