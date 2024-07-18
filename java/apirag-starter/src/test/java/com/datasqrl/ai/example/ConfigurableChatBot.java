@@ -1,4 +1,4 @@
-package com.datasqrl.ai;
+package com.datasqrl.ai.example;
 
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;

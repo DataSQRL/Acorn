@@ -1,4 +1,4 @@
-package com.datasqrl.ai;
+package com.datasqrl.ai.example;
 
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
@@ -71,6 +71,8 @@ public class LowLevelAgent {
   /**
    * Starts the chatbot on the command line which will accepts questions and produce responses.
    * Type "exit" to terminate.
+   *
+   * @param context        The user context that might be needed to execute functions
    */
   public void start(Map<String, Object> context) {
     Scanner scanner = new Scanner(System.in);
@@ -164,19 +166,19 @@ public class LowLevelAgent {
       if (numTokens.get() > maxTokens)
         throw new IllegalArgumentException("Function calls and system message too large for model: " + numTokens);
       int numMessages = messages.size();
-      List<GenericChatMessage> resultMessages = new ArrayList<>();
+      List<GenericChatMessage> contextMessages = new ArrayList<>();
       ListIterator<GenericChatMessage> listIterator = messages.listIterator(numMessages);
       //      Allow maximum 3 past messages in context window
-      while (listIterator.hasPrevious() && resultMessages.size() < 3) {
+      while (listIterator.hasPrevious() && contextMessages.size() < 3) {
         GenericChatMessage message = listIterator.previous();
         numTokens.addAndGet(message.getNumTokens(msg -> analyzer.countTokens(bindings.convertMessage(msg))));
         if (numTokens.get() > maxTokens) break;
-        resultMessages.add(message);
+        contextMessages.add(message);
         numMessages--;
       }
       builder.message(systemMessage);
-      Collections.reverse(resultMessages);
-      builder.messages(resultMessages);
+      Collections.reverse(contextMessages);
+      builder.messages(contextMessages);
       builder.numTokens(numTokens.get());
       ContextWindow<GenericChatMessage> window = builder.build();
       if (numMessages > 0) log.info("Truncated the first {} messages", numMessages);
