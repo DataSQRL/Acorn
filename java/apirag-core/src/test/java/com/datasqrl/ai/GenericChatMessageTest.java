@@ -1,19 +1,18 @@
 package com.datasqrl.ai;
 
-import static com.datasqrl.ai.backend.FunctionBackendTest.convert;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.datasqrl.ai.backend.GenericChatMessage;
-import com.datasqrl.ai.backend.GenericFunctionCall;
+import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.GenericFunctionCall;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.junit.jupiter.api.Test;
+
+import static com.datasqrl.ai.tool.ToolsBackendTest.convert;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GenericChatMessageTest {
 

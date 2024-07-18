@@ -1,14 +1,17 @@
 package com.datasqrl.ai.tool;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.APIQuery;
 import com.datasqrl.ai.api.MockAPIExecutor;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,16 +19,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.SneakyThrows;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ToolsBackendTest {
 
@@ -117,7 +115,7 @@ public class ToolsBackendTest {
 
     String backendMsg = objectMapper.writeValueAsString(backendSerialize(msg1, msg2));
 
-    FunctionBackend fctExec = FunctionBackendFactory.of(getNutshopFunctions(), Map.of(APIExecutorFactory.DEFAULT_NAME, new APIExecutor() {
+    ToolsBackend fctExec = ToolsBackendFactory.of(getNutshopFunctions(), Map.of(APIExecutorFactory.DEFAULT_NAME, new APIExecutor() {
       @Override
       public void validate(APIQuery query) throws IllegalArgumentException {
 

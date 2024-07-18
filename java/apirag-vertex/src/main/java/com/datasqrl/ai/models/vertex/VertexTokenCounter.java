@@ -1,7 +1,7 @@
 package com.datasqrl.ai.models.vertex;
 
-import com.datasqrl.ai.backend.FunctionDefinition;
-import com.datasqrl.ai.backend.ModelAnalyzer;
+import com.datasqrl.ai.models.ModelAnalyzer;
+import com.datasqrl.ai.tool.FunctionDefinition;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;

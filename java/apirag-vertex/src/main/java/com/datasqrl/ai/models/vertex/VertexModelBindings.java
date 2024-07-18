@@ -1,18 +1,16 @@
 package com.datasqrl.ai.models.vertex;
 
-import com.datasqrl.ai.backend.GenericChatMessage;
-import com.datasqrl.ai.backend.GenericFunctionCall;
-import com.datasqrl.ai.backend.ModelAnalyzer;
-import com.datasqrl.ai.backend.ModelBindings;
+import com.datasqrl.ai.models.ModelAnalyzer;
+import com.datasqrl.ai.models.ModelBindings;
+import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.GenericFunctionCall;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.api.FunctionCall;
 import com.google.cloud.vertexai.api.FunctionResponse;
 import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
-import com.google.cloud.vertexai.generativeai.GenerativeModel;
 
 import java.time.Instant;
 import java.util.Map;

@@ -1,11 +1,11 @@
 package com.datasqrl.ai.models.vertex;
 
-import com.datasqrl.ai.backend.ChatSession;
-import com.datasqrl.ai.backend.ContextWindow;
-import com.datasqrl.ai.backend.FunctionBackend;
-import com.datasqrl.ai.backend.GenericChatMessage;
-import com.datasqrl.ai.backend.RuntimeFunctionDefinition;
-import com.datasqrl.ai.models.ChatClientProvider;
+import com.datasqrl.ai.models.ChatProvider;
+import com.datasqrl.ai.models.ChatSession;
+import com.datasqrl.ai.models.ContextWindow;
+import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,13 +30,13 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
-public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall> {
+public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
 
   private final GenerativeModel chatModel;
   private final String systemPrompt;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public VertexChatProvider(VertexModelConfiguration config, FunctionBackend backend, String systemPrompt) {
+  public VertexChatProvider(VertexModelConfiguration config, ToolsBackend backend, String systemPrompt) {
     super(backend, new VertexModelBindings(config));
     this.systemPrompt = systemPrompt;
     VertexAI vertexAI = new VertexAI(config.getProjectId(), config.getLocation());
@@ -97,7 +97,7 @@ public class VertexChatProvider extends ChatClientProvider<Content, FunctionCall
             }
             case EXECUTED -> chatMessage = outcome.functionResponse();
             case VALIDATION_ERROR_RETRY -> {
-              if (retryCount >= ChatClientProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+              if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
                 throw new RuntimeException("Too many function call retries for the same function.");
               } else {
                 retryCount++;

@@ -43,7 +43,7 @@ public class ChatSession<Message, FunctionCall> {
   }
 
   // TODO: Make this method return ContextWindow<Message>, otherwise it converts the messages twice for every run of the parent method
-  private ContextWindow<GenericChatMessage> getContextWindow(int maxTokens, ModelAnalyzer<Message> analyzer) {
+  protected ContextWindow<GenericChatMessage> getContextWindow(int maxTokens, ModelAnalyzer<Message> analyzer) {
     GenericChatMessage systemMessage = bindings.convertMessage(bindings.createSystemMessage(this.systemMessage), context);
     final AtomicInteger numTokens = new AtomicInteger(0);
     numTokens.addAndGet(systemMessage.getNumTokens());
