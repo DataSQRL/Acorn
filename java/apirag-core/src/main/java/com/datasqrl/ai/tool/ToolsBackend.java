@@ -190,6 +190,9 @@ public class ToolsBackend {
       String schemaText = mapper.writeValueAsString(def.getParameters());
       JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
       JsonSchema schema = factory.getSchema(schemaText);
+      if (arguments.isEmpty()) {
+        arguments = mapper.readTree("{}");
+      }
       Set<ValidationMessage> schemaErrors = schema.validate(arguments);
       if (!schemaErrors.isEmpty()) {
         String schemaErrorsText = schemaErrors.stream().map(ValidationMessage::toString).collect(Collectors.joining("; "));

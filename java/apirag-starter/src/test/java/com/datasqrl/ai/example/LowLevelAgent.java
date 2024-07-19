@@ -40,7 +40,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * A simple streaming chatbot for the command line.
+ * An example of a streaming chatbot for the command line, which is using the low level components of the AcornAgent Framework.
+ * All API and model configuration is done in the main() function.
+ * The system prompt is hardcoded and the tools are loaded from file.
  */
 @Slf4j
 @Value
@@ -57,11 +59,11 @@ public class LowLevelAgent {
    *
    * @param toolsBackend The tools backend to use for function execution.
    * @param chatConfig   The openAI model configuration
-   * @param systemPrompt The system message for the LLM
+   * @param systemPrompt The system prompt for the LLM
    * @param openAIKey    The OpenAI API key to call the API
    */
 
-  public LowLevelAgent(ToolsBackend toolsBackend, OpenAIModelConfiguration chatConfig, String systemPrompt, String openAIKey) throws IOException {
+  public LowLevelAgent(ToolsBackend toolsBackend, OpenAIModelConfiguration chatConfig, String systemPrompt, String openAIKey) {
     this.toolsBackend = toolsBackend;
     this.chatConfig = chatConfig;
     this.systemPrompt = systemPrompt;
@@ -123,6 +125,7 @@ public class LowLevelAgent {
 
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
+        //        Basic function validation without retries
         FunctionValidation<ChatMessage> functionValidation = session.validateFunctionCall(functionCall);
         if (functionValidation.isValid()) {
           log.info("Executing {} with arguments {}", functionCall.getName(), functionCall.getArguments().toPrettyString());
@@ -151,6 +154,7 @@ public class LowLevelAgent {
       super(toolsBackend, context, systemPrompt, modelBindings);
     }
 
+    // Custom implementation of a ChatSession method in order to control the size of the context window, which can be costly
     @Override
     protected ContextWindow<GenericChatMessage> getContextWindow(int maxTokens, ModelAnalyzer<ChatMessage> analyzer) {
       GenericChatMessage systemMessage = this.bindings.convertMessage(this.bindings.createSystemMessage(systemPrompt), this.context);
