@@ -6,13 +6,13 @@ This is the Java implementation of Acorn Agent which provides the libraries you 
 
 ### Spring Boot
 
-To build an AI agent as a web application with Spring Boot, include the following dependency in your project and use the generic implementation in [AcornAgentServer](apirag-spring/src/main/java/com/datasqrl/ai/spring/AcornAgentServer.java) as a starting point for your own.
+To build an AI agent as a web application with Spring Boot, include the following dependency in your project and use the generic implementation in [AcornAgentServer](acorn-spring/src/main/java/com/datasqrl/ai/spring/AcornAgentServer.java) as a starting point for your own.
 
 #### Gradle
 
 ```text
 dependencies {
-    implementation 'com.datasqrl:apirag-spring:0.5.0'
+    implementation 'com.datasqrl:acorn-spring:0.5.0'
 }
 ```
 
@@ -21,20 +21,20 @@ dependencies {
 ```text
     <dependency>
         <groupId>com.datasqrl</groupId>
-        <artifactId>apirag-spring</artifactId>
+        <artifactId>acorn-spring</artifactId>
         <version>0.5.0</version>
     </dependency>
 ```
 
 ### Generic
 
-If you prefer a different web development framework or want to use Acorn Agent in a different context (e.g. a command line application), use the following dependency and take a look at the [command line agent implementation examples](apirag-starter/src/test/java/com/datasqrl/ai) for inspiration.
+If you prefer a different web development framework or want to use Acorn Agent in a different context (e.g. a command line application), use the following dependency and take a look at the [command line agent implementation examples](acorn-starter/src/test/java/com/datasqrl/ai) for inspiration.
 
 #### Gradle
 
 ```text
 dependencies {
-    implementation 'com.datasqrl:apirag-starter:0.5.0'
+    implementation 'com.datasqrl:acorn-starter:0.5.0'
 }
 ```
 
@@ -43,7 +43,7 @@ dependencies {
 ```text
     <dependency>
         <groupId>com.datasqrl</groupId>
-        <artifactId>apirag-starter</artifactId>
+        <artifactId>acorn-starter</artifactId>
         <version>0.5.0</version>
     </dependency>
 ```
@@ -70,7 +70,7 @@ To include a module into your project, use a dependency management tool like Gra
 
 ```text title='Gradle'
 dependencies {
-    implementation 'com.datasqrl:apirag-[MODULE_NAME]:${acorn.version}'
+    implementation 'com.datasqrl:acorn-[MODULE_NAME]:${acorn.version}'
 }
 ```
 
@@ -80,7 +80,7 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>com.datasqrl</groupId>
-        <artifactId>apirag-[MODULE_NAME]</artifactId>
+        <artifactId>acorn-[MODULE_NAME]</artifactId>
         <version>${acorn.version}</version>
     </dependency>
 </dependencies>

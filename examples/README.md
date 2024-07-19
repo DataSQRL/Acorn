@@ -16,7 +16,7 @@ These examples show you what building a production-grade application with Acorn 
 
 ## Public API Examples
 
-This directory contains examples of using apiRAG with publicly accessible APIs. Hence, you don't need to run an API for these examples to work. To run these examples, all you need is Docker and an API key for the Large-Language-Model provider of your choice. 
+This directory contains examples of using Acorn with publicly accessible APIs. Hence, you don't need to run an API for these examples to work. To run these examples, all you need is Docker and an API key for the Large-Language-Model provider of your choice. 
 
 Running the examples takes less than a minute, and you can modify them to play around with Acorn Agent.
 

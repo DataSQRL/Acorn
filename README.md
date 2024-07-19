@@ -50,7 +50,7 @@ Invoke the Acorn Agent docker image with an agent and a tools configuration file
 command example [AGENT_CONFIGURATION] [TOOLS_CONFIGURATION]
 ```
 
-* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/apirag-config/) for all options.
+* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/acorn-config/) for all options.
 * Tools Configuration File: Configures the tools that the LLM can invoke to retrieve information, trigger actions, execute a function, or send a callback to the client. See the [tools configuration](TOOLS_CONFIG.md) for more information. As a simpler alternative, you can also provide a GraphQL schema with documentation which Acorn Agent automatically translates to tools.
 
 Take a look at the [Acorn Agent examples](examples/) for inspiration and ready-to-run examples that you can use as a starting point.
@@ -65,7 +65,7 @@ Check out the [Getting Started Documentation](java/README.md) for how to build y
 
 ## How does Acorn Agent Work?
 
-![Diagram of how apiRAG executes user requests](img/how_diagram.png)
+![Diagram of how Acorn executes user requests](img/how_diagram.png)
 
 Acorn Agent is essentially just a tools management framework with some convenient (and optional) abstraction layers for faster development.
 
