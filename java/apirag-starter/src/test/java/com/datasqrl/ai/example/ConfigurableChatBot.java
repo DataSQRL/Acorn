@@ -69,8 +69,8 @@ public class ConfigurableChatBot {
     )), "rickandmortyapi");
     ToolsBackend toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
     ChatProvider<?, ?> chatProvider = ChatProviderFactory.fromConfiguration(Map.of(
-        "provider", "openai",
-        "name", "gpt-3.5-turbo",
+        "provider", "groq",
+        "name", "mixtral-8x7b-32768",
         "temperature", 0.8
     ), toolsBackend, systemPrompt);
 
