@@ -49,7 +49,6 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
           .model(config.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
-          .functionCall("auto")
           .n(1)
           .topP(config.getTopP())
           .temperature(config.getTemperature())

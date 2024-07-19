@@ -92,7 +92,6 @@ public class LowLevelAgent {
           .model(chatConfig.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
-          .functionCall("auto")
           .n(1)
           .topP(chatConfig.getTopP())
           .temperature(chatConfig.getTemperature())
@@ -203,7 +202,7 @@ public class LowLevelAgent {
     String openaiKey = System.getenv("OPENAI_API_KEY");
     OpenAIModelConfiguration chatConfig = new OpenAIModelConfiguration(
         new MapConfiguration(Map.of(
-            "name", "gpt-3.5-turbo",
+            "name", "gpt-4o-mini",
             "temperature", 0.3)));
 
     LowLevelAgent agent = new LowLevelAgent(toolsBackend, chatConfig, systemPrompt, openaiKey);

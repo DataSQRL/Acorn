@@ -12,8 +12,8 @@
   <packaging>jar</packaging>
 
   <properties>
-    <openai-java.version>0.20.0</openai-java.version>
-    <jtokkit.version>1.0.0</jtokkit.version>
+    <openai-java.version>0.21.2</openai-java.version>
+    <jtokkit.version>1.1.0</jtokkit.version>
     <aws.bedrock.version>2.25.45</aws.bedrock.version>
   </properties>
 
