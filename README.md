@@ -40,8 +40,9 @@ Invoke the Acorn Agent docker image with an agent and a tools configuration file
 docker run -it --rm -p 8080:8080 -v $PWD:/config/ -e OPENAI_API_KEY=[YOUR_KEY] datasqrl/acorn:latest /config/activity.openai.config.json /config/activity.tools.json
 ```
 
+To build your own agent, you need two things:
 * Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/acorn-config/) for all options. Set the envinromental variables depending on the model provider.
-* Tools Configuration File: Configures the tools that the LLM can invoke to retrieve information, trigger actions, execute a function, or send a callback to the client. See the [tools configuration](TOOLS_CONFIG.md) for more information. As a simpler alternative, you can also provide a GraphQL schema with documentation which Acorn Agent automatically translates to tools.
+* Tools Configuration File: Configures the tools that the LLM can invoke to retrieve information, trigger actions, execute a function, or send a callback to the client. See the [tools configuration](TOOLS_CONFIG.md) for more information. As a simpler alternative, you can also provide a [GraphQL schema with documentation](java/acorn-graphql/src/test/resources/graphql/nutshop-schema.graphqls) which Acorn Agent automatically translates to tools.
 
 Take a look at the [Acorn Agent examples](examples/) for inspiration and ready-to-run examples that you can use as a starting point.
 
