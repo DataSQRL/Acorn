@@ -14,7 +14,7 @@ Acorn Agent builds on tooling support that most LLMs provide to seamlessly integ
 * Chat Bots that retrieve question-specific information from APIs, databases, and other sources on demand.
 * AI frontend applications for GraphQL and REST APIs that customize and visualize responses.
 * AI Agents that plan and execute actions against existing APIs.
-* Semantic search engines structured, semi-structured, and unstructured data that use LLMs for targeted information retrieval.
+* Semantic search engines based on  structured, semi-structured, and unstructured data that use LLMs for targeted information retrieval.
 * AI powered dashboards
 * Agents that extract structured data for planning and actions.
 
@@ -37,6 +37,7 @@ We wanted to build an agent framework that makes it easy to get started and expe
 * Custom data visualizations.
 * Easy integration with Spring Boot and other web development frameworks with in-code or file-based configuration.
 * UI integration through function callbacks.
+* Schema validation for tools definition and tool calls by LLM
 * Secure sandboxing of external system calls by injecting authentication information outside the LLM callstack.
 * Ability to fine-tune context window for quality and cost optimization.
 
@@ -67,7 +68,7 @@ Check out the [Getting Started Documentation](java/README.md) for how to build y
 
 ![Diagram of how Acorn executes user requests](img/how_diagram.png)
 
-Acorn Agent is essentially just a tools management framework with some convenient (and optional) abstraction layers for faster development.
+Acorn Agent is essentially a tools management and execution framework with some convenient (and optional) abstraction layers for faster development.
 
 You define the tools through a [configuration file](TOOLS_CONFIG.md) or in-code and Acorn Agent instruments those tools into the LLM and manages tool call validation and tool execution. To make sure that tools are executed safely and securely, you can define a "context" based on authentication or session information (e.g. a user id) which gets injected into the tool call outside the callstack of the LLM to eliminate injection attacks.
 
@@ -78,13 +79,14 @@ On top of that, Acorn Agents provides abstraction layers that make it simple and
 ## Acorn Agent Concepts
 
 * Tools: Tools (sometimes also called "functions") are executables that can be invoked by the LLM to retrieve information or trigger an action. Many LLMs are specifically trained to use tools which makes this a natural interface between the LLM and other systems. Acorn Agent distinguishes 3 types of tools and provides the infrastructure to manage and invoke them:
-  * API: An API tools executes as a query against another system through an API like GraphQL, REST, or JDBC (i.e. databases). Each API type has an associated APIExecutor that executes the queries.
+  * API: An API tool executes as a query against another system through an API like GraphQL, REST, or JDBC (i.e. databases). Each API type has an associated APIExecutor that executes the queries.
   * Local: A tool that executes as a local function within the same instance that runs Acorn Agent.
   * Client: A tool that is a callback to the client (e.g. for data visualization, UI updates, or other actions).
 * Message: The communication between the user/application and an LLM is through messages. The sequence of messages is the message history.
 * ToolsBackend: Is a repository for tools that manages tool invocation as well as message persistence and history retrieval.
 * ChatSession: A ChatSession manages the interaction between the user/application and the LLM. It uses the ToolsBackend to add, validate and invoke tools. The primary purpose of the ChatSession is to determine the ContextWindow which defines the input to the LLM.
 * ChatProvider: Is an abstraction layer that provides a message interface on top of various LLM models that makes it easy to swap out models while sacrificing some level of control over model invocations.
+* Configuration: Acorn Agent components like the APIExecutor, ChatProvider or the specific LLM to use (ModelConfiguration) are created through Configurations, which are either loaded from JSON config files or created in code via MapConfiguration
 
 ## Tools Are All You Need
 
