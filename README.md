@@ -18,15 +18,6 @@ Acorn Agent builds on tooling support that most LLMs provide to seamlessly integ
 
 Take a look at the [examples](/examples) for agents built with Acorn Agent.
 
-## Why Acorn Agent?
-
-Most agent frameworks are either too complex with lots of connectors, configurations, and options or abstract too much away from the actual LLM calls which doesn't give you enough control to fine-tune and cost-optimize your agents.
-
-We wanted to build an agent framework that makes it easy to get started and experiment with different models but doesn't leave you hanging when you need low-level control to optimize performance and cost. In addition, we wanted an agent framework that automatically benefits from the rapid innovation on LLMs without requiring rewriting your agent.
-
-* **Acorn Agent is simple**: It manages and invokes tools for LLMs efficiently and safely. That's it. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs. And it future-proofs your agent as LLMs get better and better at using tools.
-* **Acorn Agent is flexible**: you can use the lightweight abstraction layers that Acorn agent provides to get started quickly and swap out models easily, but you can also use the tooling framework with any model client library or model API for full control over each model invocation.
-
 ## Acorn Agent Features
 
 * On-Demand Data Retrieval from GraphQL APIs, REST APIs, or JDBC-compatible databases.
@@ -43,13 +34,13 @@ We wanted to build an agent framework that makes it easy to get started and expe
 
 ### No Code
 
-Invoke the Acorn Agent docker image with an agent and a tools configuration file. 
+Invoke the Acorn Agent docker image with an agent and a tools configuration file as well as any environmental variables for the model provider, [for example](examples/activity):
 
 ```bash
-command example [AGENT_CONFIGURATION] [TOOLS_CONFIGURATION]
+docker run -it --rm -p 8080:8080 -v $PWD:/config/ -e OPENAI_API_KEY=[YOUR_KEY] datasqrl/acorn:latest /config/activity.openai.config.json /config/activity.tools.json
 ```
 
-* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/acorn-config/) for all options.
+* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/acorn-config/) for all options. Set the envinromental variables depending on the model provider.
 * Tools Configuration File: Configures the tools that the LLM can invoke to retrieve information, trigger actions, execute a function, or send a callback to the client. See the [tools configuration](TOOLS_CONFIG.md) for more information. As a simpler alternative, you can also provide a GraphQL schema with documentation which Acorn Agent automatically translates to tools.
 
 Take a look at the [Acorn Agent examples](examples/) for inspiration and ready-to-run examples that you can use as a starting point.
@@ -61,6 +52,15 @@ Check out the [Getting Started Documentation](java/README.md) for how to build y
 * as a Spring Boot web application
 * using the Model-abstraction interface
 * or with low-level access to the model
+
+## Why Acorn Agent?
+
+Most agent frameworks are either too complex with lots of connectors, configurations, and options or abstract too much away from the actual LLM calls which doesn't give you enough control to fine-tune and cost-optimize your agents.
+
+We wanted to build an agent framework that makes it easy to get started and experiment with different models but doesn't leave you hanging when you need low-level control to optimize performance and cost. In addition, we wanted an agent framework that automatically benefits from the rapid innovation on LLMs without requiring rewriting your agent.
+
+* **Acorn Agent is simple**: It manages and invokes tools for LLMs efficiently and safely. That's it. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs. And it future-proofs your agent as LLMs get better and better at using tools.
+* **Acorn Agent is flexible**: you can use the lightweight abstraction layers that Acorn agent provides to get started quickly and swap out models easily, but you can also use the tooling framework with any model client library or model API for full control over each model invocation.
 
 ## How does Acorn Agent Work?
 
