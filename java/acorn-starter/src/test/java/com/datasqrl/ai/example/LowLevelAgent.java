@@ -13,6 +13,7 @@ import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
+import com.datasqrl.ai.util.ConfigurationUtil;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
@@ -22,6 +23,7 @@ import com.theokanning.openai.completion.chat.FunctionMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import io.reactivex.Flowable;
+import java.net.URL;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.MapConfiguration;
@@ -193,14 +195,14 @@ public class LowLevelAgent {
 
   public static void main(String... args) throws Exception {
     String systemPrompt = "You are an incredibly enthusiastic and joyous life coach. You provide advice to people. You look up any and all advice you give via the provided functions.";
-    Path toolsPath = Path.of("java", "acorn-starter", "src", "main", "resources", "tools", "advice.tools.json");
+    URL toolsResource = LowLevelAgent.class.getClassLoader().getResource("tools/advice.tools.json");
     APIExecutor apiExecutor = new RESTExecutorFactory().create(new MapConfiguration(Map.of(
         "type", "rest",
         "url", "https://api.adviceslip.com"
     )), "adviceapi");
-    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(toolsPath);
+    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(toolsResource);
     ToolsBackend toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
-    String openaiKey = System.getenv("OPENAI_API_KEY");
+    String openaiKey = ConfigurationUtil.getEnvOrSystemVariable("OPENAI_API_KEY");
     OpenAIModelConfiguration chatConfig = new OpenAIModelConfiguration(
         new MapConfiguration(Map.of(
             "name", "gpt-3.5-turbo",

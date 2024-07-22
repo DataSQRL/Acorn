@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.datasqrl</groupId>
     <artifactId>acorn</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
   </parent>
   <artifactId>acorn-core</artifactId>
   <name>acorn - Core Module</name>

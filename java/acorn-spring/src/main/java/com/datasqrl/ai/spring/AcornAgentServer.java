@@ -39,6 +39,8 @@ public class AcornAgentServer {
 
     @SneakyThrows
     public MessageController(AcornAgentServerProperties props) {
+      Preconditions.checkArgument(!Strings.isNullOrEmpty(props.getConfig()),"Need to provide a configuration file");
+      Preconditions.checkArgument(!Strings.isNullOrEmpty(props.getTools()), "Need to provide a tools file");
       AcornAgentConfiguration configuration = AcornAgentConfiguration.fromFile(Path.of(props.getConfig()), Path.of(props.getTools()));
       this.contextKeys = configuration.getContext();
       this.chatProvider = configuration.getChatProvider();

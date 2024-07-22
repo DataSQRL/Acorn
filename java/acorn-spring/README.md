@@ -8,13 +8,15 @@ This module contains a generic implementation of a ChatBot as a Spring Boot appl
 
 ## Run the Spring Boot Application
 
-Compile the acorn-spring package
+First, compile the entire maven project in the [root folder](../) with:
 ```
 mvn package
 ```
 
 Run the `AcornAgentServer` with the configuration parameters and the API Keys
 ```
-java -jar /app/server.jar --agent.config=[CONFIG_FILE] --agent.tools=[TOOLS_FILE] -DOPENAI_API_KEY=XXXX
+ java -DOPENAI_API_KEY=XXXX -jar acorn-spring/target/acorn-spring-0.1.0.jar --agent.config=[CONFIG_FILE] --agent.tools=[TOOLS_FILE] 
 ```
-where CONFIG_FILE is a [configuration file](/java/acorn-config/) [examples](/examples/) folder (e.g. [activity.openai.config.json](/examples/activity/activity.openai.config.json)) and TOOLS_FILE is a  [tools file](TOOLS_CONFIG.md)  
+where CONFIG_FILE is a [configuration file](/java/acorn-config/) folder (e.g. [activity.openai.config.json](/examples/activity/activity.openai.config.json)) and TOOLS_FILE is a  [tools file](TOOLS_CONFIG.md) (e.g. [activity tools](/examples/activity/activity.tools.json)).
+
+Note, that you have to pass in environmental variables for the specific model that you are using. Environmental variables need to be specified right after `java` in the command.

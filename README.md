@@ -4,8 +4,6 @@ Acorn Agent is a simple and flexible framework for building AI Agents, Chat Bots
 
 Acorn Agent builds on tooling support that most LLMs provide to seamlessly integrate (semi-)structured data from external data sources like APIs, databases, and generic function calls with generative AI for high quality results against your own data.
 
-[visual of data in - acorn agent in the middle - use cases out (like llamaindex)]
-
 ![Acorn Agent Connects Data with LLMs](img/overview.png)
 
 
@@ -26,8 +24,8 @@ Most agent frameworks are either too complex with lots of connectors, configurat
 
 We wanted to build an agent framework that makes it easy to get started and experiment with different models but doesn't leave you hanging when you need low-level control to optimize performance and cost. In addition, we wanted an agent framework that automatically benefits from the rapid innovation on LLMs without requiring rewriting your agent.
 
-* Acorn Agent is simple: It manages and invokes tools for LLMs efficiently and safely. That's it. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs. And it future-proofs your agent as LLMs get better and better at using tools.
-* Acorn Agent is flexible: you can use the lightweight abstraction layers that Acorn agent provides to get started quickly and swap out models easily, but you can also use the tooling framework with any model client library or model API for full control over each model invocation.
+* **Acorn Agent is simple**: It manages and invokes tools for LLMs efficiently and safely. That's it. [We believe tools are all you need](#tools-are-all-you-need) to succeed with LLMs. And it future-proofs your agent as LLMs get better and better at using tools.
+* **Acorn Agent is flexible**: you can use the lightweight abstraction layers that Acorn agent provides to get started quickly and swap out models easily, but you can also use the tooling framework with any model client library or model API for full control over each model invocation.
 
 ## Acorn Agent Features
 
@@ -36,7 +34,7 @@ We wanted to build an agent framework that makes it easy to get started and expe
 * Message history to preserve context between agent interactions.
 * Custom data visualizations.
 * Easy integration with Spring Boot and other web development frameworks with in-code or file-based configuration.
-* UI integration through function callbacks.
+* UI integration through function callbacks, i.e. the LLM can invoke some functions on the client.
 * Schema validation for tools definition and tool calls by LLM
 * Secure sandboxing of external system calls by injecting authentication information outside the LLM callstack.
 * Ability to fine-tune context window for quality and cost optimization.
@@ -78,15 +76,15 @@ On top of that, Acorn Agents provides abstraction layers that make it simple and
 
 ## Acorn Agent Concepts
 
-* Tools: Tools (sometimes also called "functions") are executables that can be invoked by the LLM to retrieve information or trigger an action. Many LLMs are specifically trained to use tools which makes this a natural interface between the LLM and other systems. Acorn Agent distinguishes 3 types of tools and provides the infrastructure to manage and invoke them:
+* **Tools**: Tools (sometimes also called "functions") are executables that can be invoked by the LLM to retrieve information or trigger an action. Many LLMs are specifically trained to use tools which makes this a natural interface between the LLM and other systems. Acorn Agent distinguishes 3 types of tools and provides the infrastructure to manage and invoke them:
   * API: An API tool executes as a query against another system through an API like GraphQL, REST, or JDBC (i.e. databases). Each API type has an associated APIExecutor that executes the queries.
   * Local: A tool that executes as a local function within the same instance that runs Acorn Agent.
   * Client: A tool that is a callback to the client (e.g. for data visualization, UI updates, or other actions).
-* Message: The communication between the user/application and an LLM is through messages. The sequence of messages is the message history.
-* ToolsBackend: Is a repository for tools that manages tool invocation as well as message persistence and history retrieval.
-* ChatSession: A ChatSession manages the interaction between the user/application and the LLM. It uses the ToolsBackend to add, validate and invoke tools. The primary purpose of the ChatSession is to determine the ContextWindow which defines the input to the LLM.
-* ChatProvider: Is an abstraction layer that provides a message interface on top of various LLM models that makes it easy to swap out models while sacrificing some level of control over model invocations.
-* Configuration: Acorn Agent components like the APIExecutor, ChatProvider or the specific LLM to use (ModelConfiguration) are created through Configurations, which are either loaded from JSON config files or created in code via MapConfiguration
+* **Message**: The communication between the user/application and an LLM is through messages. The sequence of messages is the message history.
+* **ToolsBackend**: Is a repository for tools that manages tool invocation as well as message persistence and history retrieval.
+* **ChatSession**: A ChatSession manages the interaction between the user/application and the LLM. It uses the ToolsBackend to add, validate and invoke tools. The primary purpose of the ChatSession is to determine the ContextWindow which defines the input to the LLM.
+* **ChatProvider**: Is an abstraction layer that provides a message interface on top of various LLM models that makes it easy to swap out models while sacrificing some level of control over model invocations.
+* **Configuration**: Acorn Agent components like the APIExecutor, ChatProvider or the specific LLM to use (ModelConfiguration) are created through Configurations, which are either loaded from JSON config files or created in code via MapConfiguration
 
 ## Tools Are All You Need
 
@@ -98,7 +96,7 @@ As LLMs rapidly improve and get better at using tools, we believe that "tooling"
 
 That's why we build Acorn Agent as a tool-centric framework, because tools are all you need to turn an LLM into a full-featured AI agent.
 
-Building AI applications around tooling is not only simpler (everything is a tool) and more flexible (the interface between the LLM and your agent is just a tool repository), but it also future-proves your GenAI application as LLMs will get better and better at using tools. The last thing you want to do is compete with LLMs on who is smarter in the long-run: your application or the LLM.
+Building AI applications around tooling is not only simpler (everything is a tool) and more flexible (the interface between the LLM and your agent is just a tool repository), but it also future-proves your GenAI application as LLMs will get better and better at using tools. The last thing you want to do is compete with LLMs on who is smarter in the long-run: your application or the LLM. Plus, you can fine-tune existing models to your domain and tools for better quality and lower cost.
 
 ## Community
 

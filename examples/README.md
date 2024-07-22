@@ -12,7 +12,7 @@ You can run the following examples in Docker by standing up an API and running A
 
 For these examples, you will stand up an API locally that Acorn Agents instruments for tool calling. The ApiExecutor inside your Acorn Agent Application will run the function calls against this API. Hence, these examples are a little more involved to run than the public API examples below. However, because we have control over the API, we can use more of Acorn Agent's feature set like storing and retrieving user messages, adding more complex tools for data retrieval, and custom data visualization.
 
-These examples show you what building a production-grade application with Acorn Agent looks like. 
+These examples show you what building a production-grade application with Acorn Agent looks like. Because these examples include a full API backend, they live in their [own repository](https://github.com/DataSQRL/datasqrl-examples).
 
 ## Public API Examples
 

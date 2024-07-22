@@ -6,7 +6,7 @@
 
   <groupId>com.datasqrl</groupId>
   <artifactId>acorn</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
   <modules>
     <module>acorn-core</module>
