@@ -41,14 +41,14 @@ Configures the model and provider to use by the agent.
 |---------------------|-----------------------------------------------------------------|-----------|------------------------------------|
 | `name`              | Model name as used by the provider                              | Yes       | -                                  |
 | `provider`          | Name of the provider (e.g. `openai`, `bedrock`, `google`, etc). | Yes       | -                                  |
-| `max_input_tokens`  | The maximum number of input tokens that this LLM can support    | Yes       | inferred based on configured model |
-| `max_output_tokens` | The maximum number of output tokens that this LLM can support   | Yes       | inferred based on configured model |
-| `temperature`       | The temperature to use with this model                          | Yes       | 0.5                                |
-| `top_p`             | The Top-P value to use with this model                          | Yes       | 0.9                                |
-| `top_p`             | The HuggingFace tokenizer to use for counting tokens            | Yes       | inferred based on configured model |
+| `max_input_tokens`  | The maximum number of input tokens that this LLM can support    | No        | inferred based on configured model |
+| `max_output_tokens` | The maximum number of output tokens that this LLM can support   | No       | inferred based on configured model |
+| `temperature`       | The temperature to use with this model                          | No       | 0.5                                |
+| `top_p`             | The Top-P value to use with this model                          | No       | 0.9                                |
+| `tokenizer`         | The HuggingFace tokenizer to use for counting tokens            | No       | inferred based on configured model |
 
 
-For all model configuration options, see the individual provider implementations for details.
+Different model providers also require/offer other configuration parameters. (For example, Amazon Bedrock requires the `region` parameter). For all model configuration options, see the individual provider implementations for details.
 
 ## API Configuration
 
@@ -76,4 +76,4 @@ This configures two API endpoints to use by Acorn Agent with the names `api1` an
 | `url`      | The URL for the API                                      | Yes       | -                                  |
 | `auth`     | Authentication headers for the API                       | No        | -                                  |
  
-Additional configuration options may be used by the APIExecutor implementation.
+Additional configuration options may be used by the specific APIExecutor implementation.
