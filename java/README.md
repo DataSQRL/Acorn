@@ -14,7 +14,7 @@ To build an AI agent as a web application with Spring Boot, include the followin
 
 ```text
 dependencies {
-    implementation 'com.datasqrl:acorn-spring:0.5.0'
+    implementation 'com.datasqrl:acorn-spring:0.1.0'
 }
 ```
 
@@ -24,7 +24,7 @@ dependencies {
     <dependency>
         <groupId>com.datasqrl</groupId>
         <artifactId>acorn-spring</artifactId>
-        <version>0.5.0</version>
+        <version>0.1.0</version>
     </dependency>
 ```
 
@@ -36,7 +36,7 @@ If you prefer a different web development framework or want to use Acorn Agent i
 
 ```text
 dependencies {
-    implementation 'com.datasqrl:acorn-starter:0.5.0'
+    implementation 'com.datasqrl:acorn-starter:0.1.0'
 }
 ```
 
@@ -46,7 +46,7 @@ dependencies {
     <dependency>
         <groupId>com.datasqrl</groupId>
         <artifactId>acorn-starter</artifactId>
-        <version>0.5.0</version>
+        <version>0.1.0</version>
     </dependency>
 ```
 
