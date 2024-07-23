@@ -12,7 +12,7 @@
         },
         "customerid" : {
           "type" : "integer",
-          "description" : " The unique identifier for the customer."
+          "description" : "customerid: The unique identifier for the customer."
         },
         "limit" : {
           "type" : "integer",

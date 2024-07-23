@@ -62,7 +62,7 @@ public class AcornAgentConfiguration {
         API_PREFIX));
     ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`",
         API_PREFIX);
-    ToolsBackend backend = ToolsBackendFactory.of(toolFunctions, apiExecutors);
+    ToolsBackend backend = ToolsBackendFactory.of(toolFunctions, apiExecutors, Set.copyOf(getContext()));
     //Add client functions
     baseConfiguration.getList(CLIENT_FUNCTIONS_KEY).stream().map(String.class::cast)
         .forEach(fctName -> {
@@ -74,11 +74,6 @@ public class AcornAgentConfiguration {
     //Add local functions
     baseConfiguration.getList(LOCAL_FUNCTIONS_KEY).stream().map(String.class::cast)
         .map(this::loadLocalFunction).forEach(backend::addFunction);
-    //Add global context
-    List<String> context = getContext();
-    if (!context.isEmpty()) {
-      backend.setGlobalContext(Set.copyOf(context));
-    }
     return backend;
   }
 
