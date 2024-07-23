@@ -5,19 +5,21 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.datasqrl</groupId>
-  <artifactId>apirag</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <artifactId>acorn</artifactId>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
   <modules>
-    <module>apirag-core</module>
-    <module>apirag-udf</module>
-    <module>apirag-openai</module>
-    <module>apirag-groq</module>
-    <module>apirag-bedrock</module>
-    <module>apirag-vertex</module>
-    <module>apirag-graphql</module>
-    <module>apirag-rest</module>
-    <module>apirag-server</module>
+    <module>acorn-core</module>
+    <module>acorn-udf</module>
+    <module>acorn-openai</module>
+    <module>acorn-groq</module>
+    <module>acorn-bedrock</module>
+    <module>acorn-vertex</module>
+    <module>acorn-graphql</module>
+    <module>acorn-rest</module>
+    <module>acorn-config</module>
+    <module>acorn-starter</module>
+    <module>acorn-spring</module>
   </modules>
 
   <properties>
@@ -32,8 +34,10 @@
     <commons-config.version>2.10.1</commons-config.version>
     <commons-beanutil.version>1.9.4</commons-beanutil.version>
     <slf4j.version>2.0.13</slf4j.version>
-    <graphql-java.version>22.1</graphql-java.version>
+    <graphql-java.version>22.0</graphql-java.version>
     <reflections.version>0.10.2</reflections.version>
+    <okhttp.version>4.12.0</okhttp.version>
+    <h2.version>2.2.224</h2.version>
   </properties>
 
   <dependencies>

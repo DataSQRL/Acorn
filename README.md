@@ -1,66 +1,107 @@
-# apiRAG 🤖🔌
+# Acorn Agent
 
-apiRAG makes it easy to augment Large Language Models with (semi-)structured data provided by APIs.
+Acorn Agent is a simple yet flexible framework for building AI Agents, Chat Bots, and generative AI applications on the JVM. It seamlessly integrates (semi-)structured data from various external sources—such as APIs, databases, and function calls—with generative AI models to deliver high-quality results tailored to your data.
 
-[![Watch how apiRAG works](img/apiRAG-video.jpg)](https://youtu.be/Mx-slh6h42c)
+![Acorn Agent Connects Data with LLMs](img/overview.png)
 
-apiRAG solves the following use cases for Large Language Models (LLM), Generative AI, and ChatBots:
-* Use structured or semi-structured data for augmentation, e.g. the data you want to pull into the context with RAG is tabular, JSON, or has any other type of internal structure. For example, if you want to augment an LLM with user information as we do in our [Credit Card example](api-examples/finance).
-* Improve the breadth, depth, and accuracy of knowledge to answer user queries intelligently. For example, if you want to connect an LLM to an existing API or database to look up information as we do in our [Rick and Morty example](api-examples/rickandmorty).
-* Access user specific or access controlled information to provided personalized answers in a secure manner. For example, allow the LLM to answer customer questions about their profile and transaction history as we do in our [Nutshop example](api-examples/nutshop).
-* Include realtime information that updates frequently. For example, have an LLM analyze realtime sensor information as we do in our [Sensors example](api-examples/sensors).
+<!--
+## What can You Build with Acorn Agent?
 
-apiRAG has the following benefits:
-* (Semi-)Structured Data: Works great with structured and semi-structured data for data analysis and visualization.
-* High Quality: Benefits from the intelligence of the LLM to retrieve exactly the needed data.
-* Efficiency: Retrieves only the data the LLM needs when it needs it.
-* Simplicity: It's essentially just a mapping layer between LLM function calls and API queries.
-* Modularity: Separates the LLM instrumentation from the data augmentation providing a separation between "frontend" and "backend" and allows you to reuse your existing APIs.
+* Chat Bots that retrieve question-specific information from APIs, databases, and other sources on demand.
+* AI frontend applications for GraphQL and REST APIs that customize and visualize responses.
+* AI Agents that plan and execute actions against existing APIs.
+* Semantic search engines based on  structured, semi-structured, and unstructured data that use LLMs for targeted information retrieval.
+* AI powered dashboards
+* Agents that extract structured data for planning and actions.
 
-To see a demo of apiRAG and how it works exactly, [watch this video](https://youtu.be/Mx-slh6h42c).
+Take a look at the [examples](/examples) for agents built with Acorn Agent.
+-->
 
-If you want to try out apiRAG yourself, check out the [examples](api-examples) for some example use cases and how they are implemented with apiRAG. Take a look at the language implementations for how to run the examples:
-* [Java](java/)
-* Python (coming soon - please help!)
-* JavaScript (coming soon - please help!)
+## Acorn Agent Features
 
-## How does this compare to RAG?
+* **On-Demand Data Retrieval**: Access data from GraphQL APIs, REST APIs, or JDBC-compatible databases.
+* **Pluggable Models**: Support for various model providers like OpenAI (GPT models), Bedrock (Llama, etc.), Google Vertex (Gemini, etc.), and Groq (Mixtral, etc.).
+* **Message History**: Preserve context between agent interactions for coherent responses.
+* **Custom Data Visualizations**: Integrate seamlessly with UI components.
+* **Easy Integration**: Compatible with Spring Boot and other web frameworks, with both code and file-based configuration options.
+* **Client-side Functions**: Safely execute client-side functions for UI integration.
+* **Schema Validation**: Ensure tools definitions and calls by LLMs are valid.
+* **Secure Sandboxing**: Inject authentication information outside the LLM call stack for safe external system calls.
+* **Flexible Context Windows**: Optimize quality and cost by fine-tuning the context window.
 
-Currently, the most popular approach for augmenting LLMs with custom data is "Retrieval Augmented Generation". The basic idea behind RAG is to take a user query, retrieve information related to the query (usually by way of a vector embedding and vector database), and then put that information into the context for the LLM.
+## Getting Started with Acorn Agent
 
-In other words, RAG is essentially a guess as to what the LLM might need to generate a good answer and loading it into the context. Because it relies on text or vector search, it only works effectively for use cases where the user question can be easily mapped to a good retrieval query.
-And even for use cases where RAG works reasonably well - such as semantic search - it can be very inefficient. For example, if a user asks to "find all information on the 'nightfall' project from last December" RAG may find information on the project but has no way to limit it to the given timeframe. 
+### No Code
 
-apiRAG does not suffer from these shortcomings because it relies on the LLM to determine what information it needs and relies on the intelligence of LLMs to translate user queries into efficient and relevant retrieval requests.
+Invoke the Acorn Agent Docker image with the required agent and tools configuration files, along with necessary environment variables for the model provider. 
 
-## How does apiRAG Work?
+[For example](examples/activity):
 
-![Diagram of how apiRAG executes user requests](img/apiRAG-diagram.png)
+```bash
+docker run -it --rm -p 8080:8080 -v $PWD:/config/ -e OPENAI_API_KEY=[YOUR_KEY] datasqrl/acorn:latest /config/activity.openai.config.json /config/activity.tools.json
+```
 
-At it's core, apiRAG is a configuration format that defines a set of LLM functions and how they map to API queries.
-It extends OpenAI's function call configuration with additional information on how to execute the function against an existing API.
+To build your own agent, you need two things:
+* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/acorn-config/README.md) for details.
+* Tools Configuration File: Configures the tools that the LLM can invoke to retrieve information, trigger actions, execute a function, or send a callback to the client. See the [tools configuration](TOOLS_CONFIG.md) for more information. Alternatively,  you can provide a [GraphQL schema with documentation](java/acorn-graphql/src/test/resources/graphql/nutshop-schema.graphqls) which Acorn Agent automatically translates to tools.
 
-For more information on apiRAG's configuration format, check out the [format documentation](FORMAT.md).
+Take a look at the [Acorn Agent examples](examples/) for ready-to-run configuration and tool files.
 
-Each apiRAG language implementation is a mapping of the configuration format to the LLM instrumentation for that language. That means, you retain complete control over how the language model gets configured and executed and only need a very lightweight library for pulling in custom data.
+### JVM (Java, Scala, Groovy, Clojure)
 
-apiRAG also introduces the notion of a "context", such as a user id, which is used to constrain the API calls to retrieve
-information that pertains to the given context. That allows you to use apiRAG within an authenticated user session
-and allowing the LLM to retrieve user-specific information without any danger of leaking information.
+Check out the [Getting Started Documentation](java/README.md) for how to build your own custom agent with Acorn Agent:
 
-## Current Limitations
+* As a Spring Boot web application
+* Using the Model-abstraction interface
+* Or with low-level access to the model
 
-apiRAG is currently a proof-of-concept to demonstrate the utility and efficiency of the approach.
-It is currently limited to OpenAI LLMs, GraphQL APIs, and only has a Java implementation.
+## Why Acorn Agent?
 
-We plan to overcome these limitations soon and are working on the following roadmap:
-* Support for Python and JavaScript/TypeScript
-* Support for REST APIs
-* Support for open-source and additional LLMs (like Llama2)
-* Support for additional API authentication modes
+Many agent frameworks are either too complex or too abstract, making it difficult to fine-tune and cost-optimize your agents. Acorn Agent aims to simplify this process by providing a balance between ease of use and control. It allows for rapid experimentation with different models, while benefiting from the ongoing advancements in LLM technology.
+
+* **Simple**: Manages and invokes tools for LLMs efficiently and safely.
+* **Flexible**: Lightweight abstraction layers for quick setup and model swapping, with full control over model invocations when needed.
+
+## How does Acorn Agent Work?
+
+![Diagram of how Acorn executes user requests](img/how_diagram.png)
+
+Acorn Agent is primarily a tools management and execution framework, with optional abstraction layers for faster development. You define [the tools](TOOLS_CONFIG.md) via a configuration file or in code. Acorn Agent then instruments these tools into the LLM, managing tool call validation and execution.
+
+To ensure safety and security, you can define a "context" based on authentication or session information, which gets injected into the tool call outside the LLM call stack to prevent injection attacks. Additionally, Acorn Agent provides message persistence and retrieval to preserve context between interactions.
+
+## Acorn Agent Concepts
+
+* **Tools**: Executables invoked by the LLM to retrieve information or trigger actions. Many LLMs are specifically trained to use tools. Acorn Agent supports three types:
+  * **API**: Executes as a query against another system (GraphQL, REST, JDBC) through the APIExecutor interface.
+  * **Local**: Executes as a local function within the same instance.
+  * **Client**: A callback to the client for UI updates or other actions.
+* **Message**: The communication between the user/application and the LLM. The sequence of messages forms the message history.
+* **ToolsBackend**: A repository for managing tool invocation, message persistence, and history retrieval.
+* **ChatSession**: Manages interactions between the user/application and the LLM, utilizing ToolsBackend.
+* **ChatProvider**: An abstraction layer providing a message interface on various LLM models, enabling easy model swapping.
+* **Configuration**: Configures Acorn Agent components (APIExecutor, ChatProvider, LLM) through JSON config files or in-code via MapConfiguration.
+
+## Tools Are All You Need
+
+We built Acorn Agent based on the realization that:
+
+* Advanced LLMs excel at understanding user requests better than any external augmentation.
+* LLMs are trained to use tools, making this a natural interface for executing actions and retrieving information.
+
+As LLMs improve, "tooling" will become the primary interface for LLM interactions. Building GenAI applications around tools ensures simplicity, flexibility, and future-proofing, as LLMs will only get better at using tools.
 
 ## Community
 
-[Join our Discord](https://discord.gg/49AnhVY2w9) to ask questions or share your feedback.
+[Join our Slack](https://join.slack.com/t/datasqrlcommunity/shared_invite/zt-2l3rl1g6o-im6YXYCqU7t55CNaHqz_Kg) to ask questions or share your feedback.
 
-We welcome community contributions to the project.
+If you encounter an issue or have a feature idea, please create an issue. We welcome community contributions via PRs—hop on Slack for support and guidance.
+
+Acorn Agent is currently limited to JVM applications. We're interested in extending to other languages like Python and JavaScript. If you'd like to help, please reach out.
+
+## When Should You NOT Use Acorn Agent
+
+While we believe a tool-centric framework has many advantages, it may not be ideal in certain scenarios:
+
+* **Non-tool-trained Models**: If you need to use a model not trained on tool usage, you'll need a more complex framework.
+* **Purely Unstructured Data**: If you're primarily dealing with unstructured data and rely on vector similarity for retrieval, a general-purpose semantic search engine may be more suitable.
