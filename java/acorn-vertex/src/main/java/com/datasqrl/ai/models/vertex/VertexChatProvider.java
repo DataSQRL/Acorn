@@ -15,6 +15,7 @@ import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.api.FunctionCall;
 import com.google.cloud.vertexai.api.FunctionDeclaration;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
+import com.google.cloud.vertexai.api.GenerationConfig;
 import com.google.cloud.vertexai.api.Part;
 import com.google.cloud.vertexai.api.Tool;
 import com.google.cloud.vertexai.generativeai.ContentMaker;
@@ -40,8 +41,16 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
     super(backend, new VertexModelBindings(config));
     this.systemPrompt = systemPrompt;
     VertexAI vertexAI = new VertexAI(config.getProjectId(), config.getLocation());
+    GenerationConfig generationConfig =
+        GenerationConfig.newBuilder()
+            .setMaxOutputTokens(config.getMaxOutputTokens())
+            .setTemperature(((Double) config.getTemperature()).floatValue())
+            .setTopP(((Double) config.getTopP()).floatValue())
+            .setTopK(config.getTopK())
+            .build();
     this.chatModel = new GenerativeModel(config.getModelName(), vertexAI)
         .withSystemInstruction(ContentMaker.fromString(systemPrompt))
+        .withGenerationConfig(generationConfig)
         .withTools(getTools());
   }
 

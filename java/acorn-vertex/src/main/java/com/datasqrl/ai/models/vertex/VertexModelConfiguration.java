@@ -17,6 +17,9 @@ public class VertexModelConfiguration extends AbstractModelConfiguration {
   VertexModelType modelType;
   public static final String PROJECT_ID_KEY = "project_id";
   public static final String LOCATION_KEY = "location";
+  public static final String TOP_K_KEY = "top_k";
+  public static final int TOP_K_DEFAULT = 40;
+  public static final int MAX_OUTPUT_TOKENS = 8192;
 
   public VertexModelConfiguration(Configuration configuration) {
     super(configuration);
@@ -35,6 +38,13 @@ public class VertexModelConfiguration extends AbstractModelConfiguration {
   }
 
   @Override
+  public int getMaxOutputTokens() {
+    if (configuration.containsKey(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY))
+      return configuration.getInt(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY);
+    return MAX_OUTPUT_TOKENS;
+  }
+
+  @Override
   public String getTokenizerName() {
     return configuration.getString(AbstractModelConfiguration.TOKENIZER_KEY, modelType.getModelName());
   }
@@ -47,6 +57,10 @@ public class VertexModelConfiguration extends AbstractModelConfiguration {
   public String getLocation() {
     ErrorHandling.checkArgument(configuration.containsKey(LOCATION_KEY), "Need to configure vertex %s", LOCATION_KEY);
     return configuration.getString(LOCATION_KEY);
+  }
+
+  public int getTopK() {
+    return configuration.getInt(TOP_K_KEY, TOP_K_DEFAULT);
   }
 
 }
