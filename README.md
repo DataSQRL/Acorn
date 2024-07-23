@@ -20,7 +20,7 @@ Take a look at the [examples](/examples) for agents built with Acorn Agent.
 ## Acorn Agent Features
 
 * **On-Demand Data Retrieval**: Access data from GraphQL APIs, REST APIs, or JDBC-compatible databases.
-* **Pluggable Models**: Support for various model providers like OpenAI (GPT models), Bedrock (Llama), Google Vertex (Gemini), and Groq (Mixtral).
+* **Pluggable Models**: Support for various model providers like OpenAI (GPT models), Bedrock (Llama, etc.), Google Vertex (Gemini, etc.), and Groq (Mixtral, etc.).
 * **Message History**: Preserve context between agent interactions for coherent responses.
 * **Custom Data Visualizations**: Integrate seamlessly with UI components.
 * **Easy Integration**: Compatible with Spring Boot and other web frameworks, with both code and file-based configuration options.
@@ -42,7 +42,7 @@ docker run -it --rm -p 8080:8080 -v $PWD:/config/ -e OPENAI_API_KEY=[YOUR_KEY] d
 ```
 
 To build your own agent, you need two things:
-* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/acorn-config/) for details.
+* Agent Configuration File: Configures the LLM, model provider, system prompt, and other agent settings. See [the configuration documentation](java/acorn-config/README.md) for details.
 * Tools Configuration File: Configures the tools that the LLM can invoke to retrieve information, trigger actions, execute a function, or send a callback to the client. See the [tools configuration](TOOLS_CONFIG.md) for more information. Alternatively,  you can provide a [GraphQL schema with documentation](java/acorn-graphql/src/test/resources/graphql/nutshop-schema.graphqls) which Acorn Agent automatically translates to tools.
 
 Take a look at the [Acorn Agent examples](examples/) for ready-to-run configuration and tool files.

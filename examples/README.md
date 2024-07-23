@@ -32,4 +32,4 @@ We want to highlight that the APIs used in the examples above are NOT our own an
 These examples showcase how you can build an agent that accesses APIs for data retrieval and presents the information to the user. 
 
 You can configure your own agent against an existing API or one that you build yourself. This requires no coding.
-For complete control for the agent implementation, check out source code implementation and examples contained therein.
+For complete control for the agent implementation, check out source code implementation and the [acorn-starter](/java/acorn-starter) module.

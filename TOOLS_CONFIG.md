@@ -68,7 +68,7 @@ The tools configuration is a JSON file that defines the set of functions exposed
 
 ## Special Functions
 
-Acorn Agent defines the following special functions which are used internally for message persistence and not passed to the LLM:
+Acorn Agent defines the following special functions which are used internally against a GraphQL API for message persistence and not passed to the LLM:
 
 * `InternalSaveChatMessage`: The API query to store a chat message. This is used to persist the chat history in the API for future retrieval and/or analysis. A chat message has the following fields:
   * `role`: the role of the message
