@@ -27,7 +27,7 @@ public class AcornAgentServer {
     try {
       SpringApplication.run(AcornAgentServer.class, args);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error("Application failed to start", e);
     }
   }
 
