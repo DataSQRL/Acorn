@@ -178,6 +178,7 @@ public class GraphQLSchemaConverter {
       for (GraphQLArgument arg : fieldDef.getArguments()) {
         UnwrappedType unwrappedType = convertRequired(arg.getType());
         if (unwrappedType.type() instanceof GraphQLInputObjectType inputType) {
+          queryBody.append(arg.getName()).append(": { ");
           for (GraphQLInputObjectField nestedField : inputType.getFieldDefinitions()) {
             String argName = combineStrings(ctx.prefix(), nestedField.getName());
             unwrappedType = convertRequired(nestedField.getType());
@@ -187,6 +188,7 @@ public class GraphQLSchemaConverter {
             queryHeader.append(argName).append(": ").append(typeString);
             numArgs++;
           }
+          queryBody.append(" }");
         } else {
           String argName = combineStrings(ctx.prefix(), arg.getName());
           argName = processField(queryBody, queryHeader, params, ctx, numArgs, unwrappedType, argName,
