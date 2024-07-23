@@ -26,5 +26,5 @@ jobs:
           context: java
           file: java/Dockerfile
           push: true
-          tags: datasqrl/acorn:${{ github.ref_name }},datasqrl/cmd:latest
+          tags: datasqrl/acorn:${{ github.ref_name }},datasqrl/acorn:latest
           platforms: linux/amd64,linux/arm64
