@@ -6,6 +6,7 @@
   },
   "model" : {
     "provider" : "openai",
-    "name": "gpt-4o-mini"
+    "name": "gpt-40-mini",
+    "max_output_tokens": 16384
   }
 }
