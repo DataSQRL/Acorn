@@ -9,7 +9,5 @@ mvn --batch-mode release:clean release:prepare -DreleaseVersion=0.v.0 -DskipTest
 
 Release to sonatype:
 ```json
-
 mvn deploy 
-=======
 ```
