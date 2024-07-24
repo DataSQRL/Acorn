@@ -56,7 +56,6 @@ public class ComparisonRunner {
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
           String fileName = modelName + "-" + getCurrentTime();
           testSessions.forEach(session -> {
-            log.info("Running session with userId: {}", idCounter.getAndIncrement());
             new SessionRunner(configuration, session, idCounter, fileName).run();
           });
           log.info("Metrics results (CSV): {}", configuration.getChatProvider().getObservability().exportToCSV());

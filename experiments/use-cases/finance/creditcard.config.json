@@ -6,5 +6,5 @@
     "use_case": "finance"
   },
   "context": ["customerid"],
-  "plot-function": "oneD"
+  "client_functions": "datacharts"
 }

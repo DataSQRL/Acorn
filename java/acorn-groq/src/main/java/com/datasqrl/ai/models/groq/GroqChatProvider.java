@@ -29,6 +29,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -96,6 +98,11 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;
+      try {
+        TimeUnit.SECONDS.sleep(30);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       ModelObservability.Trace modeltrace = observability.start();
       try {
         responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
