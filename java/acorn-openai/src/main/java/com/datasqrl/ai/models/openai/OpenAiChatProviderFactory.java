@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models.openai;
 
+import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
@@ -17,7 +18,7 @@ public class OpenAiChatProviderFactory implements ChatProviderFactory {
   }
 
   @Override
-  public ChatProvider<?, ?> create(Configuration modelConfiguration, ToolsBackend backend, String prompt) {
-    return new OpenAiChatProvider(new OpenAIModelConfiguration(modelConfiguration), backend, prompt);
+  public ChatProvider<?, ?> create(Configuration modelConfiguration, ToolsBackend backend, String prompt, ModelObservability observability) {
+    return new OpenAiChatProvider(new OpenAIModelConfiguration(modelConfiguration), backend, prompt, observability);
   }
 }
