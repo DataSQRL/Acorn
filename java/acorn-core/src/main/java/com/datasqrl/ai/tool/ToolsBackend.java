@@ -60,6 +60,7 @@ public class ToolsBackend {
       ErrorHandling.checkArgument(apiExecutors.containsKey(query.getNameOrDefault()),
           "Function `%s` references API with name [%s] but no such API has been configured",
           function.getName(), query.getNameOrDefault());
+      ErrorHandling.checkArgument(function.getContext()!=null, "Function [%s] has no context defined", function.getName());
       APIExecutor executor = apiExecutors.get(query.getNameOrDefault());
       try {
         executor.validate(query);

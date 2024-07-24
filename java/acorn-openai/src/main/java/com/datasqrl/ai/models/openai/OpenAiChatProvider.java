@@ -5,6 +5,7 @@ import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.models.ChatProvider;
+import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.theokanning.openai.completion.chat.AssistantMessage;
@@ -30,7 +31,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
     super(backend, new OpenAIModelBindings(config));
     this.config = config;
     this.systemPrompt = systemPrompt;
-    String openAIToken = System.getenv("OPENAI_API_KEY");
+    String openAIToken = ConfigurationUtil.getEnvOrSystemVariable("OPENAI_API_KEY");
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
   }
 
@@ -49,6 +50,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
           .model(config.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
+          .functionCall("auto")
           .n(1)
           .topP(config.getTopP())
           .temperature(config.getTemperature())

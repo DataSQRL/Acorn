@@ -4,6 +4,8 @@ This is the Java implementation of Acorn Agent which provides the libraries you 
 
 ## Getting Started
 
+> We are in the process of releasing the Maven/Gradle dependencies. This will take another few days. In the meantime, please build the dependencies locally.
+
 ### Spring Boot
 
 To build an AI agent as a web application with Spring Boot, include the following dependency in your project and use the generic implementation in [AcornAgentServer](acorn-spring/src/main/java/com/datasqrl/ai/spring/AcornAgentServer.java) as a starting point for your own.
@@ -12,7 +14,7 @@ To build an AI agent as a web application with Spring Boot, include the followin
 
 ```text
 dependencies {
-    implementation 'com.datasqrl:acorn-spring:0.5.0'
+    implementation 'com.datasqrl:acorn-spring:0.1.0'
 }
 ```
 
@@ -22,19 +24,19 @@ dependencies {
     <dependency>
         <groupId>com.datasqrl</groupId>
         <artifactId>acorn-spring</artifactId>
-        <version>0.5.0</version>
+        <version>0.1.0</version>
     </dependency>
 ```
 
 ### Generic
 
-If you prefer a different web development framework or want to use Acorn Agent in a different context (e.g. a command line application), use the following dependency and take a look at the [command line agent implementation examples](acorn-starter/src/test/java/com/datasqrl/ai) for inspiration.
+If you prefer a different web development framework or want to use Acorn Agent in a different context (e.g. a command line application), use the following dependency and take a look at the [command line agent implementation examples](acorn-starter/src/test/java/com/datasqrl/ai/example) for inspiration.
 
 #### Gradle
 
 ```text
 dependencies {
-    implementation 'com.datasqrl:acorn-starter:0.5.0'
+    implementation 'com.datasqrl:acorn-starter:0.1.0'
 }
 ```
 
@@ -44,7 +46,7 @@ dependencies {
     <dependency>
         <groupId>com.datasqrl</groupId>
         <artifactId>acorn-starter</artifactId>
-        <version>0.5.0</version>
+        <version>0.1.0</version>
     </dependency>
 ```
 
@@ -56,7 +58,7 @@ The implementation is divided into multiple modules, so you can include exactly 
 * **acorn-udf**: Adds support for user defined functions. Add this module if you want to add a tool that executes locally by invoking a function.
 * **acorn-openai**: Implements OpenAI as a model provider with support for the GPT-class of large-language models.
 * **acorn-bedrock**: Implements AWS Bedrock as a model provider with support for LLMs like Llama3 and others.
-* **acorn-vertex**: Implements Google Vertex as a model provider with support for Gemini-class of LLMs.
+* **acorn-vertex**: Implements Google Vertex as a model provider with support for Gemini-class of LLMs and others.
 * **acorn-groq**: Implements Groq as a model provider with support for models like Llama3, Mixtral, etc.
 * **acorn-graphql**: Supports mapping GraphQL schemas to tool configurations to simplify integration of GraphQL APIs as a tool.
 * **acorn-rest**: Utilities for calling REST APIs as a tool. Supports mapping OpenAPI schemas to tool configurations to simplify integration of REST APIs.

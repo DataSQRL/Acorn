@@ -10,10 +10,26 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.MapConfiguration;
 
+@Slf4j
 public class ConfigurationUtil {
+
+  public static String getEnvOrSystemVariable(String name) {
+    String env = null;
+    try {
+      env = System.getenv(name);
+    } catch (SecurityException e) {
+      log.warn("Could not read environmental variables", e);
+    }
+    if (env==null) {
+      env = System.getProperty(name);
+    }
+    ErrorHandling.checkArgument(env!=null && !env.isBlank(), "Need to configure environmental variable `%s`", name);
+    return env;
+  }
 
   public static <T extends Enum<T>> Optional<T> getEnumFromString(Class<T> enumClazz, String name) {
     if (enumClazz != null && name != null && !name.isEmpty()) {

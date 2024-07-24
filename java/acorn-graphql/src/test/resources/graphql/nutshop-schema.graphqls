@@ -1,48 +1,50 @@
-"An RFC-3339 compliant DateTime Scalar"
+"""An RFC-3339 compliant DateTime Scalar"""
 scalar DateTime
 
 type Query {
-    # Retrieve weekly spending data for a specified customer.
+    """ Retrieve weekly spending data for a specified customer."""
     SpendingByWeek(
-        # The unique identifier for the customer.
+        """
+        customerid: The unique identifier for the customer.
+        """
         customerid: Int!,
-        # The maximum number of results to return (default: 10).
+        """ The maximum number of results to return (default: 10)."""
         limit: Int = 10,
-        # The number of results to skip before starting to collect the result set (default: 0).
+        """ The number of results to skip before starting to collect the result set (default: 0)."""
         offset: Int = 0
     ): [SpendingByWeek!]
 
-    # Retrieve product information with optional filtering by product ID.
+    """ Retrieve product information with optional filtering by product ID."""
     Products(
-        # The unique identifier for the product (optional).
+        """ The unique identifier for the product (optional)."""
         id: Int,
-        # The maximum number of results to return (default: 10).
+        """ The maximum number of results to return (default: 10)."""
         limit: Int = 10,
-        # The number of results to skip before starting to collect the result set (default: 0).
+        """ The number of results to skip before starting to collect the result set (default: 0)."""
         offset: Int = 0
     ): [Products!]
 
-    # Retrieve order information for a specified customer.
+    """ Retrieve order information for a specified customer."""
     Orders(
-        # The unique identifier for the customer.
+        """ The unique identifier for the customer."""
         customerid: Int!,
-        # The maximum number of results to return (default: 10).
+        """ The maximum number of results to return (default: 10)."""
         limit: Int = 10,
-        # The number of results to skip before starting to collect the result set (default: 0).
+        """ The number of results to skip before starting to collect the result set (default: 0)."""
         offset: Int = 0
     ): [Orders!]
 
-    "Retrieves orders for a given customer within the specified time range"
+    """Retrieves orders for a given customer within the specified time range"""
     OrdersByTimeRange(
-        "The unique identifier for the customer"
+        """The unique identifier for the customer"""
         customerid: Int!,
-        "Returns orders where the order timestamp is larger than this RFC-3339 compliant fromTime timestamp"
+        """Returns orders where the order timestamp is larger than this RFC-3339 compliant fromTime timestamp"""
         fromTime: DateTime!,
-        "Returns orders where the order timestamp is smaller than this RFC-3339 compliant toTime timestamp"
+        """Returns orders where the order timestamp is smaller than this RFC-3339 compliant toTime timestamp"""
         toTime: DateTime!
     ): [Orders!]
 
-    # Suggest products for a customer to order again based on their previous orders.
+    """ Suggest products for a customer to order again based on their previous orders."""
     OrderAgain(
         # The unique identifier for the customer.
         customerid: Int!,
@@ -113,7 +115,7 @@ type CustomerChatMessage {
 }
 
 type Mutation {
-    # Saves a chat message
+    """ Saves a chat message"""
     InternalSaveChatMessage(message: ChatMessageInput!): CreatedChatMessage
 }
 

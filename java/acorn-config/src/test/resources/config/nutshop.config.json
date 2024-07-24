@@ -11,5 +11,5 @@
     "model": "GPT35_TURBO"
   },
   "local_functions": ["CurrentTime"],
-  "client-functions": ["datacharts"]
+  "client_functions": ["datacharts"]
 }

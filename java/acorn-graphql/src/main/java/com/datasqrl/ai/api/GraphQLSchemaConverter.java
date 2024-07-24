@@ -30,6 +30,7 @@ import graphql.scalars.ExtendedScalars;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -52,7 +53,7 @@ public class GraphQLSchemaConverter {
   Configuration configuration;
   String apiName;
 
-  SchemaPrinter schemaPrinter = new SchemaPrinter();
+  SchemaPrinter schemaPrinter = new SchemaPrinter(SchemaPrinter.Options.defaultOptions().descriptionsAsHashComments(true));
 
   public List<RuntimeFunctionDefinition> convert(String schemaString) {
     TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(schemaString);
@@ -177,6 +178,7 @@ public class GraphQLSchemaConverter {
       for (GraphQLArgument arg : fieldDef.getArguments()) {
         UnwrappedType unwrappedType = convertRequired(arg.getType());
         if (unwrappedType.type() instanceof GraphQLInputObjectType inputType) {
+          queryBody.append(arg.getName()).append(": { ");
           for (GraphQLInputObjectField nestedField : inputType.getFieldDefinitions()) {
             String argName = combineStrings(ctx.prefix(), nestedField.getName());
             unwrappedType = convertRequired(nestedField.getType());
@@ -186,6 +188,7 @@ public class GraphQLSchemaConverter {
             queryHeader.append(argName).append(": ").append(typeString);
             numArgs++;
           }
+          queryBody.append(" }");
         } else {
           String argName = combineStrings(ctx.prefix(), arg.getName());
           argName = processField(queryBody, queryHeader, params, ctx, numArgs, unwrappedType, argName,
@@ -234,12 +237,13 @@ public class GraphQLSchemaConverter {
   }
 
   private String printArgumentType(GraphQLArgument argument) {
+    GraphQLArgument argumentWithoutDescription = argument.transform(builder -> builder.description(null));
     GraphQLObjectType type = GraphQLObjectType.newObject()
         .name("DummyType")
         .field(field -> field
             .name("dummyField")
             .type(GraphQLString)
-            .argument(argument)
+            .argument(argumentWithoutDescription)
         )
         .build();
     // Print argument as part of a dummy field in a dummy schema
@@ -248,12 +252,16 @@ public class GraphQLSchemaConverter {
   }
 
   private String extractTypeFromDummy(String output, String fieldName) {
+    //Remove comments
+    output = Arrays.stream(output.split("\n"))
+        .filter(line -> !line.trim().startsWith("#")).collect(Collectors.joining("\n"));
     Pattern pattern = Pattern.compile(fieldName + "\\s*:\\s*([^)}]+)");
     // Print argument as part of a dummy field in a dummy schema
     Matcher matcher = pattern.matcher(output);
     ErrorHandling.checkArgument(matcher.find(), "Could not find type in: %s", output);
     return matcher.group(1).trim();
   }
+
 
   private static GraphQLOutputType unwrapType(GraphQLOutputType type) {
     if (type instanceof GraphQLList) {

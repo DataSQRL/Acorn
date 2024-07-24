@@ -2,17 +2,24 @@ package com.datasqrl.ai.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.SneakyThrows;
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class GraphQLSchemaConverterTest {
@@ -37,11 +44,13 @@ public class GraphQLSchemaConverterTest {
 
           @Override
           public String executeQuery(APIQuery query, JsonNode arguments) throws IOException {
+            System.out.println(arguments.toString());
             return "";
           }
-        }));
+        }), Set.of("customerid"));
     //Save and get messages aren't counted as functions
     assertEquals(5, backend.getFunctions().size());
+    assertTrue(backend.getChatMessages(Map.of("customerid", 5), 5, GenericChatMessage.class).isEmpty());
   }
 
 
@@ -56,6 +65,14 @@ public class GraphQLSchemaConverterTest {
     assertEquals(expectedResult, result);
     List<RuntimeFunctionDefinition> functions = ToolsBackendFactory.readTools(result);
     assertEquals(7, functions.size());
+  }
+
+  @Test
+  @Disabled
+  public void testSchemaConversion() throws IOException {
+    String schemaString = Files.readString(Path.of("../../../datasqrl-examples/finance-credit-card-chatbot/creditcard-analytics.graphqls"));
+    String result = GraphQLSchemaConverterExecutable.convert(schemaString, "default");
+    System.out.println(result);
   }
 
 

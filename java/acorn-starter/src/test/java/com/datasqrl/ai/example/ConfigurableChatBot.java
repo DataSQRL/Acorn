@@ -9,6 +9,7 @@ import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
+import java.net.URL;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.MapConfiguration;
@@ -62,7 +63,8 @@ public class ConfigurableChatBot {
 
   public static void main(String... args) throws Exception {
     String systemPrompt = "You are a huge fan of the Ricky and Morty TV show and help users answer questions about the show. You always try to look up the information a user is asking for via one of the available functions. Only if you cannot find the information do you use general knowledge to answer it. Retrieved information always takes precedence. You answer in the voice of Jerry Smith.";
-    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(Path.of("java", "acorn-starter", "src", "main", "resources", "tools", "rickandmorty.tools.json"));
+    URL toolsResource = ConfigurableChatBot.class.getClassLoader().getResource("tools/rickandmorty.tools.json");
+    List<RuntimeFunctionDefinition> tools = ToolsBackendFactory.readTools(toolsResource);
     APIExecutor apiExecutor = new GraphQLExecutorFactory().create(new MapConfiguration(Map.of(
         "type", "graphql",
         "url", "https://rickandmortyapi.com/graphql"

@@ -111,7 +111,10 @@ public class ToolsBackendTest {
         .build();
 
 
-    String serializedMsg = objectMapper.writeValueAsString(msg1);
+    ObjectNode serializedMsg = objectMapper.valueToTree(msg1);
+    //Inline context
+    serializedMsg.remove("context");
+    context.forEach((k,v) -> serializedMsg.set(k, objectMapper.valueToTree(v)));
 
     String backendMsg = objectMapper.writeValueAsString(backendSerialize(msg1, msg2));
 
@@ -131,7 +134,7 @@ public class ToolsBackendTest {
       @Override
       public CompletableFuture<String> executeQueryAsync(APIQuery query, JsonNode arguments) {
         assertTrue(query.getQuery().startsWith("mutation AddChatMsg"));
-        assertEquals(serializedMsg, objectMapper.writeValueAsString(arguments));
+        assertEquals(serializedMsg, arguments);
         return CompletableFuture.completedFuture("mock write");
       }
 

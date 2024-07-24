@@ -8,6 +8,7 @@ import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.models.ChatProvider;
+import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,7 +55,7 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
     super(backend, new GroqModelBindings(config));
     this.config = config;
     this.systemPrompt = systemPrompt;
-    String groqApiKey = System.getenv("GROQ_API_KEY");
+    String groqApiKey = ConfigurationUtil.getEnvOrSystemVariable("GROQ_API_KEY");
     ObjectMapper mapper = defaultObjectMapper();
     HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
     logging.setLevel(HttpLoggingInterceptor.Level.NONE); // Change to .BODY to see the request body

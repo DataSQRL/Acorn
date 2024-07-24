@@ -9,8 +9,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.NonNull;
 
 public class ToolsBackendFactory {
@@ -37,8 +39,14 @@ public class ToolsBackendFactory {
   }
 
   public static ToolsBackend of(@NonNull List<RuntimeFunctionDefinition> functions, @NonNull Map<String,APIExecutor> apiExecutors) {
+    return of(functions,apiExecutors, Collections.emptySet());
+  }
+
+  public static ToolsBackend of(@NonNull List<RuntimeFunctionDefinition> functions, @NonNull Map<String,APIExecutor> apiExecutors,
+      @NonNull Set<String> globalContext) {
     ToolsBackend backend = new ToolsBackend(apiExecutors, mapper);
     for (RuntimeFunctionDefinition function : functions) {
+      function = setContextIfNotExists(function, globalContext);
       if (function.getName().equalsIgnoreCase(SAVE_CHAT_FUNCTION_NAME)) {
         backend.setSaveChatFct(function);
       } else if (function.getName().equalsIgnoreCase(RETRIEVE_CHAT_FUNCTION_NAME)) {
@@ -48,5 +56,12 @@ public class ToolsBackendFactory {
       }
     }
     return backend;
+  }
+
+  public static RuntimeFunctionDefinition setContextIfNotExists(RuntimeFunctionDefinition fct, Set<String> context) {
+    if (fct.getContext()==null || fct.getContext().isEmpty()) {
+      fct.setContext(fct.getFunction().getParameters().getProperties().keySet().stream().filter(context::contains).toList());
+    }
+    return fct;
   }
 }

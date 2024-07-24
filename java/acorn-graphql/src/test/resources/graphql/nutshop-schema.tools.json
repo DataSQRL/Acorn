@@ -12,7 +12,7 @@
         },
         "customerid" : {
           "type" : "integer",
-          "description" : " The unique identifier for the customer."
+          "description" : "customerid: The unique identifier for the customer."
         },
         "limit" : {
           "type" : "integer",
@@ -198,6 +198,6 @@
   },
   "api" : {
     "name" : "default",
-    "query" : "mutation InternalSaveChatMessage($role: String!, $content: String!, $name: String, $customerid: Int!) {\nInternalSaveChatMessage(role: $role, content: $content, name: $name, customerid: $customerid) {\n_source_time\n}\n\n}"
+    "query" : "mutation InternalSaveChatMessage($role: String!, $content: String!, $name: String, $customerid: Int!) {\nInternalSaveChatMessage(message: { role: $role, content: $content, name: $name, customerid: $customerid }) {\n_source_time\n}\n\n}"
   }
 } ]

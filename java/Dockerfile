@@ -7,9 +7,11 @@ COPY acorn-udf acorn-udf
 COPY acorn-bedrock acorn-bedrock
 COPY acorn-groq acorn-groq
 COPY acorn-openai acorn-openai
+COPY acorn-vertex acorn-vertex
 COPY acorn-rest acorn-rest
 COPY acorn-graphql acorn-graphql
 COPY acorn-config acorn-config
+COPY acorn-starter acorn-starter
 COPY acorn-spring acorn-spring
 
 RUN mvn clean package -DskipTests

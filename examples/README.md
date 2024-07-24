@@ -10,13 +10,13 @@ You can run the following examples in Docker by standing up an API and running A
 * [IoT Bot](https://github.com/DataSQRL/datasqrl-examples/tree/main/iot-sensor-metrics): A data agent for retrieving and analyzing metrics in realtime.
 * [Credit Card Rewards](https://github.com/DataSQRL/datasqrl-examples/tree/main/finance-credit-card-chatbot): An agent that helps customers pick the best credit card to maximize rewards.
 
-For these examples, you will stand up an API locally that Acorn Agents instruments for LLM usage. Hence, these examples are a little more involved to run than the public API examples below. However, because we have control over the API, we can use more of Acorn Agent's feature set like storing and retrieving user messages, adding more complex tools for data retrieval, and custom data visualization.
+For these examples, you will stand up an API locally that Acorn Agents instruments for tool calling. The ApiExecutor inside your Acorn Agent Application will run the function calls against this API. Hence, these examples are a little more involved to run than the public API examples below. However, because we have control over the API, we can use more of Acorn Agent's feature set like storing and retrieving user messages, adding more complex tools for data retrieval, and custom data visualization.
 
-These examples show you what building a production-grade application with Acorn Agent looks like. 
+These examples show you what building a production-grade application with Acorn Agent looks like. Because these examples include a full API backend, they live in their [own repository](https://github.com/DataSQRL/datasqrl-examples).
 
 ## Public API Examples
 
-This directory contains examples of using Acorn with publicly accessible APIs. Hence, you don't need to run an API for these examples to work. To run these examples, all you need is Docker and an API key for the Large-Language-Model provider of your choice. 
+This directory contains examples of using Acorn Agent with publicly accessible APIs. Hence, you don't need to run an API for these examples to work. To run these examples, all you need is Docker and an API key for the Large-Language-Model provider of your choice. 
 
 Running the examples takes less than a minute, and you can modify them to play around with Acorn Agent.
 
@@ -32,4 +32,4 @@ We want to highlight that the APIs used in the examples above are NOT our own an
 These examples showcase how you can build an agent that accesses APIs for data retrieval and presents the information to the user. 
 
 You can configure your own agent against an existing API or one that you build yourself. This requires no coding.
-For complete control for the agent implementation, check out source code implementation and examples contained therein.
+For complete control for the agent implementation, check out source code implementation and the [acorn-starter](/java/acorn-starter) module.
