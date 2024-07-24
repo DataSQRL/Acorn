@@ -53,7 +53,7 @@ Check out the [Getting Started Documentation](java/README.md) for how to build y
 
 * [As a Spring Boot web application](java/acorn-spring)
 * [Using the Model-abstraction interface](java/acorn-starter#configurablechatbot)
-* [Or with low-level access to the model]((java/acorn-starter#lowlevelagent))
+* [Or with low-level access to the model](java/acorn-starter#lowlevelagent)
 
 ## Why Acorn Agent?
 
