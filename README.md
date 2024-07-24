@@ -1,6 +1,6 @@
 # Acorn Agent
 
-Acorn Agent is a simple yet flexible framework for building AI Agents, Chat Bots, and LLM microservices on the JVM. It seamlessly integrates (semi-)structured data from various external sources—such as APIs, databases, and function calls—with generative AI models to deliver high-quality results tailored to your data.
+Acorn Agent is a simple yet flexible framework for building AI Agents, Chat Bots, and LLM microservices on the JVM. It seamlessly integrates (semi-)structured data from various external sources—such as APIs, databases, and function calls—with Large-Language models through tooling to deliver high-quality results tailored to your application.
 
 ![Acorn Agent Connects Data with LLMs](img/overview.png)
 
