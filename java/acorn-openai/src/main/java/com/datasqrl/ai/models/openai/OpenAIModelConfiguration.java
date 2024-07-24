@@ -13,7 +13,7 @@ import org.apache.commons.configuration2.Configuration;
 @Value
 public class OpenAIModelConfiguration extends AbstractModelConfiguration {
 
-  public static final ModelType DEFAULT_MODEL = ModelType.GPT_3_5_TURBO;
+  public static final ModelType DEFAULT_MODEL = ModelType.GPT_4O_MINI;
 
   ModelType modelType;
 

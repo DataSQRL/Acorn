@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.datasqrl</groupId>
     <artifactId>acorn</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>acorn-groq</artifactId>
   <name>acorn - Groq Compatible Provider</name>
@@ -11,9 +11,7 @@
   <description>Acorn Groq</description>
 
   <properties>
-    <openai-java.version>0.20.0</openai-java.version>
-    <jtokkit.version>1.0.0</jtokkit.version>
-    <aws.bedrock.version>2.25.45</aws.bedrock.version>
+    <openai-java.version>0.21.2</openai-java.version>
   </properties>
 
   <dependencies>
@@ -32,11 +30,6 @@
       <groupId>io.github.lambdua</groupId>
       <artifactId>service</artifactId>
       <version>${openai-java.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.knuddels</groupId>
-      <artifactId>jtokkit</artifactId>
-      <version>${jtokkit.version}</version>
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>

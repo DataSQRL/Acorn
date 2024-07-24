@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.datasqrl</groupId>
     <artifactId>acorn</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>acorn-openai</artifactId>
   <name>acorn - OpenAI Compatible Provider</name>
@@ -11,9 +11,8 @@
   <description>Acorn OpenAI</description>
 
   <properties>
-    <openai-java.version>0.20.0</openai-java.version>
-    <jtokkit.version>1.0.0</jtokkit.version>
-    <aws.bedrock.version>2.25.45</aws.bedrock.version>
+    <openai-java.version>0.21.2</openai-java.version>
+    <jtokkit.version>1.1.0</jtokkit.version>
   </properties>
 
   <dependencies>
@@ -42,11 +41,6 @@
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>logging-interceptor</artifactId>
       <version>4.12.0</version>
-    </dependency>
-    <dependency>
-      <groupId>ai.djl.huggingface</groupId>
-      <artifactId>tokenizers</artifactId>
-      <version>${djl.version}</version>
     </dependency>
   </dependencies>
   <repositories>
