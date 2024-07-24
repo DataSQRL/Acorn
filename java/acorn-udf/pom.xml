@@ -9,6 +9,7 @@
   <artifactId>acorn-udf</artifactId>
   <name>acorn - User Defined Functions</name>
   <packaging>jar</packaging>
+  <description>Acorn UDF</description>
 
   <dependencies>
     <dependency>
@@ -31,4 +32,16 @@
     </dependency>
 
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

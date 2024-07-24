@@ -8,6 +8,7 @@
   <artifactId>acorn-graphql</artifactId>
   <name>acorn - GraphQL API Module</name>
   <packaging>jar</packaging>
+  <description>Acorn Graphql</description>
 
   <dependencies>
     <dependency>
@@ -35,4 +36,16 @@
     </dependency>
 
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

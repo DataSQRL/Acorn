@@ -8,6 +8,7 @@
   <artifactId>acorn-openai</artifactId>
   <name>acorn - OpenAI Compatible Provider</name>
   <packaging>jar</packaging>
+  <description>Acorn OpenAI</description>
 
   <properties>
     <openai-java.version>0.21.2</openai-java.version>
@@ -49,5 +50,16 @@
       <url>https://repo.maven.apache.org/maven2/</url>
     </repository>
   </repositories>
-
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
