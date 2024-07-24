@@ -6,8 +6,8 @@
   },
   "model" : {
     "provider" : "groq",
-    "name": "llama3-70b-8192",
-    "temperature": 1.5,
-    "max_output_tokens": 512
+    "name": "llama3-groq-70b-8192-tool-use-preview",
+    "temperature": 0.2,
+    "max_output_tokens": 2048
   }
 }
