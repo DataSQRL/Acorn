@@ -4,6 +4,7 @@ import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,8 +38,8 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
   private final String systemPrompt;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public VertexChatProvider(VertexModelConfiguration config, ToolsBackend backend, String systemPrompt) {
-    super(backend, new VertexModelBindings(config));
+  public VertexChatProvider(VertexModelConfiguration config, ToolsBackend backend, String systemPrompt, ModelObservability observability) {
+    super(backend, new VertexModelBindings(config), observability);
     this.systemPrompt = systemPrompt;
     VertexAI vertexAI = new VertexAI(config.getProjectId(), config.getLocation());
     GenerationConfig generationConfig =
@@ -92,8 +93,10 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
 
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       log.debug("and message {}", chatMessage);
+      ModelObservability.Trace modeltrace = observability.start();
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
+        modeltrace.stop();
         session.addMessage(chatMessage);
         Content response = ResponseHandler.getContent(generatedResponse);
         GenericChatMessage genericResponse = session.addMessage(response);
@@ -102,10 +105,15 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
           ChatSession.FunctionExecutionOutcome<Content> outcome = session.validateAndExecuteFunctionCall(functionCall.get(), false);
           switch (outcome.status()) {
             case EXECUTE_ON_CLIENT -> {
+              modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response), false);
               return genericResponse;
             }
-            case EXECUTED -> chatMessage = outcome.functionResponse();
+            case EXECUTED -> {
+              modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response), false);
+              chatMessage = outcome.functionResponse();
+            }
             case VALIDATION_ERROR_RETRY -> {
+              modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response), true);
               if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
                 throw new RuntimeException("Too many function call retries for the same function.");
               } else {
@@ -121,6 +129,7 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
           return genericResponse;
         }
       } catch (IOException e) {
+        modeltrace.stop();
         throw new RuntimeException(e);
       }
     }

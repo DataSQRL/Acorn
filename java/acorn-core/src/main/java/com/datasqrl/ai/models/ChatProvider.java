@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models;
 
+import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import java.util.List;
@@ -16,6 +17,8 @@ public abstract class ChatProvider<Message, FunctionCall> {
   protected final ToolsBackend backend;
   @Getter
   protected final ModelBindings<Message, FunctionCall> bindings;
+  @Getter
+  protected final ModelObservability observability;
 
   public abstract GenericChatMessage chat(String message, Map<String, Object> context);
 

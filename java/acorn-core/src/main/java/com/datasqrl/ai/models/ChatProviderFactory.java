@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models;
 
+import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.util.ErrorHandling;
 import java.util.Map;
@@ -15,7 +16,7 @@ public interface ChatProviderFactory {
 
   String getProviderName();
 
-  ChatProvider<?, ?> create(Configuration modelConfiguration, ToolsBackend backend, String prompt);
+  ChatProvider<?, ?> create(Configuration modelConfiguration, ToolsBackend backend, String prompt, ModelObservability observability);
 
   static ChatProviderFactory fromConfiguration(Configuration modelConfiguration) {
     String provider = modelConfiguration.getString(MODEL_PROVIDER_KEY);
@@ -27,9 +28,9 @@ public interface ChatProviderFactory {
     return providerFact.get();
   }
 
-  static ChatProvider<?,?> fromConfiguration(Map<String, Object> modelConfiguration, ToolsBackend backend, String prompt) {
+  static ChatProvider<?,?> fromConfiguration(Map<String, Object> modelConfiguration, ToolsBackend backend, String prompt, ModelObservability observability) {
     MapConfiguration configuration = new MapConfiguration(modelConfiguration);
-    return fromConfiguration(configuration).create(configuration,backend, prompt);
+    return fromConfiguration(configuration).create(configuration,backend, prompt, observability);
   }
 
 }

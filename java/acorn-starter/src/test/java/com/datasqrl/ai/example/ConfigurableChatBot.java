@@ -6,6 +6,7 @@ import com.datasqrl.ai.api.GraphQLExecutorFactory;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
 import com.datasqrl.ai.tool.GenericChatMessage;
+import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
@@ -74,7 +75,7 @@ public class ConfigurableChatBot {
         "provider", "groq",
         "name", "mixtral-8x7b-32768",
         "temperature", 0.8
-    ), toolsBackend, systemPrompt);
+    ), toolsBackend, systemPrompt, ModelObservability.NOOP);
 
     ConfigurableChatBot chatBot = new ConfigurableChatBot(chatProvider);
     chatBot.start(Map.of());
