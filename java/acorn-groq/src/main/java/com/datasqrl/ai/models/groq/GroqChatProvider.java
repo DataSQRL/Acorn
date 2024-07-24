@@ -98,6 +98,7 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;
+      ModelObservability.Trace modeltrace = observability.start();
       try {
         TimeUnit.SECONDS.sleep(30);
       } catch (InterruptedException e) {
