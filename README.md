@@ -1,6 +1,6 @@
 # Acorn Agent
 
-Acorn Agent is a simple yet flexible framework for building AI Agents, Chat Bots, and generative AI applications on the JVM. It seamlessly integrates (semi-)structured data from various external sources—such as APIs, databases, and function calls—with generative AI models to deliver high-quality results tailored to your data.
+Acorn Agent is a simple yet flexible framework for building AI Agents, Chat Bots, and LLM microservices on the JVM. It seamlessly integrates (semi-)structured data from various external sources—such as APIs, databases, and function calls—with generative AI models to deliver high-quality results tailored to your data.
 
 ![Acorn Agent Connects Data with LLMs](img/overview.png)
 
@@ -89,7 +89,7 @@ We built Acorn Agent based on the realization that:
 * Advanced LLMs excel at understanding user requests better than any external augmentation.
 * LLMs are trained to use tools, making this a natural interface for executing actions and retrieving information.
 
-As LLMs improve, "tooling" will become the primary interface for LLM interactions. Building GenAI applications around tools ensures simplicity, flexibility, and future-proofing, as LLMs will only get better at using tools.
+As LLMs improve, "tooling" will become the primary interface for LLM interactions. Building LLM applications around tools ensures simplicity, flexibility, and future-proofing, as LLMs will only get better at using tools.
 
 ## Community
 
