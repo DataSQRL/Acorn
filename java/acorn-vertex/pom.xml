@@ -10,6 +10,7 @@
     <artifactId>acorn-vertex</artifactId>
     <name>acorn - Google Vertex Provider</name>
     <packaging>jar</packaging>
+    <description>Acorn Vertex</description>
 
     <dependencies>
         <dependency>
@@ -23,5 +24,16 @@
             <version>1.4.0</version>
         </dependency>
     </dependencies>
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

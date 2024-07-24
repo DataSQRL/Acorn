@@ -9,7 +9,7 @@
   <artifactId>acorn-bedrock</artifactId>
   <name>acorn - Bedrock Provider</name>
   <packaging>jar</packaging>
-
+  <description>Acorn Bedrock</description>
   <properties>
     <aws.bedrock.version>2.26.6</aws.bedrock.version>
   </properties>
@@ -49,4 +49,16 @@
             <url>https://repo.maven.apache.org/maven2/</url>
         </repository>
     </repositories>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
