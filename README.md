@@ -52,8 +52,8 @@ Take a look at the [Acorn Agent examples](examples/) for ready-to-run configurat
 Check out the [Getting Started Documentation](java/README.md) for how to build your own custom agent with Acorn Agent:
 
 * [As a Spring Boot web application](java/acorn-spring)
-* [Using the Model-abstraction interface](java/acorn-starter#configurablechatbot)
-* [Or with low-level access to the model](java/acorn-starter#lowlevelagent)
+* [Using the Model-abstraction interface](https://github.com/DataSQRL/Acorn/tree/docu/starter/java/acorn-starter#configurablechatbot)
+* [Or with low-level access to the model](https://github.com/DataSQRL/Acorn/tree/docu/starter/java/acorn-starter#lowlevelagent)
 
 ## Why Acorn Agent?
 
