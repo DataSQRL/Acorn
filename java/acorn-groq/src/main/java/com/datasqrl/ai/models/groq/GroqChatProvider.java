@@ -88,7 +88,6 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
           .model(config.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
-          .functionCall("auto")
           .n(1)
           .temperature(config.getTemperature())
           .topP(config.getTopP())
