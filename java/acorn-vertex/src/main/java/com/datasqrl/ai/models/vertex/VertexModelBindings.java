@@ -149,7 +149,7 @@ public class VertexModelBindings implements ModelBindings<Content, FunctionCall>
   private String functionCall2String(FunctionCall fctCall) {
     return "{"
         + "\"function\": \"" + fctCall.getName() + "\", "
-        + "\"parameters\": " + fctCall.getArgs()
+        + "\"parameters\": " + ProtobufUtils.structToJsonNode(fctCall.getArgs())
         + "}";
   }
 
