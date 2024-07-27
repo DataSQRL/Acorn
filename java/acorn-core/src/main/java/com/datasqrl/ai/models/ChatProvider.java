@@ -1,6 +1,7 @@
 package com.datasqrl.ai.models;
 
 import com.datasqrl.ai.tool.ModelObservability;
+import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import java.util.List;
@@ -14,7 +15,7 @@ public abstract class ChatProvider<Message, FunctionCall> {
   public static int DEFAULT_HISTORY_LIMIT = 50;
   public static final int FUNCTION_CALL_RETRIES_LIMIT = 5;
 
-  protected final ToolsBackend backend;
+  protected final ToolManager backend;
   @Getter
   protected final ModelBindings<Message, FunctionCall> bindings;
   @Getter

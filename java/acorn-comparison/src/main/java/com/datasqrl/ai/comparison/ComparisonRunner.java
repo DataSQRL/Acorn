@@ -58,7 +58,7 @@ public class ComparisonRunner {
           testSessions.forEach(session -> {
             new SessionRunner(configuration, session, idCounter, fileName).run();
           });
-          log.info("Metrics results (CSV): {}", configuration.getChatProvider().getObservability().exportToCSV());
+          log.info("Metrics results (CSV): {}", ((MicrometerObservability)configuration.getChatProvider().getObservability()).exportToCSV());
           meterRegistry.close();
         });
       } else {

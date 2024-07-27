@@ -3,7 +3,7 @@ package com.datasqrl.ai.comparison.config;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.GraphQLSchemaConverter;
-import com.datasqrl.ai.comparison.MicrometerModelObservability;
+import com.datasqrl.ai.comparison.MicrometerObservability;
 import com.datasqrl.ai.config.ClientSideFunctions;
 import com.datasqrl.ai.function.UDFConverter;
 import com.datasqrl.ai.function.UserDefinedFunction;
@@ -129,6 +129,6 @@ public class ComparisonConfiguration {
     } else {
       tools = ToolsBackendFactory.readTools(toolsContent);
     }
-    return new ComparisonConfiguration(baseConfig, modelConfig, tools, new MicrometerModelObservability(meterRegistry, "acorn"));
+    return new ComparisonConfiguration(baseConfig, modelConfig, tools, new MicrometerObservability(meterRegistry, "acorn"));
   }
 }

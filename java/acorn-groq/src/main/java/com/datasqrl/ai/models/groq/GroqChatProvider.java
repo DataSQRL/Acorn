@@ -6,6 +6,8 @@ import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.ModelObservability;
+import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
+import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.models.ChatProvider;
@@ -54,7 +56,7 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
   private ChatFunctionCall errorFunctionCall = null;
   public static final String GROQ_URL = "https://api.groq.com/openai/v1/";
 
-  public GroqChatProvider(GroqModelConfiguration config, ToolsBackend backend, String systemPrompt, ModelObservability observability) {
+  public GroqChatProvider(GroqModelConfiguration config, ToolManager backend, String systemPrompt, ModelObservability observability) {
     super(backend, new GroqModelBindings(config), observability);
     this.config = config;
     this.systemPrompt = systemPrompt;
@@ -98,18 +100,17 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
           .logitBias(new HashMap<>())
           .build();
       AssistantMessage responseMessage;
-      ModelObservability.Trace modeltrace = observability.start();
       try {
         TimeUnit.SECONDS.sleep(30);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
-      ModelObservability.Trace modeltrace = observability.start();
+      ModelInvocation invocation = observability.start();
       try {
         responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
-        modeltrace.stop();
+        invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
       } catch (OpenAiHttpException e) {
-        modeltrace.stop();
+        invocation.fail(e);
         // Workaround for groq API bug that throws 400 on some function calls
         if (e.statusCode == 400 && errorFunctionCall != null) {
           responseMessage = new AssistantMessage("", "", null, errorFunctionCall);
@@ -137,11 +138,9 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
         ChatSession.FunctionExecutionOutcome<ChatMessage> outcome = session.validateAndExecuteFunctionCall(functionCall, true);
         switch (outcome.status()) {
           case EXECUTE_ON_CLIENT -> {
-            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), true);
             if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
@@ -152,7 +151,6 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
           }
         }
       } else {
-        modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
         // The text answer
         return genericResponse;
       }

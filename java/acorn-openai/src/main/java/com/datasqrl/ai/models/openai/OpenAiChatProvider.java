@@ -3,6 +3,8 @@ package com.datasqrl.ai.models.openai;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.ModelObservability;
+import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
+import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.models.ChatProvider;
@@ -28,7 +30,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
   private final OpenAiService service;
   private final String systemPrompt;
 
-  public OpenAiChatProvider(OpenAIModelConfiguration config, ToolsBackend backend, String systemPrompt, ModelObservability observability) {
+  public OpenAiChatProvider(OpenAIModelConfiguration config, ToolManager backend, String systemPrompt, ModelObservability observability) {
     super(backend, new OpenAIModelBindings(config), observability);
     this.config = config;
     this.systemPrompt = systemPrompt;
@@ -57,9 +59,9 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
           .maxTokens(config.getMaxOutputTokens())
           .logitBias(new HashMap<>())
           .build();
-      ModelObservability.Trace modeltrace = observability.start();
+      ModelInvocation invocation = observability.start();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
-      modeltrace.stop();
+      invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
@@ -79,11 +81,9 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
         ChatSession.FunctionExecutionOutcome<ChatMessage> outcome = session.validateAndExecuteFunctionCall(functionCall, true);
         switch (outcome.status()) {
           case EXECUTE_ON_CLIENT -> {
-            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), true);
             if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
@@ -94,7 +94,6 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
           }
         }
       } else {
-        modeltrace.complete(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage), false);
         // The text answer
         return genericResponse;
       }

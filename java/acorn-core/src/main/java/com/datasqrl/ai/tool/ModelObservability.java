@@ -2,37 +2,30 @@ package com.datasqrl.ai.tool;
 
 public interface ModelObservability {
 
-  Trace start();
+  ModelInvocation start();
 
-  String exportToCSV();
+  interface ModelInvocation {
 
-  public interface Trace {
+    void stop(int numInputTokens, int numOutputTokens);
 
-    void stop();
-
-    void complete(int numInputTokens, int numOutputTokens, boolean retry);
+    void fail(Exception e);
 
   }
 
   public static final ModelObservability NOOP = new ModelObservability() {
     @Override
-    public Trace start() {
-      return new Trace() {
+    public ModelInvocation start() {
+      return new ModelInvocation() {
         @Override
-        public void stop() {
+        public void stop(int numInputTokens, int numOutputTokens) {
 
         }
 
         @Override
-        public void complete(int numInputTokens, int numOutputTokens, boolean retry) {
+        public void fail(Exception e) {
 
         }
       };
-    }
-
-    @Override
-    public String exportToCSV() {
-      return "";
     }
   };
 
