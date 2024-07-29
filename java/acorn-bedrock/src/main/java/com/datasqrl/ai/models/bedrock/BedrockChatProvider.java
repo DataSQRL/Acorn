@@ -3,6 +3,7 @@ package com.datasqrl.ai.models.bedrock;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.models.ModelAnalyzer;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
 import com.datasqrl.ai.tool.ToolManager;
@@ -60,7 +61,7 @@ public class BedrockChatProvider extends ChatProvider<BedrockChatMessage, Bedroc
   }
 
   @Override
-  public GenericChatMessage chat(String message, Map<String, Object> context) {
+  public GenericChatMessage chat(String message, Context context) {
     ChatSession<BedrockChatMessage, BedrockFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     BedrockChatMessage chatMessage = new BedrockChatMessage(BedrockChatRole.USER, message, "");
     session.addMessage(chatMessage);

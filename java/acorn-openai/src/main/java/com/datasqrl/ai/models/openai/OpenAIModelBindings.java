@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models.openai;
 
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.GenericFunctionCall;
 import com.datasqrl.ai.models.ModelAnalyzer;
@@ -42,7 +43,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
   }
 
   @Override
-  public GenericChatMessage convertMessage(ChatMessage msg, Map<String, Object> sessionContext) {
+  public GenericChatMessage convertMessage(ChatMessage msg, Context sessionContext) {
     ChatFunctionCall fctCall = null;
     if (ChatMessageRole.valueOf(msg.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT) {
       fctCall = ((AssistantMessage) msg).getFunctionCall();

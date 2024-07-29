@@ -5,6 +5,7 @@ import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.GraphQLExecutorFactory;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
@@ -46,7 +47,7 @@ public class ConfigurableChatBot {
    *
    * @param context        The user context that might be needed to execute functions
    */
-  public void start(Map<String, Object> context) throws IOException {
+  public void start(Context context) throws IOException {
     Scanner scanner = new Scanner(System.in);
     System.out.print("First Query: ");
     String message = scanner.nextLine();
@@ -78,7 +79,7 @@ public class ConfigurableChatBot {
     ), toolsBackend, systemPrompt, ModelObservability.NOOP);
 
     ConfigurableChatBot chatBot = new ConfigurableChatBot(chatProvider);
-    chatBot.start(Map.of());
+    chatBot.start(Context.of());
   }
 
 }

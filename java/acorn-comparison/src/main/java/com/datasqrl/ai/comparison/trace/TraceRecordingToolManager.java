@@ -3,6 +3,7 @@ package com.datasqrl.ai.comparison.trace;
 import com.datasqrl.ai.comparison.trace.Trace.FunctionCall;
 import com.datasqrl.ai.comparison.trace.Trace.FunctionResponse;
 import com.datasqrl.ai.tool.ChatMessageInterface;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.FunctionValidation;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolManager;
@@ -41,7 +42,7 @@ public class TraceRecordingToolManager extends BaseTraceToolManager {
 
   @Override
   public String executeFunctionCall(String functionName, JsonNode arguments,
-      @NonNull Map<String, Object> context) throws IOException {
+      @NonNull Context context) throws IOException {
     traceBuilder.entry(new FunctionCall(true, functionName, arguments, List.of()));
     String result;
     if (replayResponses == null) {

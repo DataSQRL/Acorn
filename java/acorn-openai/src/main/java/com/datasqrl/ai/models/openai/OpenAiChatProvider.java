@@ -2,6 +2,7 @@ package com.datasqrl.ai.models.openai;
 
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
 import com.datasqrl.ai.tool.ToolManager;
@@ -38,7 +39,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
   }
 
-  public GenericChatMessage chat(String message, Map<String, Object> context) {
+  public GenericChatMessage chat(String message, Context context) {
     ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     ChatMessage chatMessage = new UserMessage(message);
     session.addMessage(chatMessage);

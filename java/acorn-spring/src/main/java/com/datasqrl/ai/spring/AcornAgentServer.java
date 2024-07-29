@@ -3,6 +3,7 @@ package com.datasqrl.ai.spring;
 import com.datasqrl.ai.config.AcornAgentConfiguration;
 import com.datasqrl.ai.config.ContextConversion;
 import com.datasqrl.ai.models.ChatProvider;
+import com.datasqrl.ai.tool.Context;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.nio.file.Path;
@@ -48,14 +49,14 @@ public class AcornAgentServer {
 
     @GetMapping("/messages")
     public List<ResponseMessage> getMessages(@RequestParam String userId) {
-      Map<String, Object> context = ContextConversion.getContextFromUserId(userId, contextKeys);
+      Context context = ContextConversion.getContextFromUserId(userId, contextKeys);
       return chatProvider.getHistory(context, false).stream().map(ResponseMessage::from).toList();
     }
 
     @PostMapping("/messages")
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
       log.info("\nUser #{}: {}", message.getUserId(), message.getContent());
-      Map<String, Object> context = ContextConversion.getContextFromUserId(message.getUserId(), contextKeys);
+      Context context = ContextConversion.getContextFromUserId(message.getUserId(), contextKeys);
       return ResponseMessage.from(chatProvider.chat(message.getContent(), context));
     }
   }

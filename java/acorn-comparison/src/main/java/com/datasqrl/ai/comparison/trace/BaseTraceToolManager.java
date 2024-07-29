@@ -1,6 +1,7 @@
 package com.datasqrl.ai.comparison.trace;
 
 import com.datasqrl.ai.tool.ChatMessageInterface;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolManager;
 import java.util.List;
@@ -28,7 +29,7 @@ public abstract class BaseTraceToolManager implements ToolManager {
 
   @Override
   public <ChatMessage extends ChatMessageInterface> List<ChatMessage> getChatMessages(
-      @NonNull Map<String, Object> context, int limit, @NonNull Class<ChatMessage> clazz) {
+      @NonNull Context context, int limit, @NonNull Class<ChatMessage> clazz) {
     return List.of();
   }
 

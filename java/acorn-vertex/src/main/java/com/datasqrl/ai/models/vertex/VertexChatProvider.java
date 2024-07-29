@@ -3,6 +3,7 @@ package com.datasqrl.ai.models.vertex;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
@@ -82,7 +83,7 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
   }
 
   @Override
-  public GenericChatMessage chat(String message, Map<String, Object> context) {
+  public GenericChatMessage chat(String message, Context context) {
     ChatSession<Content, FunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     Content chatMessage = ContentMaker.fromString(message);
 

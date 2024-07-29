@@ -3,6 +3,7 @@ package com.datasqrl.ai.comparison;
 import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
 import com.datasqrl.ai.config.ContextConversion;
 import com.datasqrl.ai.models.ChatProvider;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
@@ -38,7 +39,7 @@ public class SessionRunner {
     String jsonFileName = logName + ".json";
     String txtFileName = logName + ".txt";
     log.info("Running session with userId: {}", userId.get());
-    Map<String, Object> context = ContextConversion.getContextFromUserId(Integer.toString(userId.get()), contextKeys);
+    Context context = ContextConversion.getContextFromUserId(Integer.toString(userId.get()), contextKeys);
     SessionLog sessionLog = runChatSession(testSession, context, txtFileName);
     writeToFile(sessionLog, jsonFileName);
   }
@@ -63,7 +64,7 @@ public class SessionRunner {
     }
   }
 
-  private SessionLog runChatSession(TestChatSession session, Map<String, Object> context, String fileName) {
+  private SessionLog runChatSession(TestChatSession session, Context context, String fileName) {
     List<SessionLog.LogEntry> sessions = new ArrayList<>();
     session.queries().forEach(query -> {
       log.info("Query: {}", query.query());

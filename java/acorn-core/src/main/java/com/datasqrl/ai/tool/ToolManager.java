@@ -13,12 +13,12 @@ public interface ToolManager {
 
   FunctionValidation<String> validateFunctionCall(String functionName, JsonNode arguments);
 
-  String executeFunctionCall(String functionName, JsonNode arguments, @NonNull Map<String, Object> context) throws IOException;
+  String executeFunctionCall(String functionName, JsonNode arguments, @NonNull Context context) throws IOException;
 
   CompletableFuture<String> saveChatMessage(ChatMessageInterface message);
 
   <ChatMessage extends ChatMessageInterface> List<ChatMessage> getChatMessages(
-      @NonNull Map<String, Object> context, int limit, @NonNull Class<ChatMessage> clazz);
+      @NonNull Context context, int limit, @NonNull Class<ChatMessage> clazz);
 
 
 }

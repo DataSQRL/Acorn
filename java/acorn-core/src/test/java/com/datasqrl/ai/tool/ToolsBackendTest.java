@@ -79,7 +79,7 @@ public class ToolsBackendTest {
         .role("user")
         .content("hello")
         .name("name")
-        .context(Map.of("customerid", 23, "session", "xyz"))
+        .context(Context.of(Map.of("customerid", 23, "session", "xyz")))
         .build();
     fctExec.saveChatMessage(msg);
   }
@@ -88,7 +88,7 @@ public class ToolsBackendTest {
   public void messageHistoryTest() throws Exception {
     objectMapper.setConfig(objectMapper.getSerializationConfig().with(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true));
 
-    Map<String, Object> context = Map.of("customerid", 10);
+    Context context = Context.of(Map.of("customerid", 10));
     GenericChatMessage msg1 = GenericChatMessage.builder()
         .role("user")
         .content("test")

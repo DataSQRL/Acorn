@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models;
 
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
@@ -21,9 +22,9 @@ public abstract class ChatProvider<Message, FunctionCall> {
   @Getter
   protected final ModelObservability observability;
 
-  public abstract GenericChatMessage chat(String message, Map<String, Object> context);
+  public abstract GenericChatMessage chat(String message, Context context);
 
-  public List<GenericChatMessage> getHistory(Map<String, Object> sessionContext, boolean includeFunctionCalls) {
+  public List<GenericChatMessage> getHistory(Context sessionContext, boolean includeFunctionCalls) {
     return backend.getChatMessages(sessionContext, DEFAULT_HISTORY_LIMIT, GenericChatMessage.class).stream()
         .map(bindings::convertMessage)
         .filter(message -> includeFunctionCalls || bindings.isUserOrAssistantMessage(message))

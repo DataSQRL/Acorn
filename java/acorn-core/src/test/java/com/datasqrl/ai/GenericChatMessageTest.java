@@ -1,5 +1,6 @@
 package com.datasqrl.ai;
 
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.GenericFunctionCall;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +22,7 @@ public class GenericChatMessageTest {
   @Test
   public void serializationTest() throws Exception {
 
-    Map<String, Object> context = Map.of("customerid", 10);
+    Context context = Context.of(Map.of("customerid", 10));
     GenericChatMessage msg1 = GenericChatMessage.builder()
         .role("user")
         .content("test")
