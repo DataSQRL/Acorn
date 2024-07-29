@@ -101,6 +101,7 @@ public class LowLevelAgent {
           .maxTokens(chatConfig.getMaxOutputTokens())
           .logitBias(new HashMap<>())
           .build();
+      context.nextInvocation();
       Flowable<ChatCompletionChunk> flowable = service.streamChatCompletion(chatCompletionRequest);
 
       AtomicBoolean isFirst = new AtomicBoolean(true);
@@ -124,7 +125,6 @@ public class LowLevelAgent {
           .blockingGet()
           .getAccumulatedMessage();
       session.addMessage(responseMessage);
-      context.nextInvocation();
 
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {

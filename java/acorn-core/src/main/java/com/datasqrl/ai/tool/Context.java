@@ -21,9 +21,13 @@ public interface Context {
   String REQUEST_ID_KEY = "requestid";
   String INVOCATION_KEY = "invocationid";
 
-  Object get(String key);
+  default Object get(String key) {
+    return asMap().get(key);
+  }
 
-  void forEach(BiConsumer<String, Object> action);
+  default void forEach(BiConsumer<String, Object> action) {
+    asMap().forEach(action);
+  }
 
   Map<String,Object> asMap();
 

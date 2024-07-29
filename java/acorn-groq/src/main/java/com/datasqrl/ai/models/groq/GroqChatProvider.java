@@ -3,6 +3,7 @@ package com.datasqrl.ai.models.groq;
 import static com.theokanning.openai.service.OpenAiService.defaultClient;
 import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 
+import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.Context;
@@ -49,7 +50,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 @Slf4j
-public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall> {
+public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunctionCall> {
 
   private final GroqModelConfiguration config;
   private final OpenAiService service;
@@ -107,6 +108,7 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
         throw new RuntimeException(e);
       }
       ModelInvocation invocation = observability.start();
+      context.nextInvocation();
       try {
         responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
         invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
@@ -119,8 +121,6 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
         } else {
           throw e;
         }
-      } finally {
-        context.nextInvocation();
       }
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
@@ -144,7 +144,7 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+            if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
               retryCount++;

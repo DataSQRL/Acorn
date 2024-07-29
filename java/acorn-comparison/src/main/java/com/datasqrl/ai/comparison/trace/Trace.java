@@ -30,24 +30,24 @@ public class Trace {
   /**
      * A user input message
      */
-  record Message(String content) implements Entry {
+  record Message(int requestId, String content) implements Entry {
 
   }
 
   /**
      * A model text response
      */
-  record Response(String content, List<EvalConfig> evals) implements Entry {
+  record Response(int requestId, String content, List<EvalConfig> evals) implements Entry {
 
   }
 
 
-  record FunctionCall(boolean internal, String name, JsonNode arguments,
+  record FunctionCall(int requestId, int invocationId, String name, boolean internal, JsonNode arguments,
                       List<EvalConfig> evals) implements Entry {
 
   }
 
-  record FunctionResponse(String name, String response) implements Entry {
+  record FunctionResponse(int requestId, int invocationId, String name, String response) implements Entry {
 
   }
 

@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models.openai;
 
+import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.Context;
@@ -25,7 +26,7 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall> {
+public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFunctionCall> {
 
   private final OpenAIModelConfiguration config;
   private final OpenAiService service;
@@ -39,6 +40,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
     this.service = new OpenAiService(openAIToken, Duration.ofSeconds(60));
   }
 
+  @Override
   public GenericChatMessage chat(String message, Context context) {
     ChatSession<ChatMessage, ChatFunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     ChatMessage chatMessage = new UserMessage(message);
@@ -61,9 +63,9 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
           .logitBias(new HashMap<>())
           .build();
       ModelInvocation invocation = observability.start();
+      context.nextInvocation();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
       invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
-      context.nextInvocation();
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls
@@ -86,7 +88,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+            if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
               retryCount++;
@@ -102,7 +104,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
     }
   }
 
-  public static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
+  private static Optional<ChatFunctionCall> getFunctionCallFromText(String text) {
     Optional<JsonNode> functionCall = JsonUtil.parseJson(text);
     if (functionCall.isEmpty()) {
       log.error("Could not parse function text [{}]:\n", text);

@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models.bedrock;
 
+import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.models.ModelAnalyzer;
@@ -26,7 +27,8 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 
 @Slf4j
-public class BedrockChatProvider extends ChatProvider<BedrockChatMessage, BedrockFunctionCall> {
+public class BedrockChatProvider extends
+    AbstractChatProvider<BedrockChatMessage, BedrockFunctionCall> {
 
   private final BedrockModelConfiguration config;
   private final BedrockRuntimeClient client;
@@ -73,8 +75,8 @@ public class BedrockChatProvider extends ChatProvider<BedrockChatMessage, Bedroc
           .map(this.encoder::encodeMessage)
           .collect(Collectors.joining("\n"));
       log.info("Calling Bedrock with model {}", config.getModelName());
-      String generatedResponse = promptBedrock(client, config.getModelName(), prompt);
       context.nextInvocation();
+      String generatedResponse = promptBedrock(client, config.getModelName(), prompt);
       BedrockChatMessage responseMessage = encoder.decodeMessage(generatedResponse, BedrockChatRole.ASSISTANT.getRole());
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();
@@ -85,7 +87,7 @@ public class BedrockChatProvider extends ChatProvider<BedrockChatMessage, Bedroc
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
-            if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+            if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
               retryCount++;

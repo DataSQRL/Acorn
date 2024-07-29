@@ -1,5 +1,6 @@
 package com.datasqrl.ai.models.vertex;
 
+import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
@@ -35,7 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
-public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
+public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCall> {
 
   private final GenerativeModel chatModel;
   private final String systemPrompt;
@@ -97,11 +98,11 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       log.debug("and message {}", chatMessage);
       ModelInvocation invocation = observability.start();
+      context.nextInvocation();
       try {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
         Content response = ResponseHandler.getContent(generatedResponse);
         invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response));
-        context.nextInvocation();
         log.debug("Response:\n{}", generatedResponse);
         session.addMessage(chatMessage);
         GenericChatMessage genericResponse = session.addMessage(response);
@@ -116,7 +117,7 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
               chatMessage = outcome.functionResponse();
             }
             case VALIDATION_ERROR_RETRY -> {
-              if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+              if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
                 throw new RuntimeException("Too many function call retries for the same function.");
               } else {
                 retryCount++;

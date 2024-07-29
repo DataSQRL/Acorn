@@ -8,32 +8,25 @@ import com.datasqrl.ai.tool.FunctionValidation;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolManager;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.Value;
 
-public class TraceRecordingToolManager extends BaseTraceToolManager {
+@Value
+public class TraceRecordingToolManager implements ToolManager {
 
-  private final Trace.TraceBuilder traceBuilder;
-  private final Queue<FunctionResponse> replayResponses;
+  @NonNull ToolManager manager;
+  @NonNull Trace.TraceBuilder traceBuilder;
+  @NonNull Optional<Trace> replayTrace;
 
-  public TraceRecordingToolManager(ToolManager manager, Trace.TraceBuilder traceBuilder, Trace replayTrace) {
-    super(manager);
-    this.traceBuilder = traceBuilder;
-    if (replayTrace == null) {
-      this.replayResponses = null;
-    } else {
-      this.replayResponses = new LinkedList<>();
-      replayTrace.getEntries().stream().filter(entry -> entry instanceof FunctionResponse)
-          .map(entry -> (FunctionResponse) entry).forEach(replayResponses::offer);
-    }
-  }
 
   @Override
   public FunctionValidation<String> validateFunctionCall(String functionName, JsonNode arguments) {
@@ -43,16 +36,45 @@ public class TraceRecordingToolManager extends BaseTraceToolManager {
   @Override
   public String executeFunctionCall(String functionName, JsonNode arguments,
       @NonNull Context context) throws IOException {
-    traceBuilder.entry(new FunctionCall(true, functionName, arguments, List.of()));
+    TraceContext tContext = TraceContext.convert(context);
+    traceBuilder.entry(new FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
+        functionName, true, arguments, List.of()));
     String result;
-    if (replayResponses == null) {
+    if (replayTrace.isEmpty()) {
       result = manager.executeFunctionCall(functionName, arguments, context);
     } else {
-      FunctionResponse response = replayResponses.poll();
+      FunctionResponse response = findReponse(tContext);
       result = response.response();
     }
-    traceBuilder.entry(new FunctionResponse(functionName, result));
+    traceBuilder.entry(new FunctionResponse(tContext.getRequestId(), tContext.getInvocationId(),functionName, result));
     return result;
+  }
+
+  private FunctionResponse findReponse(TraceContext tContext) {
+    //For now, we make the assumption that invocation produces a single response
+    return replayTrace.get().getEntries().stream().filter(e -> e instanceof FunctionResponse)
+        .map(e -> (FunctionResponse) e)
+        .filter(r -> r.requestId() == tContext.getRequestId() && r.invocationId() == tContext.getInvocationId())
+        .findFirst()
+        .orElseThrow();
+  }
+
+  @Override
+  public Map<String, RuntimeFunctionDefinition> getFunctions() {
+    return manager.getFunctions();
+  }
+
+  //We don't use history during trace recording
+
+  @Override
+  public CompletableFuture<String> saveChatMessage(ChatMessageInterface message) {
+    return CompletableFuture.completedFuture("Ignored");
+  }
+
+  @Override
+  public <ChatMessage extends ChatMessageInterface> List<ChatMessage> getChatMessages(
+      @NonNull Context context, int limit, @NonNull Class<ChatMessage> clazz) {
+    return List.of();
   }
 
 
