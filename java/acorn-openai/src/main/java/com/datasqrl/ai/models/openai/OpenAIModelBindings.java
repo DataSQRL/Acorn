@@ -43,7 +43,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
   }
 
   @Override
-  public GenericChatMessage convertMessage(ChatMessage msg, Context sessionContext) {
+  public GenericChatMessage convertMessage(ChatMessage msg, Map<String, Object> sessionContext) {
     ChatFunctionCall fctCall = null;
     if (ChatMessageRole.valueOf(msg.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT) {
       fctCall = ((AssistantMessage) msg).getFunctionCall();

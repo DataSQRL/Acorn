@@ -79,7 +79,7 @@ public class ToolsBackendTest {
         .role("user")
         .content("hello")
         .name("name")
-        .context(Context.of(Map.of("customerid", 23, "session", "xyz")))
+        .context(Map.of("customerid", 23, "session", "xyz"))
         .build();
     fctExec.saveChatMessage(msg);
   }
@@ -94,7 +94,7 @@ public class ToolsBackendTest {
         .content("test")
         .name("myName")
         .functionCall(new GenericFunctionCall("myFunction", convert(Map.of("arg1", 5, "arg2", "myValue"))))
-        .context(context)
+        .context(context.asMap())
         .uuid(UUID.randomUUID().toString())
         .timestamp(Instant.now().toString())
         .numTokens(50)
@@ -104,7 +104,7 @@ public class ToolsBackendTest {
         .content("test2")
         .name("myName")
         .functionCall(new GenericFunctionCall("myFunction", convert(Map.of("arg1", 5, "arg2", "myValue"))))
-        .context(context)
+        .context(context.asMap())
         .uuid(UUID.randomUUID().toString())
         .timestamp(Instant.now().toString())
         .numTokens(230)

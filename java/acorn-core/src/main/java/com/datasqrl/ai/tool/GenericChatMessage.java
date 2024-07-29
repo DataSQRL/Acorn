@@ -24,7 +24,7 @@ public class GenericChatMessage implements ChatMessageInterface {
   @JsonSerialize(using = GenericFunctionCall.JacksonSerializer.class)
   @JsonDeserialize(using = GenericFunctionCall.JacksonDeserializer.class)
   GenericFunctionCall functionCall;
-  Context context;
+  Map<String, Object> context;
   String uuid;
   String timestamp;
   Integer numTokens;

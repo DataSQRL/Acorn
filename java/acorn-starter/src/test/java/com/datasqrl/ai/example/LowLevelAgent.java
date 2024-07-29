@@ -124,6 +124,7 @@ public class LowLevelAgent {
           .blockingGet()
           .getAccumulatedMessage();
       session.addMessage(responseMessage);
+      context.nextInvocation();
 
       ChatFunctionCall functionCall = responseMessage.getFunctionCall();
       if (functionCall != null) {
@@ -159,7 +160,7 @@ public class LowLevelAgent {
     // Custom implementation of a ChatSession method in order to control the size of the context window, which can be costly
     @Override
     protected ContextWindow<GenericChatMessage> getContextWindow(int maxTokens, ModelAnalyzer<ChatMessage> analyzer) {
-      GenericChatMessage systemMessage = this.bindings.convertMessage(this.bindings.createSystemMessage(systemPrompt), this.context);
+      GenericChatMessage systemMessage = this.bindings.convertMessage(this.bindings.createSystemMessage(systemPrompt), this.context.asMap());
       final AtomicInteger numTokens = new AtomicInteger(0);
       //      Count tokens for system prompt
       numTokens.addAndGet(systemMessage.getNumTokens());

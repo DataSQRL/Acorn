@@ -63,6 +63,7 @@ public class OpenAiChatProvider extends ChatProvider<ChatMessage, ChatFunctionCa
       ModelInvocation invocation = observability.start();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
       invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
+      context.nextInvocation();
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls

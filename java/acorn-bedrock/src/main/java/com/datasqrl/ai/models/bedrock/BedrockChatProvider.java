@@ -74,6 +74,7 @@ public class BedrockChatProvider extends ChatProvider<BedrockChatMessage, Bedroc
           .collect(Collectors.joining("\n"));
       log.info("Calling Bedrock with model {}", config.getModelName());
       String generatedResponse = promptBedrock(client, config.getModelName(), prompt);
+      context.nextInvocation();
       BedrockChatMessage responseMessage = encoder.decodeMessage(generatedResponse, BedrockChatRole.ASSISTANT.getRole());
       GenericChatMessage genericResponse = session.addMessage(responseMessage);
       BedrockFunctionCall functionCall = responseMessage.getFunctionCall();

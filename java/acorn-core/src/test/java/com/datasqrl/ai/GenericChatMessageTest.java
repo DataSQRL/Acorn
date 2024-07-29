@@ -22,7 +22,7 @@ public class GenericChatMessageTest {
   @Test
   public void serializationTest() throws Exception {
 
-    Context context = Context.of(Map.of("customerid", 10));
+    Map<String, Object> context = Map.of("customerid", 10);
     GenericChatMessage msg1 = GenericChatMessage.builder()
         .role("user")
         .content("test")

@@ -119,6 +119,8 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
         } else {
           throw e;
         }
+      } finally {
+        context.nextInvocation();
       }
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();

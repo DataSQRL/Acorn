@@ -28,7 +28,7 @@ public abstract class ChatProvider<Message, FunctionCall> {
     return backend.getChatMessages(sessionContext, DEFAULT_HISTORY_LIMIT, GenericChatMessage.class).stream()
         .map(bindings::convertMessage)
         .filter(message -> includeFunctionCalls || bindings.isUserOrAssistantMessage(message))
-        .map(m -> bindings.convertMessage(m, sessionContext)).toList();
+        .map(m -> bindings.convertMessage(m, sessionContext.asMap())).toList();
   }
 
 }

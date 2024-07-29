@@ -5,7 +5,7 @@ import java.util.Map;
 public interface ChatMessageInterface {
 
   String getContent();
-  Context getContext();
+  Map<String, Object> getContext();
 
 
 }

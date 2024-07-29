@@ -101,6 +101,7 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
         GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
         Content response = ResponseHandler.getContent(generatedResponse);
         invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response));
+        context.nextInvocation();
         log.debug("Response:\n{}", generatedResponse);
         session.addMessage(chatMessage);
         GenericChatMessage genericResponse = session.addMessage(response);
