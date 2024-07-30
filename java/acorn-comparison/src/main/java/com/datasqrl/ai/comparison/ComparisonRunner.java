@@ -1,6 +1,7 @@
 package com.datasqrl.ai.comparison;
 
 import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
+import com.datasqrl.ai.models.AbstractChatProvider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
@@ -58,7 +59,7 @@ public class ComparisonRunner {
           testSessions.forEach(session -> {
             new SessionRunner(configuration, session, idCounter, fileName).run();
           });
-          log.info("Metrics results (CSV): {}", ((MicrometerObservability)configuration.getChatProvider().getObservability()).exportToCSV());
+          log.info("Metrics results (CSV): {}", ((MicrometerObservability)((AbstractChatProvider<?, ?>)configuration.getChatProvider()).getObservability()).exportToCSV());
           meterRegistry.close();
         });
       } else {

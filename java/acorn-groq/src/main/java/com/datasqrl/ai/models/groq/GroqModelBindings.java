@@ -53,7 +53,7 @@ public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctio
         .content(fctCall == null ? msg.getTextContent() : functionCall2String(fctCall))
         .functionCall(fctCall == null ? null :  new GenericFunctionCall(fctCall.getName(),fctCall.getArguments()))
         .name(msg.getName())
-        .context(sessionContext)
+        .context(sessionContext.asMap())
         .timestamp(Instant.now().toString())
         .numTokens(tokenCounter.countTokens(msg))
         .build();

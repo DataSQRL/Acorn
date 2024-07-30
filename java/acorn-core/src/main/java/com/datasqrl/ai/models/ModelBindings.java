@@ -9,7 +9,7 @@ public interface ModelBindings<Message, FunctionCall> {
 
   Message convertMessage(GenericChatMessage message);
 
-  GenericChatMessage convertMessage(Message message, Map<String, Object> sessionContext);
+  GenericChatMessage convertMessage(Message message, Context sessionContext);
 
   boolean isUserOrAssistantMessage(Message message);
 

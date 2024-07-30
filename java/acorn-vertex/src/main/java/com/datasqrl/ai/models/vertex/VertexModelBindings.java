@@ -68,7 +68,7 @@ public class VertexModelBindings implements ModelBindings<Content, FunctionCall>
   public GenericChatMessage convertMessage(Content content, Context sessionContext) {
     GenericChatMessage.GenericChatMessageBuilder builder = GenericChatMessage.builder()
         .role(content.getRole())
-        .context(sessionContext)
+        .context(sessionContext.asMap())
         .timestamp(Instant.now().toString())
         .numTokens(tokenCounter.countTokens(content));
     switch (content.getRole()) {

@@ -19,7 +19,7 @@ public class OpenAiChatProviderFactory implements ChatProviderFactory {
   }
 
   @Override
-  public ChatProvider<?, ?> create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
+  public ChatProvider create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
     return new OpenAiChatProvider(new OpenAIModelConfiguration(modelConfiguration), backend, prompt, observability);
   }
 }

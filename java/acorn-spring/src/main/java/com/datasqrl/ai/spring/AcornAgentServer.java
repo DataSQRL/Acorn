@@ -35,7 +35,7 @@ public class AcornAgentServer {
   @RestController
   public static class MessageController {
 
-    private final ChatProvider<?, ?> chatProvider;
+    private final ChatProvider chatProvider;
     private final List<String> contextKeys;
 
     @SneakyThrows

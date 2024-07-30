@@ -19,7 +19,7 @@ public class VertexChatProviderFactory implements ChatProviderFactory {
   }
 
   @Override
-  public ChatProvider<?, ?> create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
+  public ChatProvider create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
     return new VertexChatProvider(new VertexModelConfiguration(modelConfiguration), backend, prompt, observability);
   }
 }

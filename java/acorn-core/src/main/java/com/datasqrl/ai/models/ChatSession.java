@@ -38,7 +38,7 @@ public class ChatSession<Message, FunctionCall> {
   }
 
   public GenericChatMessage addMessage(Message message) {
-    GenericChatMessage convertedMsg = bindings.convertMessage(message, context.asMap());
+    GenericChatMessage convertedMsg = bindings.convertMessage(message, context);
     messages.add(convertedMsg);
     backend.saveChatMessage(convertedMsg);
     return convertedMsg;
@@ -46,7 +46,7 @@ public class ChatSession<Message, FunctionCall> {
 
   // TODO: Make this method return ContextWindow<Message>, otherwise it converts the messages twice for every run of the parent method
   protected ContextWindow<GenericChatMessage> getContextWindow(int maxTokens, ModelAnalyzer<Message> analyzer) {
-    GenericChatMessage systemMessage = bindings.convertMessage(bindings.createSystemMessage(this.systemMessage), context.asMap());
+    GenericChatMessage systemMessage = bindings.convertMessage(bindings.createSystemMessage(this.systemMessage), context);
     final AtomicInteger numTokens = new AtomicInteger(0);
     numTokens.addAndGet(systemMessage.getNumTokens());
     ContextWindow.ContextWindowBuilder<GenericChatMessage> builder = ContextWindow.builder();

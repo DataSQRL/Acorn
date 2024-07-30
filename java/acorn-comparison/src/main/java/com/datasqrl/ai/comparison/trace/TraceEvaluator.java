@@ -10,14 +10,12 @@ import com.datasqrl.ai.util.ConfigurationUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.JSONConfiguration;
 
 public class TraceEvaluator {
 

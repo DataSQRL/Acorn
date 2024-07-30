@@ -19,7 +19,7 @@ public class GroqChatProviderFactory implements ChatProviderFactory {
   }
 
   @Override
-  public ChatProvider<?, ?> create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
+  public ChatProvider create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
     return new GroqChatProvider(new GroqModelConfiguration(modelConfiguration), backend, prompt, observability);
   }
 }

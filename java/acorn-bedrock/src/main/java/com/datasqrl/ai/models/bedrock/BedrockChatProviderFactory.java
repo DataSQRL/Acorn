@@ -19,7 +19,7 @@ public class BedrockChatProviderFactory implements ChatProviderFactory {
   }
 
   @Override
-  public ChatProvider<?, ?> create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
+  public ChatProvider create(Configuration modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
     return new BedrockChatProvider(new BedrockModelConfiguration(modelConfiguration), backend, prompt, observability);
   }
 }

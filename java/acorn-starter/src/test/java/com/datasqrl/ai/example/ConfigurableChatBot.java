@@ -72,7 +72,7 @@ public class ConfigurableChatBot {
         "url", "https://rickandmortyapi.com/graphql"
     )), "rickandmortyapi");
     ToolsBackend toolsBackend = ToolsBackendFactory.of(tools, Map.of(APIExecutorFactory.DEFAULT_NAME, apiExecutor));
-    ChatProvider<?, ?> chatProvider = ChatProviderFactory.fromConfiguration(Map.of(
+    ChatProvider chatProvider = ChatProviderFactory.fromConfiguration(Map.of(
         "provider", "groq",
         "name", "mixtral-8x7b-32768",
         "temperature", 0.8

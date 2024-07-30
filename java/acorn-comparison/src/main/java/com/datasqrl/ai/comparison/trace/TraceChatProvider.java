@@ -1,14 +1,12 @@
 package com.datasqrl.ai.comparison.trace;
 
-import com.datasqrl.ai.comparison.trace.Trace.FunctionCall;
-import com.datasqrl.ai.comparison.trace.Trace.Message;
 import com.datasqrl.ai.comparison.trace.Trace.Response;
 import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.GenericFunctionCall;
-import com.google.common.base.Preconditions;
+
 import java.util.List;
 
 public class TraceChatProvider<Message, FunctionCall> implements ChatProvider {

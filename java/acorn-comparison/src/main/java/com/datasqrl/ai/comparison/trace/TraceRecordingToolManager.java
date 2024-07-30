@@ -8,15 +8,13 @@ import com.datasqrl.ai.tool.FunctionValidation;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolManager;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
+
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+
 import lombok.NonNull;
 import lombok.Value;
 
@@ -43,14 +41,14 @@ public class TraceRecordingToolManager implements ToolManager {
     if (replayTrace.isEmpty()) {
       result = manager.executeFunctionCall(functionName, arguments, context);
     } else {
-      FunctionResponse response = findReponse(tContext);
+      FunctionResponse response = findResponse(tContext);
       result = response.response();
     }
     traceBuilder.entry(new FunctionResponse(tContext.getRequestId(), tContext.getInvocationId(),functionName, result));
     return result;
   }
 
-  private FunctionResponse findReponse(TraceContext tContext) {
+  private FunctionResponse findResponse(TraceContext tContext) {
     //For now, we make the assumption that invocation produces a single response
     return replayTrace.get().getEntries().stream().filter(e -> e instanceof FunctionResponse)
         .map(e -> (FunctionResponse) e)
