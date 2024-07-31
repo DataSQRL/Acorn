@@ -59,7 +59,7 @@ public class TraceContext implements Context {
   }
 
   public TraceContext nextRequest() {
-    return new TraceContext(requestId++, 0, secure);
+    return new TraceContext(++requestId, 0, secure);
   }
 
   public void setRequestIndex(int index) {

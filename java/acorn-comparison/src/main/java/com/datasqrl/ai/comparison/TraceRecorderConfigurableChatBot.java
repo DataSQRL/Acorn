@@ -55,12 +55,13 @@ public class TraceRecorderConfigurableChatBot {
    *
    * @param context        The user context that might be needed to execute functions
    */
-  public void start(Context context) throws IOException {
+  public void start(TraceContext context) throws IOException {
     Scanner scanner = new Scanner(System.in);
     System.out.print("First Query: ");
     String message = scanner.nextLine();
     while (true) {
       GenericChatMessage response = chatProvider.chat(message, context);
+      context = context.nextRequest();
       System.out.println("Response: " + response.getContent());
       System.out.print("Next Query: ");
       String nextLine = scanner.nextLine();
