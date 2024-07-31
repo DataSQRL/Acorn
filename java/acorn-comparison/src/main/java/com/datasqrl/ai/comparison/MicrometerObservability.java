@@ -67,10 +67,6 @@ public class MicrometerObservability implements ModelObservability, ToolObservab
     s.append(modelLatencyTimer.count()).append(", ");
     s.append(modelLatencyTimer.totalTime(TimeUnit.MILLISECONDS)).append(", ");
     s.append(modelLatencyTimer.mean(TimeUnit.MILLISECONDS)).append(", ");
-//    for (ValueAtPercentile valueAtPercentile : latencyTimer.takeSnapshot().percentileValues()) {
-//      s.append(valueAtPercentile.percentile()).append(":");
-//      s.append(valueAtPercentile.value(TimeUnit.MILLISECONDS)).append(", ");
-//    }
     s.append(modelLatencyTimer.max(TimeUnit.MILLISECONDS)).append(", ");
     s.append(inputTokenCounter.totalAmount()).append(", ");
     s.append(inputTokenCounter.mean()).append(", ");

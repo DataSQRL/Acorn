@@ -65,7 +65,7 @@ public class TraceReplayer {
           AtomicInteger idCounter = new AtomicInteger(0);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
           String fileName = modelName + "-" + getCurrentTime() + ".json";
-          new SessionRunner(chatProvider, TraceContext.of(), recordedTrace, idCounter, fileName).run();
+          new SessionRunner(chatProvider, TraceContext.of(), recordedTrace, idCounter).run();
           Trace trace = traceBuilder.build();
           trace.writeToFile(fileName);
           log.info("Metrics results (CSV): {}", ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV());
@@ -91,12 +91,6 @@ public class TraceReplayer {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @SneakyThrows
-  private List<TestChatSession> loadTestChatSessionsFromFile(String fileName) {
-    return mapper.readValue(Paths.get(fileName).toFile(), new TypeReference<List<TestChatSession>>() {
-    });
   }
 
   @SneakyThrows
