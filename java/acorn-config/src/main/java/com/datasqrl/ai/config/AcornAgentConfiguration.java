@@ -4,6 +4,7 @@ import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.GraphQLSchemaConverter;
 import com.datasqrl.ai.tool.ModelObservability;
+import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
@@ -59,7 +60,7 @@ public class AcornAgentConfiguration {
     return UDFConverter.getRuntimeFunctionDefinition((Class<? extends UserDefinedFunction>)functionClass);
   }
 
-  public ToolsBackend getFunctionBackend() {
+  public ToolManager getToolManager() {
     Map<String,APIExecutor> apiExecutors = APIExecutorFactory.getAPIExecutors(baseConfiguration.subset(
         API_PREFIX));
     ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`",
@@ -87,9 +88,12 @@ public class AcornAgentConfiguration {
   }
 
   public ChatProvider getChatProvider() {
-    ToolsBackend backend = getFunctionBackend();
-    String systemPrompt = getSystemPrompt();
-    return ChatProviderFactory.fromConfiguration(modelConfiguration).create(getModelConfiguration(), backend, systemPrompt, getObservability());
+    return getChatProvider(getToolManager());
+  }
+
+  public ChatProvider getChatProvider(ToolManager toolManager) {
+    return ChatProviderFactory.fromConfiguration(modelConfiguration)
+        .create(modelConfiguration, toolManager, getSystemPrompt(), observability);
   }
 
   public List<String> getContext() {

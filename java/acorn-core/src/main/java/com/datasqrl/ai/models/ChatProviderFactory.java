@@ -29,7 +29,7 @@ public interface ChatProviderFactory {
     return providerFact.get();
   }
 
-  static ChatProvider fromConfiguration(Map<String, Object> modelConfiguration, ToolsBackend backend, String prompt, ModelObservability observability) {
+  static ChatProvider fromConfiguration(Map<String, Object> modelConfiguration, ToolManager backend, String prompt, ModelObservability observability) {
     MapConfiguration configuration = new MapConfiguration(modelConfiguration);
     return fromConfiguration(configuration).create(configuration,backend, prompt, observability);
   }

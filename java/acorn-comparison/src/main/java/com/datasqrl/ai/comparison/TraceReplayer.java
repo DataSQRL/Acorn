@@ -3,10 +3,15 @@ package com.datasqrl.ai.comparison;
 import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
 import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
+import com.datasqrl.ai.tool.ToolManager;
+import com.datasqrl.ai.trace.Trace;
+import com.datasqrl.ai.trace.TraceChatProvider;
+import com.datasqrl.ai.trace.TraceContext;
+import com.datasqrl.ai.trace.TraceRecordingToolManager;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,19 +31,19 @@ import static com.datasqrl.ai.models.ChatProviderFactory.MODEL_PROVIDER_KEY;
 
 @Slf4j
 @Value
-public class ComparisonRunner {
+public class TraceReplayer {
 
   List<String> modelFiles;
   List<String> useCaseFolders;
-  String scriptFile;
+  String traceFile;
   ObjectMapper mapper = new ObjectMapper();
   SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-  public ComparisonRunner(List<String> modelFiles, List<String> useCaseFolders, String scriptFile) {
+  public TraceReplayer(List<String> modelFiles, List<String> useCaseFolders, String traceFile) {
     this.modelFiles = modelFiles;
     this.useCaseFolders = useCaseFolders;
-    this.scriptFile = scriptFile;
-    log.info("modelFiles: {}\n useCaseFolders: {}\n scriptFile: {}", modelFiles, useCaseFolders, scriptFile);
+    this.traceFile = traceFile;
+    log.info("modelFiles: {}\n useCaseFolders: {}\n scriptFile: {}", modelFiles, useCaseFolders, traceFile);
   }
 
   public void start() throws IOException {
@@ -48,19 +53,22 @@ public class ComparisonRunner {
       Optional<Path> useCaseConfig = loadUseCaseConfig(useCaseDir);
       Optional<Path> tools = loadTools(useCaseDir);
       if (useCaseConfig.isPresent() && tools.isPresent()) {
-        List<TestChatSession> testSessions = loadTestChatSessionsFromFile(scriptFile);
-        log.info("Loaded {} test sessions from {}", testSessions.size(), scriptFile);
+        Trace recordedTrace = loadTraceFromFile(traceFile);
+        log.info("Loaded recorded Trace with {} entries from {}", recordedTrace.getEntries().size(), traceFile);
         modelFiles.forEach(modelConfig -> {
           log.info("Loading model config from {}", modelConfig);
           SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
           ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), meterRegistry);
+          Trace.TraceBuilder traceBuilder = Trace.builder();
+          ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(recordedTrace));
+          ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder);
           AtomicInteger idCounter = new AtomicInteger(0);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
-          String fileName = modelName + "-" + getCurrentTime();
-          testSessions.forEach(session -> {
-//            new SessionRunner(configuration.getChatProvider(), configuration.getContext(), session, idCounter, fileName).run();
-          });
-          log.info("Metrics results (CSV): {}", ((MicrometerObservability)((AbstractChatProvider<?, ?>)configuration.getChatProvider()).getObservability()).exportToCSV());
+          String fileName = modelName + "-" + getCurrentTime() + ".json";
+          new SessionRunner(chatProvider, TraceContext.of(), recordedTrace, idCounter, fileName).run();
+          Trace trace = traceBuilder.build();
+          trace.writeToFile(fileName);
+          log.info("Metrics results (CSV): {}", ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV());
           meterRegistry.close();
         });
       } else {
@@ -85,14 +93,16 @@ public class ComparisonRunner {
     }
   }
 
+  @SneakyThrows
   private List<TestChatSession> loadTestChatSessionsFromFile(String fileName) {
-    try {
-      return mapper.readValue(Paths.get(fileName).toFile(), new TypeReference<List<TestChatSession>>() {
-      });
-    } catch (Exception ex) {
-      log.error("Could not read test chat sessions from {}", fileName, ex);
-    }
-    return List.of();
+    return mapper.readValue(Paths.get(fileName).toFile(), new TypeReference<List<TestChatSession>>() {
+    });
+  }
+
+  @SneakyThrows
+  private Trace loadTraceFromFile(String fileName) {
+    return mapper.readValue(Paths.get(fileName).toFile(), new TypeReference<Trace>() {
+    });
   }
 
   private String getCurrentTime() {
@@ -102,7 +112,7 @@ public class ComparisonRunner {
 
   public static void main(String... args) throws Exception {
     if (args == null || args.length != 3)
-      throw new IllegalArgumentException("Please provide a models folder, a use case folder and a script file");
+      throw new IllegalArgumentException("Please provide a models folder, a use case folder and a trace file");
     List<String> modelFiles;
     List<String> useCaseFolders;
     String scriptFile = args[2];
@@ -120,7 +130,7 @@ public class ComparisonRunner {
           .toList();
     }
 
-    ComparisonRunner runner = new ComparisonRunner(modelFiles, useCaseFolders, scriptFile);
+    TraceReplayer runner = new TraceReplayer(modelFiles, useCaseFolders, scriptFile);
     runner.start();
   }
 

@@ -1,7 +1,5 @@
-package com.datasqrl.ai.comparison.trace;
+package com.datasqrl.ai.trace;
 
-import com.datasqrl.ai.comparison.trace.Trace.Response;
-import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
@@ -9,10 +7,15 @@ import com.datasqrl.ai.tool.GenericFunctionCall;
 
 import java.util.List;
 
-public class TraceChatProvider<Message, FunctionCall> implements ChatProvider {
+public class TraceChatProvider implements ChatProvider {
 
-  AbstractChatProvider<Message, FunctionCall> chatProvider;
-  Trace.TraceBuilder traceBuilder;
+  public TraceChatProvider(ChatProvider chatProvider, Trace.TraceBuilder traceBuilder) {
+    this.chatProvider = chatProvider;
+    this.traceBuilder = traceBuilder;
+  }
+
+  private final ChatProvider chatProvider;
+  private final Trace.TraceBuilder traceBuilder;
 
   @Override
   public GenericChatMessage chat(String message, Context context) {
@@ -24,7 +27,7 @@ public class TraceChatProvider<Message, FunctionCall> implements ChatProvider {
       traceBuilder.entry(new Trace.FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
           fcall.getName(), false, fcall.getArguments(), List.of()));
     } else {
-      traceBuilder.entry(new Response(tContext.getRequestId(), result.getContent(), List.of()));
+      traceBuilder.entry(new Trace.Response(tContext.getRequestId(), result.getContent(), List.of()));
     }
     return result;
   }

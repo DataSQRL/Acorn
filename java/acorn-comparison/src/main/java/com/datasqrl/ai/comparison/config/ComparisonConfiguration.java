@@ -12,6 +12,7 @@ import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.ToolsBackendFactory;
 import com.datasqrl.ai.util.ConfigurationUtil;
@@ -64,7 +65,7 @@ public class ComparisonConfiguration {
     return UDFConverter.getRuntimeFunctionDefinition((Class<? extends UserDefinedFunction>)functionClass);
   }
 
-  public ToolsBackend getFunctionBackend() {
+  public ToolManager getToolManager() {
     Map<String,APIExecutor> apiExecutors = APIExecutorFactory.getAPIExecutors(baseConfiguration.subset(
         API_PREFIX));
     ErrorHandling.checkArgument(!apiExecutors.isEmpty(), "Need to configure at least one API in the configuration file under field `%s`",
@@ -93,9 +94,12 @@ public class ComparisonConfiguration {
   }
 
   public ChatProvider getChatProvider() {
-    ToolsBackend backend = getFunctionBackend();
-    String systemPrompt = getSystemPrompt();
-    return ChatProviderFactory.fromConfiguration(modelConfiguration).create(getModelConfiguration(), backend, systemPrompt, getObservability());
+    return getChatProvider(getToolManager());
+  }
+
+  public ChatProvider getChatProvider(ToolManager toolManager) {
+    return ChatProviderFactory.fromConfiguration(modelConfiguration)
+        .create(modelConfiguration, toolManager, getSystemPrompt(), observability);
   }
 
   public List<String> getContext() {

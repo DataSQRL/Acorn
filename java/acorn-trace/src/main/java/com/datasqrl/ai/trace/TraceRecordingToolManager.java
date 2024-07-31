@@ -1,22 +1,19 @@
-package com.datasqrl.ai.comparison.trace;
+package com.datasqrl.ai.trace;
 
-import com.datasqrl.ai.comparison.trace.Trace.FunctionCall;
-import com.datasqrl.ai.comparison.trace.Trace.FunctionResponse;
 import com.datasqrl.ai.tool.ChatMessageInterface;
 import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.FunctionValidation;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.tool.ToolManager;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.NonNull;
+import lombok.Value;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
-import lombok.NonNull;
-import lombok.Value;
 
 @Value
 public class TraceRecordingToolManager implements ToolManager {
@@ -35,23 +32,23 @@ public class TraceRecordingToolManager implements ToolManager {
   public String executeFunctionCall(String functionName, JsonNode arguments,
       @NonNull Context context) throws IOException {
     TraceContext tContext = TraceContext.convert(context);
-    traceBuilder.entry(new FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
+    traceBuilder.entry(new Trace.FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
         functionName, true, arguments, List.of()));
     String result;
     if (replayTrace.isEmpty()) {
       result = manager.executeFunctionCall(functionName, arguments, context);
     } else {
-      FunctionResponse response = findResponse(tContext);
+      Trace.FunctionResponse response = findResponse(tContext);
       result = response.response();
     }
-    traceBuilder.entry(new FunctionResponse(tContext.getRequestId(), tContext.getInvocationId(),functionName, result));
+    traceBuilder.entry(new Trace.FunctionResponse(tContext.getRequestId(), tContext.getInvocationId(),functionName, result));
     return result;
   }
 
-  private FunctionResponse findResponse(TraceContext tContext) {
+  private Trace.FunctionResponse findResponse(TraceContext tContext) {
     //For now, we make the assumption that invocation produces a single response
-    return replayTrace.get().getEntries().stream().filter(e -> e instanceof FunctionResponse)
-        .map(e -> (FunctionResponse) e)
+    return replayTrace.get().getEntries().stream().filter(e -> e instanceof Trace.FunctionResponse)
+        .map(e -> (Trace.FunctionResponse) e)
         .filter(r -> r.requestId() == tContext.getRequestId() && r.invocationId() == tContext.getInvocationId())
         .findFirst()
         .orElseThrow();

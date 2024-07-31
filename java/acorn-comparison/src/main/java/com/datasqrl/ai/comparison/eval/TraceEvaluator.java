@@ -1,11 +1,6 @@
-package com.datasqrl.ai.comparison.trace;
+package com.datasqrl.ai.comparison.eval;
 
-import com.datasqrl.ai.comparison.eval.Equality;
-import com.datasqrl.ai.comparison.eval.Evaluation;
-import com.datasqrl.ai.comparison.eval.EvaluationFactory;
-import com.datasqrl.ai.comparison.trace.Trace.Entry;
-import com.datasqrl.ai.comparison.trace.Trace.FunctionCall;
-import com.datasqrl.ai.comparison.trace.Trace.Response;
+import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.HashMultimap;
@@ -22,22 +17,22 @@ public class TraceEvaluator {
   private final Evaluation defaultEval = new Equality();
 
   public boolean evaluate(Trace expected, Trace actual) {
-    List<Entry> expectedEntries = expected.getEntries();
-    List<Entry> actualEntries = actual.getEntries();
+    List<Trace.Entry> expectedEntries = expected.getEntries();
+    List<Trace.Entry> actualEntries = actual.getEntries();
     if (expectedEntries.size() != actualEntries.size()) {
       return false;
     }
     for (int i = 0; i < expectedEntries.size(); i++) {
-      Entry expectedEntry = expectedEntries.get(i);
-      Entry actualEntry = actualEntries.get(i);
+      Trace.Entry expectedEntry = expectedEntries.get(i);
+      Trace.Entry actualEntry = actualEntries.get(i);
       if (!expectedEntry.getClass().equals(actualEntry.getClass())) {
         return false;
       }
       boolean eval = true;
-      if (expectedEntry instanceof Response) {
-        eval = evaluate((Response) expectedEntry, (Response) actualEntry);
-      } else if (expectedEntry instanceof FunctionCall) {
-        eval = evaluate((FunctionCall) expectedEntry, (FunctionCall) actualEntry);
+      if (expectedEntry instanceof Trace.Response) {
+        eval = evaluate((Trace.Response) expectedEntry, (Trace.Response) actualEntry);
+      } else if (expectedEntry instanceof Trace.FunctionCall) {
+        eval = evaluate((Trace.FunctionCall) expectedEntry, (Trace.FunctionCall) actualEntry);
       } //else we don't need to compare
 
       if (!eval) {
@@ -47,7 +42,7 @@ public class TraceEvaluator {
     return true;
   }
 
-  public boolean evaluate(Response expected, Response actual) {
+  public boolean evaluate(Trace.Response expected, Trace.Response actual) {
     List<Evaluation> evals = expected.evals().stream().map(conf -> createEvaluation(conf.type(), conf.settings())).toList();
     if (evals.isEmpty()) evals = List.of(defaultEval);
     for (Evaluation eval : evals) {
@@ -58,7 +53,7 @@ public class TraceEvaluator {
     return true;
   }
 
-  public boolean evaluate(FunctionCall expected, FunctionCall actual) {
+  public boolean evaluate(Trace.FunctionCall expected, Trace.FunctionCall actual) {
     //Compare by field
     Multimap<String, Evaluation> evalsByField = HashMultimap.create();
     expected.evals().forEach(conf -> {

@@ -1,11 +1,14 @@
-package com.datasqrl.ai.comparison.trace;
+package com.datasqrl.ai.trace;
 
 import com.datasqrl.ai.tool.Context;
 import com.google.common.base.Preconditions;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,6 +19,10 @@ public class TraceContext implements Context {
   private int requestId;
   private int invocationId;
   private final Map<String, Object> secure;
+
+  public static TraceContext of() {
+    return of(Collections.emptyMap());
+  }
 
   public static TraceContext of(Map<String, Object> secure) {
     return new TraceContext(0, 0, secure);
@@ -39,17 +46,23 @@ public class TraceContext implements Context {
     secure.forEach(action);
   }
 
-  public Map<String,Object> asMap() {
-    Map<String, Object> result = new HashMap<>(secure.size()+2);
+  @Override
+  public Map<String, Object> asMap() {
+    Map<String, Object> result = new HashMap<>(secure.size() + 2);
     forEach(result::put);
     return result;
   }
 
+  @Override
   public void nextInvocation() {
     this.invocationId++;
   }
 
   public void nextRequest() {
     this.requestId++;
+  }
+
+  public void setRequestIndex(int index) {
+    this.requestId = index;
   }
 }

@@ -18,6 +18,7 @@
     <module>acorn-config</module>
     <module>acorn-starter</module>
     <module>acorn-spring</module>
+    <module>acorn-trace</module>
     <module>acorn-comparison</module>
   </modules>
 

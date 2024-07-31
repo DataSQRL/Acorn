@@ -9,7 +9,6 @@ import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
 import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
-import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +20,6 @@ import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 

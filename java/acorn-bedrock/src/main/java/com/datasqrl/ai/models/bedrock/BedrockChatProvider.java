@@ -11,11 +11,10 @@ import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.tool.ToolsBackend;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
-import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
+
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;

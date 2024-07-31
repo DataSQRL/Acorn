@@ -26,6 +26,11 @@
         </dependency>
         <dependency>
             <groupId>com.datasqrl</groupId>
+            <artifactId>acorn-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.datasqrl</groupId>
             <artifactId>acorn-openai</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -38,7 +43,7 @@
             <groupId>com.datasqrl</groupId>
             <artifactId>acorn-bedrock</artifactId>
             <version>${project.version}</version>
-        </dependency>    
+        </dependency>
         <dependency>
             <groupId>com.datasqrl</groupId>
             <artifactId>acorn-vertex</artifactId>
@@ -46,9 +51,15 @@
         </dependency>
         <dependency>
             <groupId>com.datasqrl</groupId>
-            <artifactId>acorn-spring</artifactId>
+            <artifactId>acorn-config</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.datasqrl</groupId>
+            <artifactId>acorn-trace</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>io.micrometer</groupId>
