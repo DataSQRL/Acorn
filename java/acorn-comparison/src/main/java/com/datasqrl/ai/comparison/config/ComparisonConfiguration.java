@@ -36,7 +36,7 @@ import java.util.Set;
 @Value
 public class ComparisonConfiguration {
 
-  public static final String MODEL_PREFIX = "model";
+  public static final String MODEL_PREFIX = "name";
   public static final String API_PREFIX = "apis";
   public static final String CONVERTER_PREFIX = "converter";
 
