@@ -58,8 +58,8 @@ public class TraceContext implements Context {
     this.invocationId++;
   }
 
-  public void nextRequest() {
-    this.requestId++;
+  public TraceContext nextRequest() {
+    return new TraceContext(requestId++, 0, secure);
   }
 
   public void setRequestIndex(int index) {

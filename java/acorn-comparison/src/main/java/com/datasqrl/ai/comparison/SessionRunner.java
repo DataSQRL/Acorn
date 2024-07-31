@@ -13,7 +13,7 @@ public class SessionRunner {
 
   private final ChatProvider chatProvider;
   private final AtomicInteger userId;
-  private final TraceContext context;
+  private TraceContext context;
   private final Trace trace;
 
   public SessionRunner(ChatProvider chatProvider, TraceContext context, Trace trace, AtomicInteger userId) {
@@ -25,16 +25,12 @@ public class SessionRunner {
 
   public void run() {
     log.info("Running session with userId: {}", userId.get());
-    runChatSession(trace, context);
-  }
-
-  private void runChatSession(Trace trace, TraceContext context) {
     trace.getMessages().forEach(message -> {
       log.info("Query: {}", message.content());
       GenericChatMessage response;
       try {
          response = chatProvider.chat(message.content(), context);
-         context.nextRequest();
+         context = context.nextRequest();
         log.info("Response: {}", response.getContent());
       } catch (Exception e) {
         log.error("Query failed", e);
