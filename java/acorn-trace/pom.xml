@@ -17,6 +17,11 @@
       <artifactId>acorn-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.datasqrl</groupId>
+      <artifactId>acorn-udf</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
   </dependencies>
   <build>
