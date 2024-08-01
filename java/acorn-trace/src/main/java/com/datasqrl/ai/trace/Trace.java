@@ -100,7 +100,6 @@ public class Trace implements Iterable<Entry> {
 
   public record FunctionCall(int requestId, int invocationId, String name, boolean internal, JsonNode arguments,
                              List<EvalConfig> evals) implements Entry {
-
   }
 
   public record FunctionResponse(int requestId, int invocationId, String name, String response) implements Entry {
