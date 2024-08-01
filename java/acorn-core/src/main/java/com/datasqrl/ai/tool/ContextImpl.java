@@ -51,12 +51,4 @@ public class ContextImpl implements Context {
   public void nextInvocation() {
     this.invocationId++;
   }
-
-  public static ContextImpl of() {
-    return of(Collections.emptyMap());
-  }
-
-  public static ContextImpl of(Map<String, Object> secure) {
-    return new ContextImpl(UUID.randomUUID().toString(), 0, secure);
-  }
 }

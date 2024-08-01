@@ -68,7 +68,7 @@ public class TraceReplayer {
           String fileName = modelName + "-" + getCurrentTime() + ".json";
           new SessionRunner(chatProvider, TraceContext.of(), recordedTrace, idCounter).run();
           Trace trace = traceBuilder.build();
-          trace.writeToFile(fileName);
+          writeTrace(trace, Path.of(fileName));
           log.info("Metrics results (CSV): {}", ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV());
           meterRegistry.close();
           TraceEvaluator traceEvaluator = new TraceEvaluator();
@@ -78,6 +78,11 @@ public class TraceReplayer {
         log.error("Could not load configuration and UseCase config from folder {}", useCaseFolder);
       }
     });
+  }
+
+  @SneakyThrows
+  private static void writeTrace(Trace trace, Path file) {
+    trace.writeToFile(file);
   }
 
   private Optional<Path> loadTools(Path useCaseDir) {
@@ -98,8 +103,7 @@ public class TraceReplayer {
 
   @SneakyThrows
   private Trace loadTraceFromFile(String fileName) {
-    return mapper.readValue(Paths.get(fileName).toFile(), new TypeReference<Trace>() {
-    });
+    return mapper.readValue(Paths.get(fileName).toFile(), Trace.class);
   }
 
   private String getCurrentTime() {

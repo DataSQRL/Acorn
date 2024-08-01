@@ -38,6 +38,8 @@ public interface Context {
   }
 
   static Context of(Map<String, Object> secure) {
-    return new ContextImpl(UUID.randomUUID().toString(), 0, secure);
+    //Invocations are incremented before a model is called, hence we start with -1 (to indicate
+    //model has not yet been called) so the first invocation is 0.
+    return new ContextImpl(UUID.randomUUID().toString(), -1, secure);
   }
 }
