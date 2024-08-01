@@ -43,22 +43,22 @@ public class Trace {
   }
 
   /**
-     * A user input message
-     */
+   * A user input message
+   */
   public record Message(int requestId, String content) implements Entry {
 
   }
 
   /**
-     * A model text response
-     */
+   * A model text response
+   */
   public record Response(int requestId, String content, List<EvalConfig> evals) implements Entry {
 
   }
 
 
   public record FunctionCall(int requestId, int invocationId, String name, boolean internal, JsonNode arguments,
-                      List<EvalConfig> evals) implements Entry {
+                             List<EvalConfig> evals) implements Entry {
 
   }
 

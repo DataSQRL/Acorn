@@ -2,10 +2,14 @@ package com.datasqrl.ai.comparison.eval;
 
 import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.util.ConfigurationUtil;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import lombok.SneakyThrows;
 
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +19,11 @@ import java.util.ServiceLoader;
 public class TraceEvaluator {
 
   private final Evaluation defaultEval = new Equality();
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  public boolean evaluate(String expectedTracePath, String actualTracePath) {
+    return evaluate(loadTraceFromFile(expectedTracePath), loadTraceFromFile(actualTracePath));
+  }
 
   public boolean evaluate(Trace expected, Trace actual) {
     List<Trace.Entry> expectedEntries = expected.getEntries();
@@ -56,9 +65,7 @@ public class TraceEvaluator {
   public boolean evaluate(Trace.FunctionCall expected, Trace.FunctionCall actual) {
     //Compare by field
     Multimap<String, Evaluation> evalsByField = HashMultimap.create();
-    expected.evals().forEach(conf -> {
-      evalsByField.put(conf.field(), createEvaluation(conf.type(), conf.settings()));
-    });
+    expected.evals().forEach(conf -> evalsByField.put(conf.field(), createEvaluation(conf.type(), conf.settings())));
     Iterator<Map.Entry<String, JsonNode>> fields = expected.arguments().fields();
     while (fields.hasNext()) {
       Map.Entry<String, JsonNode> field = fields.next();
@@ -77,6 +84,12 @@ public class TraceEvaluator {
       }
     }
     return true;
+  }
+
+  @SneakyThrows
+  private Trace loadTraceFromFile(String fileName) {
+    return mapper.readValue(Paths.get(fileName).toFile(), new TypeReference<Trace>() {
+    });
   }
 
   private static Iterable<EvaluationFactory> evalFactories = ServiceLoader.load(EvaluationFactory.class);
