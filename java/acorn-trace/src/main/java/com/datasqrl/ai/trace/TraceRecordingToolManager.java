@@ -33,7 +33,7 @@ public class TraceRecordingToolManager implements ToolManager {
       @NonNull Context context) throws IOException {
     TraceContext tContext = TraceContext.convert(context);
     traceBuilder.entry(new Trace.FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
-        functionName, true, arguments, List.of()));
+        functionName, true, arguments, ""));
     String result;
     if (replayTrace.isEmpty()) {
       result = manager.executeFunctionCall(functionName, arguments, context);

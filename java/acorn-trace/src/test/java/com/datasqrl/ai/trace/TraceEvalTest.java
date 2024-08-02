@@ -1,6 +1,7 @@
 package com.datasqrl.ai.trace;
 
 import com.datasqrl.ai.trace.QualitativeTraceJudge.QualitativeResult;
+import com.datasqrl.ai.trace.Trace.Entry;
 import com.datasqrl.ai.trace.Trace.FunctionCall;
 import java.util.Map;
 import lombok.SneakyThrows;
@@ -28,7 +29,8 @@ public class TraceEvalTest {
   @SneakyThrows
   public void evaluateTrace() {
     Trace finance = Trace.loadFromURL(TraceEvalTest.class.getResource("/traces/trace-finance.json"));
-    Trace reference = Trace.loadFromURL(TraceEvalTest.class.getResource("/traces/trace-finance-reference.json"));
+    Trace reference = Trace.loadFromURL(TraceEvalTest.class.getResource(
+        "/traces/trace-finance-comparison.json"));
     Assertions.assertEquals(18, finance.size());
     assertContainsIgnoreCase(finance.getResponse(0).content(), "transaction", "spending");
     assertSameFunctionCalls(reference.getAll(FunctionCall.class), finance, false);
@@ -42,14 +44,17 @@ public class TraceEvalTest {
   @SneakyThrows
   public void judgeTrace() {
     Trace finance = Trace.loadFromURL(TraceEvalTest.class.getResource("/traces/trace-finance.json"));
-    Trace reference = Trace.loadFromURL(TraceEvalTest.class.getResource("/traces/trace-finance-judge.json"));
+    Trace reference = Trace.loadFromURL(TraceEvalTest.class.getResource("/traces/trace-finance-judgeAndCompare.json"));
     Assertions.assertEquals(18, finance.size());
 
     QualitativeTraceJudge judge = QualitativeTraceJudge.fromConfiguration(new MapConfiguration(JUDGE_MODEL_CONFIG));
-    judge.judgeAllResponses(reference, finance).forEach(QualitativeResult::assertCorrect);
-    QualitativeResult result = judge.judge(reference.getFunctionCall(3,1), finance.getFunctionCall(3,1));
-    System.out.println(result);
-    result.assertCorrect();
+    TraceEvaluator<QualitativeResult> evaluator = new TraceEvaluator<>(false, judge);
+    Map<Entry,TraceComparisonResult> results = evaluator.judgeOrCompare(reference, finance);
+    results.forEach((k,v) -> {
+      System.out.println(k);
+      System.out.println(v);
+    });
+    TraceComparisonResult.combine(results.values()).assertCorrect();
   }
 
 }

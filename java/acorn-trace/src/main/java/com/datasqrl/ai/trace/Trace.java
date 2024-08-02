@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Strings;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,6 +84,17 @@ public class Trace implements Iterable<Entry> {
     int requestId();
   }
 
+  public interface Judgement {
+    String judge();
+    default boolean evalWithJudge() {
+      return judge()!=null;
+    }
+    default boolean evalWithComparison() {
+      return !evalWithJudge();
+    }
+
+  }
+
   /**
    * A user input message
    */
@@ -93,20 +105,16 @@ public class Trace implements Iterable<Entry> {
   /**
    * A model text response
    */
-  public record Response(int requestId, String content, List<EvalConfig> evals) implements Entry {
+  public record Response(int requestId, String content, String judge) implements Entry, Judgement {
 
   }
 
 
   public record FunctionCall(int requestId, int invocationId, String name, boolean internal, JsonNode arguments,
-                             List<EvalConfig> evals) implements Entry {
+                             String judge) implements Entry, Judgement {
   }
 
   public record FunctionResponse(int requestId, int invocationId, String name, String response) implements Entry {
-
-  }
-
-  public record EvalConfig(String type, String field, JsonNode settings) {
 
   }
 

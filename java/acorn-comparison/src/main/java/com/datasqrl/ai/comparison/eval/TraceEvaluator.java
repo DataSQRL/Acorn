@@ -52,8 +52,7 @@ public class TraceEvaluator {
   }
 
   public boolean evaluate(Trace.Response expected, Trace.Response actual) {
-    List<Evaluation> evals = expected.evals().stream().map(conf -> createEvaluation(conf.type(), conf.settings())).toList();
-    if (evals.isEmpty()) evals = List.of(defaultEval);
+    List<Evaluation> evals = List.of(defaultEval);
     for (Evaluation eval : evals) {
       if (!eval.evaluate(expected.content(), actual.content())) {
         return false;
@@ -65,7 +64,6 @@ public class TraceEvaluator {
   public boolean evaluate(Trace.FunctionCall expected, Trace.FunctionCall actual) {
     //Compare by field
     Multimap<String, Evaluation> evalsByField = HashMultimap.create();
-    expected.evals().forEach(conf -> evalsByField.put(conf.field(), createEvaluation(conf.type(), conf.settings())));
     Iterator<Map.Entry<String, JsonNode>> fields = expected.arguments().fields();
     while (fields.hasNext()) {
       Map.Entry<String, JsonNode> field = fields.next();

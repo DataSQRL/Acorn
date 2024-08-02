@@ -25,9 +25,9 @@ public class TraceChatProvider implements ChatProvider {
     if (result.getFunctionCall()!=null) {
       GenericFunctionCall fcall = result.getFunctionCall();
       traceBuilder.entry(new Trace.FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
-          fcall.getName(), false, fcall.getArguments(), List.of()));
+          fcall.getName(), false, fcall.getArguments(), ""));
     } else {
-      traceBuilder.entry(new Trace.Response(tContext.getRequestId(), result.getContent(), List.of()));
+      traceBuilder.entry(new Trace.Response(tContext.getRequestId(), result.getContent(), ""));
     }
     return result;
   }
