@@ -28,11 +28,10 @@ public class TraceJudgeTest {
     Assertions.assertEquals(18, finance.size());
 
     QualitativeTraceJudge judge = QualitativeTraceJudge.fromConfiguration(new MapConfiguration(JUDGE_MODEL_CONFIG));
-    judge.judgeAllResponses(reference, finance).forEach(result -> {
-      result.execute();
-    });
+    judge.judgeAllResponses(reference, finance).forEach(QualitativeResult::assertCorrect);
     QualitativeResult result = judge.judge(reference.getFunctionCall(3,1), finance.getFunctionCall(3,1));
-    result.execute();
+    System.out.println(result);
+    result.assertCorrect();
   }
 
 

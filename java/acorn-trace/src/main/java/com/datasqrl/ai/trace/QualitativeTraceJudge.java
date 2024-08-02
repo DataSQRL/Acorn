@@ -96,7 +96,7 @@ public class QualitativeTraceJudge implements TraceJudge<QualitativeResult> {
     public void assertCorrect() {
       if (!correct) throw new AssertionError(incorrectAnalysis);
     }
-    public static boolean isLocalFunction() {
+    public static boolean isClientFunction() {
       return true;
     }
   }

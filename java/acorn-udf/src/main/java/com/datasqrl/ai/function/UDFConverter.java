@@ -56,7 +56,7 @@ public class UDFConverter {
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-    boolean isLocal = isLocalFunction(clazz);
+    boolean isLocal = !isClientFunction(clazz);
     return RuntimeFunctionDefinition.builder()
         .type(isLocal?FunctionType.local:FunctionType.client)
         .function(funcDef)
@@ -66,18 +66,18 @@ public class UDFConverter {
         .build();
   }
 
-  private static boolean isLocalFunction(Class<? extends UserDefinedFunction> clazz) {
+  private static boolean isClientFunction(Class<? extends UserDefinedFunction> clazz) {
     try {
       Method method = clazz.getMethod("isClientFunction");
       if (Modifier.isStatic(method.getModifiers())) {
-        return !((boolean) method.invoke(null));
+        return ((boolean) method.invoke(null));
       }
     } catch (NoSuchMethodException e) {
       //ignore
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    return true;
+    return false;
   }
 
   public static<U extends UserDefinedFunction> U getFunctionCall(GenericFunctionCall functionCall, Class<U> clazz) {
