@@ -95,17 +95,12 @@ public class TraceAssertions {
     }
   }
 
-  public static void assertSameFunctionCalls(Trace expected, Trace given, boolean strict) {
-    List<FunctionCall> expectedCalls = expected.getAll(FunctionCall.class), givenCalls = given.getAll(
-        FunctionCall.class);
+  public static void assertSameFunctionCalls(Iterable<FunctionCall> expectedCalls, Trace given, boolean strict) {
     for (FunctionCall expectedCall : expectedCalls) {
       FunctionCall givenCall = given.getFunctionCall(expectedCall.requestId(),
           expectedCall.invocationId());
       if (givenCall==null) throw new AssertionError("Could not find function call: " + expectedCall);
       assertEquals(expectedCall, givenCall, strict);
-    }
-    if (strict && expectedCalls.size()!=givenCalls.size()) {
-      throwAssertion("Extra function calls in given trace", expectedCalls, givenCalls);
     }
   }
 

@@ -5,5 +5,5 @@
     "url": "http://localhost:8888/graphql"
   },
   "context": ["customerid"],
-  "client_functions": "datacharts"
+  "functions": "ui/datacharts.json"
 }

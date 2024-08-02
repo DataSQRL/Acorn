@@ -6,5 +6,5 @@
       "url": "https://rickandmortyapi.com/graphql"
     }
   },
-  "local_functions": ["CurrentTime"]
+  "functions": ["CurrentTime"]
 }
