@@ -1,16 +1,15 @@
 package com.datasqrl.ai.trace;
 
-import com.datasqrl.ai.trace.QualitativeTraceJudge.QualitativeResult;
 import com.datasqrl.ai.trace.Trace.FunctionCall;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.apache.commons.configuration2.MapConfiguration;
-import org.junit.jupiter.api.Assertions;
-import static com.datasqrl.ai.trace.TraceAssertions.*;
-
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Set;
+
+import static com.datasqrl.ai.trace.TraceAssertions.assertContainsIgnoreCase;
+import static com.datasqrl.ai.trace.TraceAssertions.assertSameFunctionCalls;
 
 public class TraceEvalTest {
 

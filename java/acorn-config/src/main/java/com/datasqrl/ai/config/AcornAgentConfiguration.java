@@ -3,30 +3,30 @@ package com.datasqrl.ai.config;
 import com.datasqrl.ai.api.APIExecutor;
 import com.datasqrl.ai.api.APIExecutorFactory;
 import com.datasqrl.ai.api.GraphQLSchemaConverter;
-import com.datasqrl.ai.tool.ModelObservability;
-import com.datasqrl.ai.tool.ToolManager;
-import com.datasqrl.ai.tool.ToolsBackend;
-import com.datasqrl.ai.tool.ToolsBackendFactory;
-import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
 import com.datasqrl.ai.function.UDFConverter;
 import com.datasqrl.ai.function.UserDefinedFunction;
 import com.datasqrl.ai.function.builtin.BuiltinFunctions;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatProviderFactory;
+import com.datasqrl.ai.tool.ModelObservability;
+import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.ToolManager;
+import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.ToolsBackendFactory;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.ErrorHandling;
 import com.datasqrl.ai.util.JsonUtil;
+import lombok.Value;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.JSONConfiguration;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import lombok.Value;
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.JSONConfiguration;
 
 @Value
 public class AcornAgentConfiguration {

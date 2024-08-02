@@ -8,8 +8,7 @@
     {
       "type": "Response",
       "requestId": 0,
-      "content": "I can assist you with questions about your past transactions and spending history. Here are some examples of what I can do:\n\n1. **Provide a list of your credit card transactions** within a specified time period.\n2. **Summarize your spending by category** for recent weeks.\n3. **Show your total spending by day** for a specified time period.\n4. **Visualize your spending data** in various chart formats like bar, line, column, or pie charts.\n\nPlease let me know what specific information or assistance you need!",
-      "evals": ["contains"]
+      "content": "I can assist you with questions about your past transactions and spending history. Here are some examples of what I can do:\n\n1. **Provide a list of your credit card transactions** within a specified time period.\n2. **Summarize your spending by category** for recent weeks.\n3. **Show your total spending by day** for a specified time period.\n4. **Visualize your spending data** in various chart formats like bar, line, column, or pie charts.\n\nPlease let me know what specific information or assistance you need!"
     },
     {
       "type": "Message",
@@ -25,8 +24,7 @@
       "arguments": {
         "fromTime": "2024-05-01T00:00:00-00:00",
         "toTime": "2024-06-01T00:00:00-00:00"
-      },
-      "evals": ["equals"]
+      }
     },
     {
       "type": "FunctionResponse",
@@ -59,8 +57,7 @@
           "Mann-Bahringer (Housing & Utilities) - $2344.55",
           "Wehner, Ledner and Altenwerth (Housing & Utilities) - $2218.76"
         ]
-      },
-      "evals": ["contains"]
+      }
     },
     {
       "type": "Message",
@@ -75,8 +72,7 @@
       "internal": true,
       "arguments": {
         "limit": 12
-      },
-      "evals": ["equals"]
+      }
     },
     {
       "type": "FunctionResponse",
@@ -123,8 +119,7 @@
           "Communication (May 22)"
         ],
         "caption": "Breakdown of spending by category for the weeks ending May 29 and May 22, 2024."
-      },
-      "evals": ["contains"]
+      }
     },
     {
       "type": "Message",
@@ -139,8 +134,7 @@
       "internal": true,
       "arguments": {
         "limit": 12
-      },
-      "evals": ["equals"]
+      }
     },
     {
       "type": "FunctionResponse",
@@ -187,8 +181,7 @@
           "Clothing & Apparel (Previous Week)",
           "Communication (Previous Week)"
         ]
-      },
-      "evals": ["contains"]
+      }
     },
     {
       "type": "Message",
@@ -204,8 +197,7 @@
       "arguments": {
         "fromTime": "2024-05-21T00:00:00-00:00",
         "toTime": "2024-06-04T00:00:00-00:00"
-      },
-      "evals": ["equals"]
+      }
     },
     {
       "type": "FunctionResponse",
@@ -250,8 +242,7 @@
         "chartType": "line",
         "title": "Daily Spending Over the Last 2 Weeks",
         "caption": "This chart shows how your spending has developed on a daily basis from May 21, 2024, to June 3, 2024."
-      },
-      "evals": ["contains"]
+      }
     }
   ]
 }

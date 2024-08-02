@@ -9,7 +9,6 @@ import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.trace.TraceChatProvider;
 import com.datasqrl.ai.trace.TraceContext;
 import com.datasqrl.ai.trace.TraceRecordingToolManager;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
