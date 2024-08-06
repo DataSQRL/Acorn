@@ -71,13 +71,10 @@ public class AcornAgentServer {
     }
 
     @PostMapping("/messages")
-    @SneakyThrows
     public ResponseMessage postMessage(@RequestBody InputMessage message) {
       log.info("\nUser #{}: {}", message.getUserId(), message.getContent());
       if (tracer.isPresent() && message.getContent().equals("exit")) {
-        Trace trace = tracer.get().traceBuilder.build();
-        String filename = String.format("trace_%s.json", System.currentTimeMillis()/1000);
-        trace.writeToFile(Path.of(filename));
+        String filename = tracer.get().saveTraceToFile();
         tracer = Optional.of(new Tracer());
         this.chatProvider = tracer.get().getChatProvider();
         return ResponseMessage.system(String.format("Trace written to file: %s. Session concluded.",filename));
@@ -106,6 +103,17 @@ public class AcornAgentServer {
       public ChatProvider getChatProvider() {
         ToolManager tracingTools = new TraceRecordingToolManager(toolsManager, this.traceBuilder, Optional.empty());
         return new TraceChatProvider(configuration.getChatProvider(tracingTools), this.traceBuilder);
+      }
+
+      @SneakyThrows
+      public String saveTraceToFile() {
+        if (tracer.isEmpty()) {
+          return null;
+        }
+        Trace trace = tracer.get().traceBuilder.build();
+        String filename = String.format("trace_%s.json", System.currentTimeMillis()/1000);
+        trace.writeToFile(Path.of(filename));
+        return filename;
       }
 
     }
