@@ -8,24 +8,17 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Strings;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
+
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import lombok.Builder;
-import lombok.Singular;
-import lombok.SneakyThrows;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Value
 @Builder

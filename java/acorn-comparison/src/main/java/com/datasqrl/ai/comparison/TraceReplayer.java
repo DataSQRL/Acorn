@@ -1,7 +1,6 @@
 package com.datasqrl.ai.comparison;
 
 import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
-import com.datasqrl.ai.comparison.eval.TraceEvaluator;
 import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.tool.ToolManager;
@@ -70,8 +69,6 @@ public class TraceReplayer {
           writeTrace(trace, Path.of(fileName));
           log.info("Metrics results (CSV): {}", ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV());
           meterRegistry.close();
-          TraceEvaluator traceEvaluator = new TraceEvaluator();
-          log.info("Generated trace for model {} matches with recorded trace: {}", modelName, traceEvaluator.evaluate(recordedTrace, trace));
         });
       } else {
         log.error("Could not load configuration and UseCase config from folder {}", useCaseFolder);
