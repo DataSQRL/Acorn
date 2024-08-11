@@ -8,7 +8,8 @@
     {
       "type": "Response",
       "requestId": 0,
-      "content": "I can assist you with questions about your past transactions and spending history. Here are some examples of what I can do:\n\n1. **Provide a list of your credit card transactions** within a specified time period.\n2. **Summarize your spending by category** for recent weeks.\n3. **Show your total spending by day** for a specified time period.\n4. **Visualize your spending data** in various chart formats like bar, line, column, or pie charts.\n\nPlease let me know what specific information or assistance you need!"
+      "content": "I can assist you with questions about your past transactions and spending history. Here are some examples of what I can do:\n\n1. **Provide a list of your credit card transactions** within a specified time period.\n2. **Summarize your spending by category** for recent weeks.\n3. **Show your total spending by day** for a specified time period.\n4. **Visualize your spending data** in various chart formats like bar, line, column, or pie charts.\n\nPlease let me know what specific information or assistance you need!",
+      "judge" : "The content must be similar"
     },
     {
       "type": "Message",
@@ -57,7 +58,8 @@
           "Mann-Bahringer (Housing & Utilities) - $2344.55",
           "Wehner, Ledner and Altenwerth (Housing & Utilities) - $2218.76"
         ]
-      }
+      },
+      "judge" : "Values are allowed to be in any order but should be set-equivalent."
     },
     {
       "type": "Message",
@@ -119,7 +121,8 @@
           "Communication (May 22)"
         ],
         "caption": "Breakdown of spending by category for the weeks ending May 29 and May 22, 2024."
-      }
+      },
+      "judge" : "Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories"
     },
     {
       "type": "Message",
@@ -181,7 +184,8 @@
           "Clothing & Apparel (Previous Week)",
           "Communication (Previous Week)"
         ]
-      }
+      },
+      "judge" : "chartType should be 'pie'. Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories"
     },
     {
       "type": "Message",
@@ -242,7 +246,8 @@
         "chartType": "line",
         "title": "Daily Spending Over the Last 2 Weeks",
         "caption": "This chart shows how your spending has developed on a daily basis from May 21, 2024, to June 3, 2024."
-      }
+      },
+      "judge" : "The numbers in the 'values' list must be the same in order, but their order can be reversed"
     }
   ]
 }

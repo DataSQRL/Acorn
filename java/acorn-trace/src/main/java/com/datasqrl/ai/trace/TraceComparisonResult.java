@@ -18,7 +18,7 @@ public interface TraceComparisonResult {
     for (TraceComparisonResult result : results) {
       if (!result.isCorrect()) {
         isCorrect = false;
-        message.append(result.getMessage());
+        message.append(result.getMessage()).append("\n");
       }
     }
     final boolean isCorrectResult = isCorrect;
