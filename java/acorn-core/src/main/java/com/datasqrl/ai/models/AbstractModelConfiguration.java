@@ -16,7 +16,7 @@ public abstract class AbstractModelConfiguration implements ModelConfiguration {
   public static final double TOP_P_DEFAULT = 0.9;
   public static final String TOKENIZER_KEY = "tokenizer";
 
-  public static final double OUTPUT_TOKEN_RATIO = 0.3;
+  public static final double INPUT_TOKEN_RATIO = 0.7;
 
   protected final Configuration configuration;
 
@@ -42,16 +42,21 @@ public abstract class AbstractModelConfiguration implements ModelConfiguration {
     if (configuration.containsKey(AbstractModelConfiguration.MAX_INPUT_TOKENS_KEY)) {
       return configuration.getInt(AbstractModelConfiguration.MAX_INPUT_TOKENS_KEY);
     } else {
-      return (int)Math.round(getMaxTokensForModel()*(1-OUTPUT_TOKEN_RATIO));
+      return (int) Math.round(getMaxTokensForModel() * INPUT_TOKEN_RATIO);
     }
   }
 
   @Override
-  public int getMaxOutputTokens() {
-    if (configuration.containsKey(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY)) {
+  public boolean hasMaxOutputTokens() {
+    return configuration.containsKey(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY);
+  }
+
+  @Override
+  public Integer getMaxOutputTokens() {
+    if (hasMaxOutputTokens()) {
       return configuration.getInt(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY);
     } else {
-      return (int)Math.round(getMaxTokensForModel()*(OUTPUT_TOKEN_RATIO));
+      return null;
     }
   }
 

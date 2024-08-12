@@ -17,7 +17,6 @@ public class BedrockModelConfiguration extends AbstractModelConfiguration {
   public static final String REGION_KEY = "region";
   public static final String REGION_DEFAULT = "us-east-1";
   public static final String MAX_GENERATION_LENGTH_KEY = "max_gen_len";
-  public static final int MAX_OUTPUT_TOKENS = 2048;
 
   public BedrockModelConfiguration(Configuration configuration) {
     super(configuration);
@@ -41,11 +40,9 @@ public class BedrockModelConfiguration extends AbstractModelConfiguration {
   }
 
   @Override
-  public int getMaxOutputTokens() {
+  public Integer getMaxOutputTokens() {
     if (configuration.containsKey(MAX_GENERATION_LENGTH_KEY)) return configuration.getInt(MAX_GENERATION_LENGTH_KEY);
-    if (configuration.containsKey(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY))
-      return configuration.getInt(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY);
-    return MAX_OUTPUT_TOKENS;
+    return super.getMaxOutputTokens();
   }
 
   public String getRegion() {

@@ -21,6 +21,7 @@ import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +29,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -83,7 +85,7 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
       log.info("Calling GROQ with model {}", config.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
-      ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+      ChatCompletionRequest.ChatCompletionRequestBuilder builder = ChatCompletionRequest
           .builder()
           .model(config.getModelName())
           .messages(contextWindow.getMessages())
@@ -91,9 +93,11 @@ public class GroqChatProvider extends ChatProvider<ChatMessage, ChatFunctionCall
           .n(1)
           .temperature(config.getTemperature())
           .topP(config.getTopP())
-          .maxTokens(config.getMaxOutputTokens())
-          .logitBias(new HashMap<>())
-          .build();
+          .logitBias(new HashMap<>());
+      if (config.hasMaxOutputTokens()) {
+        builder.maxTokens(config.getMaxOutputTokens());
+      }
+      ChatCompletionRequest chatCompletionRequest = builder.build();
       AssistantMessage responseMessage;
       try {
         responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();

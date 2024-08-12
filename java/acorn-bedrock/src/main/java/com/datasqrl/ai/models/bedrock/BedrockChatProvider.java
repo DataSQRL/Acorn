@@ -9,8 +9,10 @@ import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -120,9 +122,11 @@ public class BedrockChatProvider extends ChatProvider<BedrockChatMessage, Bedroc
   private JSONObject promptBedrock(BedrockRuntimeClient client, String modelId, String prompt) {
     JSONObject request = new JSONObject()
         .put("prompt", prompt)
-        .put("max_gen_len", config.getMaxOutputTokens())
         .put("top_p", config.getTopP())
         .put("temperature", config.getTemperature());
+    if (config.hasMaxOutputTokens()) {
+      request.put("max_gen_len", config.getMaxOutputTokens());
+    }
     InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
         .modelId(modelId)
         .body(SdkBytes.fromUtf8String(request.toString()))

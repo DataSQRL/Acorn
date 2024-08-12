@@ -8,7 +8,9 @@ public interface ModelConfiguration {
 
   int getMaxInputTokens();
 
-  int getMaxOutputTokens();
+  boolean hasMaxOutputTokens();
+
+  Integer getMaxOutputTokens();
 
   double getTemperature();
 
