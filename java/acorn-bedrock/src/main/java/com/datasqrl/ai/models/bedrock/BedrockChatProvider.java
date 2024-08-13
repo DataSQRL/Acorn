@@ -15,6 +15,7 @@ import com.datasqrl.ai.models.ChatMessageEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -138,6 +139,11 @@ public class BedrockChatProvider extends
         .body(SdkBytes.fromUtf8String(request.toString()))
         .build();
     log.debug("Bedrock prompt: {}", prompt);
+    try {
+      TimeUnit.SECONDS.sleep(observability.timeoutBetweenRequestsSeconds(BedrockChatProviderFactory.PROVIDER_NAME));
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
     ModelInvocation invocation = observability.start();
     InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());

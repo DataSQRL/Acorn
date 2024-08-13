@@ -102,7 +102,7 @@ public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunc
       ChatCompletionRequest chatCompletionRequest = builder.build();
       AssistantMessage responseMessage;
       try {
-        TimeUnit.SECONDS.sleep(30);
+        TimeUnit.SECONDS.sleep(observability.timeoutBetweenRequestsSeconds(GroqChatProviderFactory.PROVIDER_NAME));
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }

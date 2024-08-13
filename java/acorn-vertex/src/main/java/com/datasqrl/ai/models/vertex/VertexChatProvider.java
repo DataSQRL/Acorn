@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCall> {
@@ -96,6 +97,11 @@ public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCa
 
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       log.debug("and message {}", chatMessage);
+      try {
+        TimeUnit.SECONDS.sleep(observability.timeoutBetweenRequestsSeconds(VertexChatProviderFactory.PROVIDER_NAME));
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       ModelInvocation invocation = observability.start();
       context.nextInvocation();
       try {

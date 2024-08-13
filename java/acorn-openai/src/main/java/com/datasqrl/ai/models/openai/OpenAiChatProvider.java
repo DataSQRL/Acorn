@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFunctionCall> {
@@ -62,6 +63,11 @@ public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFu
         builder.maxTokens(config.getMaxOutputTokens());
       }
       ChatCompletionRequest chatCompletionRequest = builder.build();
+      try {
+        TimeUnit.SECONDS.sleep(observability.timeoutBetweenRequestsSeconds(OpenAiChatProviderFactory.PROVIDER_NAME));
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       ModelInvocation invocation = observability.start();
       context.nextInvocation();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();

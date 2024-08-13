@@ -12,6 +12,8 @@ public interface ModelObservability {
 
   }
 
+  int timeoutBetweenRequestsSeconds(String modelProvider);
+
   public static final ModelObservability NOOP = new ModelObservability() {
     @Override
     public ModelInvocation start() {
@@ -26,6 +28,11 @@ public interface ModelObservability {
 
         }
       };
+    }
+
+    @Override
+    public int timeoutBetweenRequestsSeconds(String modelProvider) {
+      return 0;
     }
   };
 
