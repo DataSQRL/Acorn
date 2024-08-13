@@ -49,17 +49,19 @@ public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFu
       log.info("Calling OpenAI with model {}", config.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       log.debug("Calling OpenAI with messages: {}", contextWindow.getMessages());
-      ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+      ChatCompletionRequest.ChatCompletionRequestBuilder builder = ChatCompletionRequest
           .builder()
           .model(config.getModelName())
           .messages(contextWindow.getMessages())
           .functions(contextWindow.getFunctions())
           .n(1)
-          .topP(config.getTopP())
           .temperature(config.getTemperature())
-          .maxTokens(config.getMaxOutputTokens())
-          .logitBias(new HashMap<>())
-          .build();
+          .topP(config.getTopP())
+          .logitBias(new HashMap<>());
+      if (config.hasMaxOutputTokens()) {
+        builder.maxTokens(config.getMaxOutputTokens());
+      }
+      ChatCompletionRequest chatCompletionRequest = builder.build();
       ModelInvocation invocation = observability.start();
       context.nextInvocation();
       AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();

@@ -19,7 +19,6 @@ public class VertexModelConfiguration extends AbstractModelConfiguration {
   public static final String LOCATION_KEY = "location";
   public static final String TOP_K_KEY = "top_k";
   public static final int TOP_K_DEFAULT = 40;
-  public static final int MAX_OUTPUT_TOKENS = 8192;
 
   public VertexModelConfiguration(Configuration configuration) {
     super(configuration);
@@ -35,13 +34,6 @@ public class VertexModelConfiguration extends AbstractModelConfiguration {
   @Override
   protected int getMaxTokensForModel() {
     return modelType.getContextWindowLength();
-  }
-
-  @Override
-  public int getMaxOutputTokens() {
-    if (configuration.containsKey(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY))
-      return configuration.getInt(AbstractModelConfiguration.MAX_OUTPUT_TOKENS_KEY);
-    return MAX_OUTPUT_TOKENS;
   }
 
   @Override

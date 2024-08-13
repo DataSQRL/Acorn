@@ -128,9 +128,11 @@ public class BedrockChatProvider extends
     ModelAnalyzer<BedrockChatMessage> tokenCounter = bindings.getTokenCounter();
     JSONObject request = new JSONObject()
         .put("prompt", prompt)
-        .put("max_gen_len", config.getMaxOutputTokens())
         .put("top_p", config.getTopP())
         .put("temperature", config.getTemperature());
+    if (config.hasMaxOutputTokens()) {
+      request.put("max_gen_len", config.getMaxOutputTokens());
+    }
     InvokeModelRequest invokeModelRequest = InvokeModelRequest.builder()
         .modelId(modelId)
         .body(SdkBytes.fromUtf8String(request.toString()))

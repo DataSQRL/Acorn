@@ -44,13 +44,15 @@ public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCa
     super(backend, new VertexModelBindings(config), observability);
     this.systemPrompt = systemPrompt;
     VertexAI vertexAI = new VertexAI(config.getProjectId(), config.getLocation());
-    GenerationConfig generationConfig =
+    GenerationConfig.Builder builder =
         GenerationConfig.newBuilder()
-            .setMaxOutputTokens(config.getMaxOutputTokens())
             .setTemperature(((Double) config.getTemperature()).floatValue())
             .setTopP(((Double) config.getTopP()).floatValue())
-            .setTopK(config.getTopK())
-            .build();
+            .setTopK(config.getTopK());
+    if (config.hasMaxOutputTokens()) {
+      builder.setMaxOutputTokens(config.getMaxOutputTokens());
+    }
+    GenerationConfig generationConfig = builder.build();
     this.chatModel = new GenerativeModel(config.getModelName(), vertexAI)
         .withSystemInstruction(ContentMaker.fromString(systemPrompt))
         .withGenerationConfig(generationConfig)

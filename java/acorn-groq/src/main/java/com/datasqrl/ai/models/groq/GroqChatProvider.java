@@ -88,7 +88,7 @@ public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunc
       log.info("Calling GROQ with model {}", config.getModelName());
       ContextWindow<ChatMessage> contextWindow = session.getContextWindow();
       log.debug("Calling GROQ with messages: {}", contextWindow.getMessages());
-      ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest
+      ChatCompletionRequest.ChatCompletionRequestBuilder builder = ChatCompletionRequest
           .builder()
           .model(config.getModelName())
           .messages(contextWindow.getMessages())
@@ -96,9 +96,11 @@ public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunc
           .n(1)
           .temperature(config.getTemperature())
           .topP(config.getTopP())
-          .maxTokens(config.getMaxOutputTokens())
-          .logitBias(new HashMap<>())
-          .build();
+          .logitBias(new HashMap<>());
+      if (config.hasMaxOutputTokens()) {
+        builder.maxTokens(config.getMaxOutputTokens());
+      }
+      ChatCompletionRequest chatCompletionRequest = builder.build();
       AssistantMessage responseMessage;
       try {
         TimeUnit.SECONDS.sleep(30);
