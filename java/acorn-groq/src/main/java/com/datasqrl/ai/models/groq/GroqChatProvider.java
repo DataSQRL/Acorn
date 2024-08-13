@@ -1,17 +1,13 @@
 package com.datasqrl.ai.models.groq;
 
-import static com.theokanning.openai.service.OpenAiService.defaultClient;
-import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
-
 import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
 import com.datasqrl.ai.tool.Context;
+import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
 import com.datasqrl.ai.tool.ToolManager;
-import com.datasqrl.ai.tool.ToolsBackend;
-import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,14 +21,6 @@ import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.UserMessage;
 import com.theokanning.openai.service.OpenAiService;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -46,6 +34,17 @@ import org.jetbrains.annotations.NotNull;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import static com.theokanning.openai.service.OpenAiService.defaultClient;
+import static com.theokanning.openai.service.OpenAiService.defaultObjectMapper;
 
 @Slf4j
 public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunctionCall> {
