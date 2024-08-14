@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.UUID;
 
 /**
  * A simple chatbot for the command line.
@@ -104,8 +105,10 @@ public class TraceRecorderConfigurableChatBot {
 
     TraceRecorderConfigurableChatBot chatBot = new TraceRecorderConfigurableChatBot(chatProvider);
     chatBot.start(TraceContext.of());
-    Trace trace = traceBuilder.build();
-    writeToFile(trace, "trace.json");
+    Trace trace = traceBuilder.id(UUID.randomUUID().toString())
+        .build();
+    String filename = String.format("trace_%s.json", trace.getId());
+    writeToFile(trace, filename);
   }
 
 }

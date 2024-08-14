@@ -12,20 +12,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SessionRunner {
 
   private final ChatProvider chatProvider;
-  private final AtomicInteger userId;
   private TraceContext context;
-  private final Trace trace;
+  private final Trace referenceTrace;
 
-  public SessionRunner(ChatProvider chatProvider, TraceContext context, Trace trace, AtomicInteger userId) {
+  public SessionRunner(ChatProvider chatProvider, TraceContext context, Trace referenceTrace) {
     this.context = context;
-    this.trace = trace;
-    this.userId = userId;
+    this.referenceTrace = referenceTrace;
     this.chatProvider = chatProvider;
   }
 
   public void run() {
-    log.info("Running session with userId: {}", userId.get());
-    trace.getMessages().forEach(message -> {
+    referenceTrace.getMessages().forEach(message -> {
       log.info("Query: {}", message.content());
       GenericChatMessage response;
       try {

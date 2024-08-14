@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PREFIX;
 import static com.datasqrl.ai.models.ChatProviderFactory.MODEL_PROVIDER_KEY;
 
-//TODO: FInd better name
+//TODO: Find better name
 @Slf4j
 @Value
 public class TraceReplayer {
@@ -62,10 +62,9 @@ public class TraceReplayer {
           Trace.TraceBuilder traceBuilder = Trace.builder();
           ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(recordedTrace), Optional.of(configuration.getModelConfiguration()));
           ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder, Optional.of(configuration.getModelConfiguration()));
-          AtomicInteger idCounter = new AtomicInteger(0);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
           String fileName = modelName + "-" + getCurrentTime() + ".json";
-          new SessionRunner(chatProvider, TraceContext.of(), recordedTrace, idCounter).run();
+          new SessionRunner(chatProvider, TraceContext.of(), recordedTrace).run();
           Trace trace = traceBuilder.build();
           writeTrace(trace, Path.of(fileName));
           log.info("Metrics results (CSV): {}", ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV());

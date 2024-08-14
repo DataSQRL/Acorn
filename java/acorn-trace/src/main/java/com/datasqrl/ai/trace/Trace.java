@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
 @Builder
 public class Trace implements Iterable<Entry> {
 
+  String id;
+  String referenceTraceId;
+
   @Singular
   List<Entry> entries;
 
@@ -32,7 +35,7 @@ public class Trace implements Iterable<Entry> {
   }
 
   public<E extends Entry> List<E> getAll(Class<E> clazz) {
-    return entries.stream().filter(clazz::isInstance).map(clazz::cast).collect(Collectors.toUnmodifiableList());
+    return entries.stream().filter(clazz::isInstance).map(clazz::cast).toList();
   }
 
   public Response getResponse(int requestId) {
@@ -56,8 +59,8 @@ public class Trace implements Iterable<Entry> {
   }
 
   @JsonCreator
-  public static Trace create(@JsonProperty("entries") List<Entry> entries) {
-    return new Trace(entries);
+  public static Trace create(@JsonProperty("id") String id, @JsonProperty("referenceTraceId") String referenceTraceId, @JsonProperty("entries") List<Entry> entries) {
+    return new Trace(id, referenceTraceId, entries);
   }
 
   @Override

@@ -14,6 +14,8 @@ import com.google.common.base.Strings;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -110,8 +112,8 @@ public class AcornAgentServer {
         if (tracer.isEmpty()) {
           return null;
         }
-        Trace trace = tracer.get().traceBuilder.build();
-        String filename = String.format("trace_%s.json", System.currentTimeMillis()/1000);
+        Trace trace = tracer.get().traceBuilder.id(UUID.randomUUID().toString()).build();
+        String filename = String.format("trace_%s.json", trace.getId());
         trace.writeToFile(Path.of(filename));
         return filename;
       }

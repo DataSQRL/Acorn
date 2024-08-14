@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.NonNull;
 import lombok.Value;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,20 +23,20 @@ public class TraceRecordingToolManager implements ToolManager {
 
   @NonNull ToolManager manager;
   @NonNull Trace.TraceBuilder traceBuilder;
-  @NonNull Optional<Trace> replayTrace;
+  @NonNull Optional<Trace> referenceTrace;
   @NonNull Optional<Configuration> modelConfiguration;
 
-  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> replayTrace) {
+  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> referenceTrace) {
     this.manager = manager;
     this.traceBuilder = traceBuilder;
-    this.replayTrace = replayTrace;
+    this.referenceTrace = referenceTrace;
     modelConfiguration = Optional.empty();
   }
 
-  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> replayTrace, @NonNull Optional<Configuration> modelConfiguration) {
+  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> referenceTrace, @NonNull Optional<Configuration> modelConfiguration) {
     this.manager = manager;
     this.traceBuilder = traceBuilder;
-    this.replayTrace = replayTrace;
+    this.referenceTrace = referenceTrace;
     this.modelConfiguration = modelConfiguration;
   }
 
@@ -54,7 +53,7 @@ public class TraceRecordingToolManager implements ToolManager {
     traceBuilder.entry(new Trace.FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
         functionName, true, arguments, ""));
     String result;
-    if (replayTrace.isEmpty()) {
+    if (referenceTrace.isEmpty()) {
       result = manager.executeFunctionCall(functionName, arguments, context);
     } else {
       Trace.FunctionResponse response = findResponse(tContext);
@@ -66,7 +65,7 @@ public class TraceRecordingToolManager implements ToolManager {
 
   private Trace.FunctionResponse findResponse(TraceContext tContext) {
     //For now, we make the assumption that invocation produces a single response
-    return replayTrace.get().getEntries().stream().filter(e -> e instanceof Trace.FunctionResponse)
+    return referenceTrace.get().getEntries().stream().filter(e -> e instanceof Trace.FunctionResponse)
         .map(e -> (Trace.FunctionResponse) e)
         .filter(r -> r.requestId() == tContext.getRequestId() && r.invocationId() == tContext.getInvocationId())
         .findFirst()
