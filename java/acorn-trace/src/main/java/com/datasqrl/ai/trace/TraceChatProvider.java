@@ -16,24 +16,21 @@ import static com.datasqrl.ai.models.ChatProviderFactory.MODEL_PROVIDER_KEY;
 public class TraceChatProvider implements ChatProvider {
 
   public TraceChatProvider(ChatProvider chatProvider, Trace.TraceBuilder traceBuilder) {
-    this.chatProvider = chatProvider;
-    this.traceBuilder = traceBuilder;
-    this.modelConfiguration = Optional.empty();
+    this(chatProvider, traceBuilder, RequestObserver.NONE);
   }
 
-  public TraceChatProvider(ChatProvider chatProvider, Trace.TraceBuilder traceBuilder, Optional<Configuration> modelConfiguration) {
+  public TraceChatProvider(ChatProvider chatProvider, Trace.TraceBuilder traceBuilder, RequestObserver requestObserver) {
     this.chatProvider = chatProvider;
     this.traceBuilder = traceBuilder;
-    this.modelConfiguration = modelConfiguration;
+    this.observer = requestObserver;
   }
 
   ChatProvider chatProvider;
   Trace.TraceBuilder traceBuilder;
-  Optional<Configuration> modelConfiguration;
+  RequestObserver observer;
 
   @Override
   public GenericChatMessage chat(String message, Context context) {
-    modelConfiguration.ifPresent(mapConfiguration -> TraceUtil.waitBetweenRequests(mapConfiguration.getString(MODEL_PROVIDER_KEY)));
     TraceContext tContext = TraceContext.convert(context);
     traceBuilder.entry(new Trace.Message(tContext.getRequestId(), message));
     GenericChatMessage result = chatProvider.chat(message, context);
@@ -44,6 +41,7 @@ public class TraceChatProvider implements ChatProvider {
     } else {
       traceBuilder.entry(new Trace.Response(tContext.getRequestId(), result.getContent(), ""));
     }
+    observer.observe(context);
     return result;
   }
 

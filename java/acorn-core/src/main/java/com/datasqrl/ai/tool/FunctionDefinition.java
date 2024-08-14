@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 /**
  * Definition of a chat function that can be invoked by the language model.
  *
- * This is essentially a java definition of the json structure OpenAI uses to represent
- * functions which is used by most LLMs.
+ * This is essentially a java definition of the json structure OpenAI and most LLMs use to represent
+ * functions/tools.
  */
 @Data
 @Builder

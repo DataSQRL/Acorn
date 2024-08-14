@@ -24,20 +24,18 @@ public class TraceRecordingToolManager implements ToolManager {
   @NonNull ToolManager manager;
   @NonNull Trace.TraceBuilder traceBuilder;
   @NonNull Optional<Trace> referenceTrace;
-  @NonNull Optional<Configuration> modelConfiguration;
+  @NonNull RequestObserver observer;
 
   public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> referenceTrace) {
-    this.manager = manager;
-    this.traceBuilder = traceBuilder;
-    this.referenceTrace = referenceTrace;
-    modelConfiguration = Optional.empty();
+    this(manager, traceBuilder, referenceTrace, RequestObserver.NONE);
   }
 
-  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> referenceTrace, @NonNull Optional<Configuration> modelConfiguration) {
+  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder,
+      @NonNull Optional<Trace> referenceTrace, @NonNull RequestObserver requestObserver) {
     this.manager = manager;
     this.traceBuilder = traceBuilder;
     this.referenceTrace = referenceTrace;
-    this.modelConfiguration = modelConfiguration;
+    this.observer = requestObserver;
   }
 
   @Override
@@ -48,7 +46,6 @@ public class TraceRecordingToolManager implements ToolManager {
   @Override
   public String executeFunctionCall(String functionName, JsonNode arguments,
       @NonNull Context context) throws IOException {
-    modelConfiguration.ifPresent(mapConfiguration -> TraceUtil.waitBetweenRequests(mapConfiguration.getString(MODEL_PROVIDER_KEY)));
     TraceContext tContext = TraceContext.convert(context);
     traceBuilder.entry(new Trace.FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
         functionName, true, arguments, ""));
@@ -59,6 +56,7 @@ public class TraceRecordingToolManager implements ToolManager {
       Trace.FunctionResponse response = findResponse(tContext);
       result = response.response();
     }
+    observer.observe(context);
     traceBuilder.entry(new Trace.FunctionResponse(tContext.getRequestId(), tContext.getInvocationId(),functionName, result));
     return result;
   }

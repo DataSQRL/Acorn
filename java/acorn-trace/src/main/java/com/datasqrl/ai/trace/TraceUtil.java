@@ -12,10 +12,24 @@ public class TraceUtil {
       case "groq" -> 30;
       default -> 0;
     };
-    try {
-      TimeUnit.SECONDS.sleep(seconds);
-    } catch (InterruptedException e) {
-      log.error("Could not to sleep {} seconds", seconds, e);
-    }
+
   }
+
+  public static RequestObserver waitingRequestObserver(String modelProvider) {
+    return switch (modelProvider) {
+      case "groq" -> waitFor(30);
+      default -> RequestObserver.NONE;
+    };
+  }
+
+  private static RequestObserver waitFor(final int seconds) {
+    return ctx -> {
+      try {
+        TimeUnit.SECONDS.sleep(seconds);
+      } catch (InterruptedException e) {
+        log.error("Could not to sleep {} seconds", seconds, e);
+      }
+    };
+  }
+
 }

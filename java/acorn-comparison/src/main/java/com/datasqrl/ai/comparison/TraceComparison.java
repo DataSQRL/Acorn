@@ -5,12 +5,14 @@ import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.trace.QualitativeTraceJudge;
+import com.datasqrl.ai.trace.RequestObserver;
 import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.trace.TraceChatProvider;
 import com.datasqrl.ai.trace.TraceComparisonResult;
 import com.datasqrl.ai.trace.TraceContext;
 import com.datasqrl.ai.trace.TraceEvaluator;
 import com.datasqrl.ai.trace.TraceRecordingToolManager;
+import com.datasqrl.ai.trace.TraceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
@@ -70,8 +72,9 @@ public class TraceComparison {
           SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
           ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), meterRegistry);
           for (int i = 0; i < MODEL_RUNS; i++) {
-            ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(referenceTrace), Optional.of(configuration.getModelConfiguration()));
-            ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder, Optional.of(configuration.getModelConfiguration()));
+            RequestObserver requestObserver = TraceUtil.waitingRequestObserver(configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY));
+            ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(referenceTrace), requestObserver);
+            ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder, requestObserver);
             String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
             String id = UUID.randomUUID().toString();
             String fileName = "trace_" + modelName + "_" + id + ".json";
