@@ -62,14 +62,6 @@ public class MicrometerObservability implements ModelObservability, ToolObservab
     return new StandardModelInvocation();
   }
 
-  @Override
-  public int timeoutBetweenRequestsSeconds(String modelProvider) {
-    return switch (modelProvider) {
-      case "groq" -> 30;
-      default -> 0;
-    };
-  }
-
   public String exportToCSV() {
     StringBuilder s = new StringBuilder();
     s.append(modelLatencyTimer.count()).append(", ");

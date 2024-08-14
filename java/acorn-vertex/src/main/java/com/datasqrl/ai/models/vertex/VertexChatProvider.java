@@ -97,11 +97,6 @@ public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCa
 
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       log.debug("and message {}", chatMessage);
-      try {
-        TimeUnit.SECONDS.sleep(observability.timeoutBetweenRequestsSeconds(VertexChatProviderFactory.PROVIDER_NAME));
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
       ModelInvocation invocation = observability.start();
       context.nextInvocation();
       try {

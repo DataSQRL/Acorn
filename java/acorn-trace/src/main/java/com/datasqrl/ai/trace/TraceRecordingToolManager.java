@@ -8,6 +8,8 @@ import com.datasqrl.ai.tool.ToolManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.NonNull;
 import lombok.Value;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,13 +17,29 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static com.datasqrl.ai.models.ChatProviderFactory.MODEL_PROVIDER_KEY;
+
 @Value
 public class TraceRecordingToolManager implements ToolManager {
 
   @NonNull ToolManager manager;
   @NonNull Trace.TraceBuilder traceBuilder;
   @NonNull Optional<Trace> replayTrace;
+  @NonNull Optional<Configuration> modelConfiguration;
 
+  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> replayTrace) {
+    this.manager = manager;
+    this.traceBuilder = traceBuilder;
+    this.replayTrace = replayTrace;
+    modelConfiguration = Optional.empty();
+  }
+
+  public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> replayTrace, @NonNull Optional<Configuration> modelConfiguration) {
+    this.manager = manager;
+    this.traceBuilder = traceBuilder;
+    this.replayTrace = replayTrace;
+    this.modelConfiguration = modelConfiguration;
+  }
 
   @Override
   public FunctionValidation<String> validateFunctionCall(String functionName, JsonNode arguments) {
@@ -31,6 +49,7 @@ public class TraceRecordingToolManager implements ToolManager {
   @Override
   public String executeFunctionCall(String functionName, JsonNode arguments,
       @NonNull Context context) throws IOException {
+    modelConfiguration.ifPresent(mapConfiguration -> TraceUtil.waitBetweenRequests(mapConfiguration.getString(MODEL_PROVIDER_KEY)));
     TraceContext tContext = TraceContext.convert(context);
     traceBuilder.entry(new Trace.FunctionCall(tContext.getRequestId(), tContext.getInvocationId(),
         functionName, true, arguments, ""));

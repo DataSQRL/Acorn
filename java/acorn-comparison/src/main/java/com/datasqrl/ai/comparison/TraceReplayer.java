@@ -55,13 +55,13 @@ public class TraceReplayer {
       if (useCaseConfig.isPresent() && tools.isPresent()) {
         Trace recordedTrace = loadTraceFromFile(traceFile);
         log.info("Loaded recorded Trace with {} entries from {}", recordedTrace.getEntries().size(), traceFile);
-        modelFiles.forEach(modelConfig -> {
-          log.info("Loading model config from {}", modelConfig);
+        modelFiles.forEach(configPath -> {
+          log.info("Loading model config from {}", configPath);
           SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
-          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), meterRegistry);
+          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(configPath), useCaseConfig.get(), tools.get(), meterRegistry);
           Trace.TraceBuilder traceBuilder = Trace.builder();
-          ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(recordedTrace));
-          ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder);
+          ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(recordedTrace), Optional.of(configuration.getModelConfiguration()));
+          ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder, Optional.of(configuration.getModelConfiguration()));
           AtomicInteger idCounter = new AtomicInteger(0);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
           String fileName = modelName + "-" + getCurrentTime() + ".json";
