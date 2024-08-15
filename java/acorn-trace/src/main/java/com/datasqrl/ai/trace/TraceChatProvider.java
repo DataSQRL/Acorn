@@ -5,12 +5,8 @@ import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
 import com.datasqrl.ai.tool.GenericFunctionCall;
 import lombok.Value;
-import org.apache.commons.configuration2.Configuration;
 
 import java.util.List;
-import java.util.Optional;
-
-import static com.datasqrl.ai.models.ChatProviderFactory.MODEL_PROVIDER_KEY;
 
 @Value
 public class TraceChatProvider implements ChatProvider {

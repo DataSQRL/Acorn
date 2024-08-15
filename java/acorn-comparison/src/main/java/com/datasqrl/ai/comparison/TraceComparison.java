@@ -4,13 +4,10 @@ import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
 import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.tool.ToolManager;
-import com.datasqrl.ai.trace.QualitativeTraceJudge;
 import com.datasqrl.ai.trace.RequestObserver;
 import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.trace.TraceChatProvider;
-import com.datasqrl.ai.trace.TraceComparisonResult;
 import com.datasqrl.ai.trace.TraceContext;
-import com.datasqrl.ai.trace.TraceEvaluator;
 import com.datasqrl.ai.trace.TraceRecordingToolManager;
 import com.datasqrl.ai.trace.TraceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +15,6 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,10 +23,8 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PREFIX;
@@ -45,9 +39,9 @@ public class TraceComparison {
   List<String> useCaseFolders;
   String referenceTraceFile;
   ObjectMapper mapper = new ObjectMapper();
-  static int MODEL_RUNS = 1;
+  static int MODEL_RUNS = 2;
   static String OUTPUT_FOLDER = "experiments/runs/";
-  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'_'HH:mm");
 
   public TraceComparison(List<String> modelFiles, List<String> useCaseFolders, String referenceTraceFile) {
     this.modelFiles = modelFiles;
@@ -56,9 +50,9 @@ public class TraceComparison {
     log.info("modelFiles: {}\n useCaseFolders: {}\n referenceTraceFile: {}", modelFiles, useCaseFolders, referenceTraceFile);
   }
 
-  public void start() throws IOException {
+  public void start() throws Exception {
+    String time = getCurrentTime();
     Trace referenceTrace = loadTraceFromFile(referenceTraceFile);
-    String currentTime = getCurrentTime();
     log.info("Loaded reference Trace with {} entries from {}", referenceTrace.getEntries().size(), referenceTraceFile);
     useCaseFolders.forEach(useCaseFolder -> {
       Path useCaseDir = Paths.get(useCaseFolder);
@@ -66,16 +60,17 @@ public class TraceComparison {
       Optional<Path> useCaseConfig = loadUseCaseConfig(useCaseDir);
       Optional<Path> tools = loadTools(useCaseDir);
       if (useCaseConfig.isPresent() && tools.isPresent()) {
-        modelFiles.forEach(modelConfig -> {
-          log.info("Loading model config from {}", modelConfig);
+        modelFiles.forEach(modelConfigPath -> {
+          log.info("Loading model config from {}", modelConfigPath);
           Trace.TraceBuilder traceBuilder = Trace.builder();
           SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
-          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfig), useCaseConfig.get(), tools.get(), meterRegistry);
+          ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfigPath), useCaseConfig.get(), tools.get(), meterRegistry);
+          String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
+          createDirectories(Path.of(OUTPUT_FOLDER, time, modelName));
           for (int i = 0; i < MODEL_RUNS; i++) {
             RequestObserver requestObserver = TraceUtil.waitingRequestObserver(configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY));
             ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(referenceTrace), requestObserver);
             ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder, requestObserver);
-            String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
             String id = UUID.randomUUID().toString();
             String fileName = "trace_" + modelName + "_" + id + ".json";
             log.info("Running session {} with model {}", id, modelName);
@@ -83,10 +78,11 @@ public class TraceComparison {
             Trace trace = traceBuilder.referenceTraceId(referenceTrace.getId())
                 .id(id)
                 .build();
-
-            writeTrace(trace, Path.of(OUTPUT_FOLDER, currentTime, fileName));
+            writeTrace(trace, Path.of(OUTPUT_FOLDER, time, modelName, fileName));
           }
-          log.info("Metrics results (CSV): {}", ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV());
+          String metricsResults = ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV();
+          log.info("Metrics results (CSV): {}", metricsResults);
+          writeToFile(metricsResults, Path.of(OUTPUT_FOLDER, time, modelName, "metrics.csv"));
           meterRegistry.close();
         });
       } else {
@@ -95,11 +91,27 @@ public class TraceComparison {
     });
   }
 
+  private void createDirectories(Path path) {
+    try {
+      Files.createDirectories(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @SneakyThrows
-  private static void writeTrace(Trace trace, Path file) {
+  private void writeTrace(Trace trace, Path file) {
     Files.createDirectories(file.getParent());
     trace.writeToFile(file);
     log.info("Saved trace {} to file: {}", trace.getId(), file);
+  }
+
+  private void writeToFile(String message, Path file) {
+    try {
+      Files.write(file, message.getBytes());
+    } catch (IOException e) {
+      log.error("Could not write {} to file: {}", message, file, e);
+    }
   }
 
   private Optional<Path> loadTools(Path useCaseDir) {

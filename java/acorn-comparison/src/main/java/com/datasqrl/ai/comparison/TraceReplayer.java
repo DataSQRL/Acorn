@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PREFIX;

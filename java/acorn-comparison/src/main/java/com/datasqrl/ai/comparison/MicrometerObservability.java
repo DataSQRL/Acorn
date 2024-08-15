@@ -64,6 +64,15 @@ public class MicrometerObservability implements ModelObservability, ToolObservab
 
   public String exportToCSV() {
     StringBuilder s = new StringBuilder();
+    s.append("model.execution.time.count").append(", ");
+    s.append("model.execution.time.total").append(", ");
+    s.append("model.execution.time.mean").append(", ");
+    s.append("model.execution.time.max").append(", ");
+    s.append("model.tokens.input.count").append(", ");
+    s.append("model.tokens.input.mean").append(", ");
+    s.append("model.tokens.output.count").append(", ");
+    s.append("model.tokens.output.mean").append(", ");
+    s.append("tool.call.invalid").append("\n");
     s.append(modelLatencyTimer.count()).append(", ");
     s.append(modelLatencyTimer.totalTime(TimeUnit.MILLISECONDS)).append(", ");
     s.append(modelLatencyTimer.mean(TimeUnit.MILLISECONDS)).append(", ");

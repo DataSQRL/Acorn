@@ -7,14 +7,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TraceUtil {
 
-  public static void waitBetweenRequests(String modelProvider) {
-    int seconds = switch (modelProvider) {
-      case "groq" -> 30;
-      default -> 0;
-    };
-
-  }
-
   public static RequestObserver waitingRequestObserver(String modelProvider) {
     return switch (modelProvider) {
       case "groq" -> waitFor(30);

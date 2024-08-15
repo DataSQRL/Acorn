@@ -8,15 +8,12 @@ import com.datasqrl.ai.tool.ToolManager;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.NonNull;
 import lombok.Value;
-import org.apache.commons.configuration2.Configuration;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
-import static com.datasqrl.ai.models.ChatProviderFactory.MODEL_PROVIDER_KEY;
 
 @Value
 public class TraceRecordingToolManager implements ToolManager {
