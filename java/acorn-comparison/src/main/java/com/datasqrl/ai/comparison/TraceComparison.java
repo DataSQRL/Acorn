@@ -4,10 +4,13 @@ import com.datasqrl.ai.comparison.config.ComparisonConfiguration;
 import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatProvider;
 import com.datasqrl.ai.tool.ToolManager;
+import com.datasqrl.ai.trace.QualitativeTraceJudge;
 import com.datasqrl.ai.trace.RequestObserver;
 import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.trace.TraceChatProvider;
+import com.datasqrl.ai.trace.TraceComparisonResult;
 import com.datasqrl.ai.trace.TraceContext;
+import com.datasqrl.ai.trace.TraceEvaluator;
 import com.datasqrl.ai.trace.TraceRecordingToolManager;
 import com.datasqrl.ai.trace.TraceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +18,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +27,7 @@ import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -37,58 +42,90 @@ public class TraceComparison {
 
   List<String> modelFiles;
   List<String> useCaseFolders;
-  String referenceTraceFile;
+  Trace referenceTrace;
   ObjectMapper mapper = new ObjectMapper();
   static int MODEL_RUNS = 2;
-  static String OUTPUT_FOLDER = "experiments/runs/";
+  static Path basePath = Path.of("experiments", "runs");
   SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'_'HH:mm");
 
   public TraceComparison(List<String> modelFiles, List<String> useCaseFolders, String referenceTraceFile) {
     this.modelFiles = modelFiles;
     this.useCaseFolders = useCaseFolders;
-    this.referenceTraceFile = referenceTraceFile;
+    this.referenceTrace = loadTraceFromFile(referenceTraceFile);
     log.info("modelFiles: {}\n useCaseFolders: {}\n referenceTraceFile: {}", modelFiles, useCaseFolders, referenceTraceFile);
   }
 
-  public void start() throws Exception {
-    String time = getCurrentTime();
-    Trace referenceTrace = loadTraceFromFile(referenceTraceFile);
-    log.info("Loaded reference Trace with {} entries from {}", referenceTrace.getEntries().size(), referenceTraceFile);
-    useCaseFolders.forEach(useCaseFolder -> {
+  public Path runTraces() throws Exception {
+    Path runPath = basePath.resolve(getCurrentTime());
+    log.info("Loaded reference Trace with {} entries", referenceTrace.getEntries().size());
+    for (String useCaseFolder : useCaseFolders) {
       Path useCaseDir = Paths.get(useCaseFolder);
       log.info("Loading use case and tools from {}", useCaseFolder);
       Optional<Path> useCaseConfig = loadUseCaseConfig(useCaseDir);
       Optional<Path> tools = loadTools(useCaseDir);
       if (useCaseConfig.isPresent() && tools.isPresent()) {
-        modelFiles.forEach(modelConfigPath -> {
+        for (String modelConfigPath : modelFiles) {
           log.info("Loading model config from {}", modelConfigPath);
-          Trace.TraceBuilder traceBuilder = Trace.builder();
           SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
           ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfigPath), useCaseConfig.get(), tools.get(), meterRegistry);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
-          createDirectories(Path.of(OUTPUT_FOLDER, time, modelName));
+          Path modelPath = runPath.resolve(modelName);
+          createDirectories(modelPath);
           for (int i = 0; i < MODEL_RUNS; i++) {
+            Trace.TraceBuilder traceBuilder = Trace.builder();
             RequestObserver requestObserver = TraceUtil.waitingRequestObserver(configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY));
             ToolManager toolsBackend = new TraceRecordingToolManager(configuration.getToolManager(), traceBuilder, Optional.of(referenceTrace), requestObserver);
             ChatProvider chatProvider = new TraceChatProvider(configuration.getChatProvider(toolsBackend), traceBuilder, requestObserver);
             String id = UUID.randomUUID().toString();
-            String fileName = "trace_" + modelName + "_" + id + ".json";
+            String fileName = id + "_" + modelName + ".trace.json";
             log.info("Running session {} with model {}", id, modelName);
             new SessionRunner(chatProvider, TraceContext.of(), referenceTrace).run();
             Trace trace = traceBuilder.referenceTraceId(referenceTrace.getId())
                 .id(id)
                 .build();
-            writeTrace(trace, Path.of(OUTPUT_FOLDER, time, modelName, fileName));
+            writeTrace(trace, modelPath.resolve(fileName));
           }
           String metricsResults = ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV();
           log.info("Metrics results (CSV): {}", metricsResults);
-          writeToFile(metricsResults, Path.of(OUTPUT_FOLDER, time, modelName, "metrics.csv"));
+          writeToFile(metricsResults, modelPath.resolve("metrics.csv"));
           meterRegistry.close();
-        });
+        }
       } else {
         log.error("Could not load configuration and UseCase config from folder {}", useCaseFolder);
       }
-    });
+    }
+    return runPath;
+  }
+
+  public void evaluateTraces(Path runPath, MapConfiguration judgeConfig) throws IOException {
+    QualitativeTraceJudge judge = QualitativeTraceJudge.fromConfiguration(judgeConfig);
+    TraceEvaluator<QualitativeTraceJudge.QualitativeResult> evaluator = new TraceEvaluator<>(false, judge);
+
+    List<Path> modelFolders;
+    try (Stream<Path> stream = Files.list(runPath)) {
+      modelFolders = stream.filter(Files::isDirectory)
+          .toList();
+    }
+
+    for (Path modelFolder : modelFolders) {
+      log.info("Evaluating model folder {}", modelFolder);
+      List<Path> tracePaths;
+      try (Stream<Path> stream = Files.list(modelFolder)) {
+        tracePaths = stream
+            .filter(Files::isRegularFile)
+            .filter(path -> path.getFileName().toString().endsWith(".trace.json"))
+            .toList();
+      }
+      for (Path path : tracePaths) {
+        log.info("Evaluating model trace {}", path);
+        Trace trace = loadTraceFromFile(path.toFile().getAbsolutePath());
+        Map<Trace.Entry, TraceComparisonResult> resultMap = evaluator.judgeOrCompare(referenceTrace, trace);
+        String comparisonResult = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultMap);
+        writeToFile(comparisonResult, modelFolder.resolve(trace.getId() + "_" + modelFolder.getFileName() + ".comparison.json"));
+        TraceComparisonResult result = evaluator.combinedJudgeOrCompare(referenceTrace, trace);
+        log.info("Trace Comparison is correct: {}", result.isCorrect());
+      }
+    }
   }
 
   private void createDirectories(Path path) {
@@ -161,24 +198,24 @@ public class TraceComparison {
           .toList();
     }
 
+    MapConfiguration judgeConfig = new MapConfiguration(Map.of(
+        "provider", "openai",
+        "name", "gpt-4o-mini",
+        "temperature", 0.2,
+        "max_output_tokens", 512
+    ));
+
     TraceComparison runner = new TraceComparison(modelFiles, useCaseFolders, referenceTraceFile);
-    runner.start();
+    Path runPath = runner.runTraces();
+    runner.evaluateTraces(runPath, judgeConfig);
+//    runner.evaluateTraces(basePath.resolve("2024-08-16_17:07"), judgeConfig);
 
 //    Trace referenceTrace = Trace.loadFromFile(Path.of(referenceTraceFile));
 //    Trace trace = Trace.loadFromFile(Path.of(traceFile));
 //    log.info("Loaded reference Trace with {} entries from {}", referenceTrace.getEntries().size(), referenceTraceFile);
 //    log.info("Loaded Trace to compare with {} entries from {}", trace.getEntries().size(), traceFile);
 //
-//    Map<String, Object> modelConfig = Map.of(
-//        "provider", "openai",
-//        "name", "gpt-4o-mini",
-//        "temperature", 0.2,
-//        "max_output_tokens", 512
-//    );
 //
-//    QualitativeTraceJudge judge = QualitativeTraceJudge.fromConfiguration(new MapConfiguration(modelConfig));
-//    TraceEvaluator<QualitativeTraceJudge.QualitativeResult> evaluator = new TraceEvaluator<>(false, judge);
-//    Map<Trace.Entry, TraceComparisonResult> resultMap = evaluator.judgeOrCompare(referenceTrace, trace);
 //    log.info("Trace comparison results: {}", resultMap);
 //    TraceComparisonResult result = evaluator.combinedJudgeOrCompare(referenceTrace, trace);
 //    log.info("Combined trace comparison results:\ncorrect: {}\nmessage: {}", result.isCorrect(), result.getMessage());
