@@ -132,6 +132,7 @@ public class TraceComparison {
       }
       AggregatedComparisonResult modelResults = combine(comparisonResults);
       log.info("Final results for model {}: {}", modelFolder.getFileName(), modelResults);
+      writeComparisonResult(modelResults, modelFolder.resolve("comparison_results.json"));
     }
   }
 
@@ -192,6 +193,13 @@ public class TraceComparison {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @SneakyThrows
+  private void writeComparisonResult(AggregatedComparisonResult result, Path file) {
+    Files.createDirectories(file.getParent());
+    String resultTxt = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+    log.info("Saved AggregatedComparisonResult to file: {}", file);
   }
 
   @SneakyThrows
