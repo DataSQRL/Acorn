@@ -10,6 +10,7 @@ import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.trace.TraceChatProvider;
 import com.datasqrl.ai.trace.TraceComparisonResult;
 import com.datasqrl.ai.trace.TraceContext;
+import com.datasqrl.ai.trace.TraceEquality;
 import com.datasqrl.ai.trace.TraceEvaluator;
 import com.datasqrl.ai.trace.TraceRecordingToolManager;
 import com.datasqrl.ai.trace.TraceUtil;
@@ -112,7 +113,7 @@ public class TraceComparison {
     for (Path modelFolder : modelFolders) {
       log.info("Evaluating model folder {}", modelFolder);
       List<Path> tracePaths;
-      List<Path> comparisonFiles = new ArrayList<>();
+      List<AggregatedComparisonResult> comparisonResults = new ArrayList<>();
       try (Stream<Path> stream = Files.list(modelFolder)) {
         tracePaths = stream
             .filter(Files::isRegularFile)
@@ -123,19 +124,68 @@ public class TraceComparison {
         log.info("Evaluating model trace {}", path);
         Trace trace = loadTraceFromFile(path);
         Map<Trace.Entry, TraceComparisonResult> resultMap = evaluator.judgeOrCompare(referenceTrace, trace, false);
-        String comparisonResult = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultMap);
+        String comparisonTxt = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultMap);
         Path comparisonFile = modelFolder.resolve(trace.getId() + "_" + modelFolder.getFileName() + ".comparison.json");
-        writeToFile(comparisonResult, comparisonFile);
+        writeToFile(comparisonTxt, comparisonFile);
         TraceComparisonResult result = evaluator.combinedJudgeOrCompare(referenceTrace, trace);
-        log.info("Trace Comparison is correct: {}", result.isCorrect());
-        comparisonFiles.add(comparisonFile);
+        AggregatedComparisonResult aggregatedComparisonResult = aggregateComparisonMap(resultMap);
+        comparisonResults.add(aggregatedComparisonResult);
+        log.info("Aggregated Comparison Result: {}", aggregatedComparisonResult);
       }
-//      for (Path comparisonFile: comparisonFiles) {
-//        TraceComparisonResult result = loadComparisonResultFromFile(comparisonFile);
-//        String content = new String(Files.readAllBytes(comparisonFile));
-////        log.info("Comparison result: {}", content);
-//      }
+      AggregatedComparisonResult modelResults = combine(comparisonResults);
+      log.info("Final results for model {}: {}", modelFolder.getFileName(), modelResults);
     }
+  }
+
+  private AggregatedComparisonResult aggregateComparisonMap(Map<Trace.Entry, TraceComparisonResult> resultMap) {
+    long noMessages = resultMap.keySet().stream()
+        .filter(entry -> entry instanceof Trace.Message)
+        .count();
+    long noFunctionCalls = resultMap.keySet().stream()
+        .filter(entry -> entry instanceof Trace.FunctionCall)
+        .count();
+    double avgCorrectMessages = (double) resultMap.entrySet().stream()
+        .filter(entry -> entry.getKey() instanceof Trace.Message && entry.getValue().isCorrect())
+        .count() / noMessages;
+    double avgCorrectFunctionCalls = (double) resultMap.entrySet().stream()
+        .filter(entry -> entry.getKey() instanceof Trace.FunctionCall && entry.getValue().isCorrect())
+        .count() / noFunctionCalls;
+    double avgCorrect = (double) resultMap.values().stream()
+        .filter(TraceComparisonResult::isCorrect)
+        .count() / resultMap.size();
+    double avgJudgeScore = resultMap.values().stream()
+        .filter(result -> result instanceof QualitativeTraceJudge.QualitativeResult)
+        .mapToDouble(result -> ((QualitativeTraceJudge.QualitativeResult) result).getQualityScore())
+        .average()
+        .orElse(0.0);
+    return new AggregatedComparisonResult(1, Math.toIntExact(noMessages), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectMessages, avgCorrectFunctionCalls, avgJudgeScore);
+  }
+
+  private AggregatedComparisonResult combine(List<AggregatedComparisonResult> aggregatedComparisonResults) {
+    int noRuns = aggregatedComparisonResults.size();
+    long noMessages = aggregatedComparisonResults.stream()
+        .mapToInt(AggregatedComparisonResult::noMessages)
+        .sum();
+    long noFunctionCalls = aggregatedComparisonResults.stream()
+        .mapToInt(AggregatedComparisonResult::noFunctionCalls)
+        .sum();
+    double avgCorrectMessages = aggregatedComparisonResults.stream()
+        .mapToDouble(AggregatedComparisonResult::avgCorrectMessages)
+        .average()
+        .orElse(0.0);
+    double avgCorrectFunctionCalls = aggregatedComparisonResults.stream()
+        .mapToDouble(AggregatedComparisonResult::avgCorrectFunctionCalls)
+        .average()
+        .orElse(0.0);
+    double avgCorrect = aggregatedComparisonResults.stream()
+        .mapToDouble(AggregatedComparisonResult::avgCorrect)
+        .average()
+        .orElse(0.0);
+    double avgJudgeScore = aggregatedComparisonResults.stream()
+        .mapToDouble(AggregatedComparisonResult::avgJudgeScore)
+        .average()
+        .orElse(0.0);
+    return new AggregatedComparisonResult(noRuns, Math.toIntExact(noMessages), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectMessages, avgCorrectFunctionCalls, avgJudgeScore);
   }
 
   private void createDirectories(Path path) {
