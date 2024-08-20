@@ -2,10 +2,10 @@ package com.datasqrl.ai.comparison;
 
 public record AggregatedComparisonResult(
     int runs,
-    int noMessages,
+    int noResponses,
     int noFunctionCalls,
     double avgCorrect,
-    double avgCorrectMessages,
+    double avgCorrectResponses,
     double avgCorrectFunctionCalls,
     double avgJudgeScore
 ) {

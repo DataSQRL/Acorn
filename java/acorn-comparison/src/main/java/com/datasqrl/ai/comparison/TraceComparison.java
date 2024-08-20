@@ -10,7 +10,6 @@ import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.trace.TraceChatProvider;
 import com.datasqrl.ai.trace.TraceComparisonResult;
 import com.datasqrl.ai.trace.TraceContext;
-import com.datasqrl.ai.trace.TraceEquality;
 import com.datasqrl.ai.trace.TraceEvaluator;
 import com.datasqrl.ai.trace.TraceRecordingToolManager;
 import com.datasqrl.ai.trace.TraceUtil;
@@ -19,7 +18,6 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import nonapi.io.github.classgraph.classpath.ClassLoaderOrder;
 import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
@@ -138,15 +136,15 @@ public class TraceComparison {
   }
 
   private AggregatedComparisonResult aggregateComparisonMap(Map<Trace.Entry, TraceComparisonResult> resultMap) {
-    long noMessages = resultMap.keySet().stream()
-        .filter(entry -> entry instanceof Trace.Message)
+    long noResponses = resultMap.keySet().stream()
+        .filter(entry -> entry instanceof Trace.Response)
         .count();
     long noFunctionCalls = resultMap.keySet().stream()
         .filter(entry -> entry instanceof Trace.FunctionCall)
         .count();
-    double avgCorrectMessages = (double) resultMap.entrySet().stream()
-        .filter(entry -> entry.getKey() instanceof Trace.Message && entry.getValue().isCorrect())
-        .count() / noMessages;
+    double avgCorrectResponses = (double) resultMap.entrySet().stream()
+        .filter(entry -> entry.getKey() instanceof Trace.Response && entry.getValue().isCorrect())
+        .count() / noResponses;
     double avgCorrectFunctionCalls = (double) resultMap.entrySet().stream()
         .filter(entry -> entry.getKey() instanceof Trace.FunctionCall && entry.getValue().isCorrect())
         .count() / noFunctionCalls;
@@ -158,19 +156,19 @@ public class TraceComparison {
         .mapToDouble(result -> ((QualitativeTraceJudge.QualitativeResult) result).getQualityScore())
         .average()
         .orElse(0.0);
-    return new AggregatedComparisonResult(1, Math.toIntExact(noMessages), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectMessages, avgCorrectFunctionCalls, avgJudgeScore);
+    return new AggregatedComparisonResult(1, Math.toIntExact(noResponses), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectResponses, avgCorrectFunctionCalls, avgJudgeScore);
   }
 
   private AggregatedComparisonResult combine(List<AggregatedComparisonResult> aggregatedComparisonResults) {
     int noRuns = aggregatedComparisonResults.size();
-    long noMessages = aggregatedComparisonResults.stream()
-        .mapToInt(AggregatedComparisonResult::noMessages)
+    long noResponses = aggregatedComparisonResults.stream()
+        .mapToInt(AggregatedComparisonResult::noResponses)
         .sum();
     long noFunctionCalls = aggregatedComparisonResults.stream()
         .mapToInt(AggregatedComparisonResult::noFunctionCalls)
         .sum();
-    double avgCorrectMessages = aggregatedComparisonResults.stream()
-        .mapToDouble(AggregatedComparisonResult::avgCorrectMessages)
+    double avgCorrectResponses = aggregatedComparisonResults.stream()
+        .mapToDouble(AggregatedComparisonResult::avgCorrectResponses)
         .average()
         .orElse(0.0);
     double avgCorrectFunctionCalls = aggregatedComparisonResults.stream()
@@ -185,7 +183,7 @@ public class TraceComparison {
         .mapToDouble(AggregatedComparisonResult::avgJudgeScore)
         .average()
         .orElse(0.0);
-    return new AggregatedComparisonResult(noRuns, Math.toIntExact(noMessages), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectMessages, avgCorrectFunctionCalls, avgJudgeScore);
+    return new AggregatedComparisonResult(noRuns, Math.toIntExact(noResponses), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectResponses, avgCorrectFunctionCalls, avgJudgeScore);
   }
 
   private void createDirectories(Path path) {
@@ -230,11 +228,6 @@ public class TraceComparison {
   @SneakyThrows
   private Trace loadTraceFromFile(Path path) {
     return mapper.readValue(path.toFile(), Trace.class);
-  }
-
-  @SneakyThrows
-  private TraceComparisonResult loadComparisonResultFromFile(Path path) {
-    return mapper.readValue(path.toFile(), TraceComparisonResult.class);
   }
 
   private String getCurrentTime() {
