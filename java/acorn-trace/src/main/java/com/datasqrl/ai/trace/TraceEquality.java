@@ -1,5 +1,6 @@
 package com.datasqrl.ai.trace;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.List;
@@ -16,11 +17,13 @@ public class TraceEquality implements TraceComparisonResult {
   @Singular
   List<String> differences;
 
+  @JsonIgnore
   @Override
   public boolean isCorrect() {
     return isEqual();
   }
 
+  @JsonIgnore
   public String getMessage() {
     return String.join("\n", differences);
   }

@@ -1,9 +1,20 @@
 package com.datasqrl.ai.trace;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = TraceEquality.class, name = "TraceEquality"),
+    @JsonSubTypes.Type(value = QualitativeTraceJudge.QualitativeResult.class, name = "QualitativeResult"),
+})
+
 public interface TraceComparisonResult {
 
   boolean isCorrect();
 
+  @JsonIgnore
   default String getMessage() {
     return "";
   }
