@@ -19,15 +19,16 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nonnull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
+
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Value
@@ -100,6 +101,9 @@ public class QualitativeTraceJudge implements TraceJudge<QualitativeResult> {
     @JsonPropertyDescription("Provide an analysis that justifies the quality score.")
     @Nonnull
     String qualityAnalysis;
+    @JsonPropertyDescription("Must always equal `QualitativeResult`")
+    @Nonnull
+    String type;
 
     @Override
     public Object execute() {

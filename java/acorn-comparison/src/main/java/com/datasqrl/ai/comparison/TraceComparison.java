@@ -18,6 +18,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import nonapi.io.github.classgraph.classpath.ClassLoaderOrder;
 import org.apache.commons.configuration2.MapConfiguration;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,7 +53,7 @@ public class TraceComparison {
   public TraceComparison(List<String> modelFiles, List<String> useCaseFolders, String referenceTraceFile) {
     this.modelFiles = modelFiles;
     this.useCaseFolders = useCaseFolders;
-    this.referenceTrace = loadTraceFromFile(referenceTraceFile);
+    this.referenceTrace = loadTraceFromFile(Paths.get(referenceTraceFile));
     log.info("modelFiles: {}\n useCaseFolders: {}\n referenceTraceFile: {}", modelFiles, useCaseFolders, referenceTraceFile);
   }
 
@@ -110,6 +112,7 @@ public class TraceComparison {
     for (Path modelFolder : modelFolders) {
       log.info("Evaluating model folder {}", modelFolder);
       List<Path> tracePaths;
+      List<Path> comparisonFiles = new ArrayList<>();
       try (Stream<Path> stream = Files.list(modelFolder)) {
         tracePaths = stream
             .filter(Files::isRegularFile)
@@ -118,13 +121,20 @@ public class TraceComparison {
       }
       for (Path path : tracePaths) {
         log.info("Evaluating model trace {}", path);
-        Trace trace = loadTraceFromFile(path.toFile().getAbsolutePath());
-        Map<Trace.Entry, TraceComparisonResult> resultMap = evaluator.judgeOrCompare(referenceTrace, trace);
+        Trace trace = loadTraceFromFile(path);
+        Map<Trace.Entry, TraceComparisonResult> resultMap = evaluator.judgeOrCompare(referenceTrace, trace, false);
         String comparisonResult = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultMap);
-        writeToFile(comparisonResult, modelFolder.resolve(trace.getId() + "_" + modelFolder.getFileName() + ".comparison.json"));
+        Path comparisonFile = modelFolder.resolve(trace.getId() + "_" + modelFolder.getFileName() + ".comparison.json");
+        writeToFile(comparisonResult, comparisonFile);
         TraceComparisonResult result = evaluator.combinedJudgeOrCompare(referenceTrace, trace);
         log.info("Trace Comparison is correct: {}", result.isCorrect());
+        comparisonFiles.add(comparisonFile);
       }
+//      for (Path comparisonFile: comparisonFiles) {
+//        TraceComparisonResult result = loadComparisonResultFromFile(comparisonFile);
+//        String content = new String(Files.readAllBytes(comparisonFile));
+////        log.info("Comparison result: {}", content);
+//      }
     }
   }
 
@@ -168,8 +178,13 @@ public class TraceComparison {
   }
 
   @SneakyThrows
-  private Trace loadTraceFromFile(String fileName) {
-    return mapper.readValue(Paths.get(fileName).toFile(), Trace.class);
+  private Trace loadTraceFromFile(Path path) {
+    return mapper.readValue(path.toFile(), Trace.class);
+  }
+
+  @SneakyThrows
+  private TraceComparisonResult loadComparisonResultFromFile(Path path) {
+    return mapper.readValue(path.toFile(), TraceComparisonResult.class);
   }
 
   private String getCurrentTime() {
@@ -208,7 +223,7 @@ public class TraceComparison {
     TraceComparison runner = new TraceComparison(modelFiles, useCaseFolders, referenceTraceFile);
     Path runPath = runner.runTraces();
     runner.evaluateTraces(runPath, judgeConfig);
-//    runner.evaluateTraces(basePath.resolve("2024-08-16_17:07"), judgeConfig);
+//    runner.evaluateTraces(basePath.resolve("2024-08-20_17:28"), judgeConfig);
 
 //    Trace referenceTrace = Trace.loadFromFile(Path.of(referenceTraceFile));
 //    Trace trace = Trace.loadFromFile(Path.of(traceFile));
