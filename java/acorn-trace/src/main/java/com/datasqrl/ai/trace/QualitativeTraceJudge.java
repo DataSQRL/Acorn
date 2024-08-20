@@ -101,9 +101,6 @@ public class QualitativeTraceJudge implements TraceJudge<QualitativeResult> {
     @JsonPropertyDescription("Provide an analysis that justifies the quality score.")
     @Nonnull
     String qualityAnalysis;
-    @JsonPropertyDescription("Must always equal `QualitativeResult`")
-    @Nonnull
-    String type;
 
     @Override
     public Object execute() {
