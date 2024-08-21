@@ -44,15 +44,15 @@ public class TraceComparison {
   List<String> modelFiles;
   List<String> useCaseFolders;
   Trace referenceTrace;
-  ObjectMapper mapper = new ObjectMapper();
   static int MODEL_RUNS = 2;
   static Path basePath = Path.of("experiments", "runs");
   SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'_'HH:mm");
+  ObjectMapper mapper = new ObjectMapper();
 
   public TraceComparison(List<String> modelFiles, List<String> useCaseFolders, String referenceTraceFile) {
     this.modelFiles = modelFiles;
     this.useCaseFolders = useCaseFolders;
-    this.referenceTrace = loadTraceFromFile(Paths.get(referenceTraceFile));
+    this.referenceTrace = ComparisonUtil.loadTraceFromFile(Paths.get(referenceTraceFile));
     log.info("modelFiles: {}\n useCaseFolders: {}\n referenceTraceFile: {}", modelFiles, useCaseFolders, referenceTraceFile);
   }
 
@@ -71,7 +71,7 @@ public class TraceComparison {
           ComparisonConfiguration configuration = ComparisonConfiguration.fromFile(Path.of(modelConfigPath), useCaseConfig.get(), tools.get(), meterRegistry);
           String modelName = configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY) + "-" + configuration.getModelConfiguration().getString(MODEL_PREFIX);
           Path modelPath = runPath.resolve(modelName);
-          createDirectories(modelPath);
+          ComparisonUtil.createDirectories(modelPath);
           for (int i = 0; i < MODEL_RUNS; i++) {
             Trace.TraceBuilder traceBuilder = Trace.builder();
             RequestObserver requestObserver = TraceUtil.waitingRequestObserver(configuration.getModelConfiguration().getString(MODEL_PROVIDER_KEY));
@@ -84,11 +84,11 @@ public class TraceComparison {
             Trace trace = traceBuilder.referenceTraceId(referenceTrace.getId())
                 .id(id)
                 .build();
-            writeTrace(trace, modelPath.resolve(fileName));
+            ComparisonUtil.writeTrace(trace, modelPath.resolve(fileName));
           }
           String metricsResults = ((MicrometerObservability) ((AbstractChatProvider<?, ?>) configuration.getChatProvider()).getObservability()).exportToCSV();
           log.info("Metrics results (CSV): {}", metricsResults);
-          writeToFile(metricsResults, modelPath.resolve("metrics.csv"));
+          ComparisonUtil.writeToFile(metricsResults, modelPath.resolve("metrics.csv"));
           meterRegistry.close();
         }
       } else {
@@ -120,100 +120,19 @@ public class TraceComparison {
       }
       for (Path path : tracePaths) {
         log.info("Evaluating model trace {}", path);
-        Trace trace = loadTraceFromFile(path);
+        Trace trace = ComparisonUtil.loadTraceFromFile(path);
         Map<Trace.Entry, TraceComparisonResult> resultMap = evaluator.judgeOrCompare(referenceTrace, trace, false);
         String comparisonTxt = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultMap);
         Path comparisonFile = modelFolder.resolve(trace.getId() + "_" + modelFolder.getFileName() + ".comparison.json");
-        writeToFile(comparisonTxt, comparisonFile);
-        TraceComparisonResult result = evaluator.combinedJudgeOrCompare(referenceTrace, trace);
-        AggregatedComparisonResult aggregatedComparisonResult = aggregateComparisonMap(resultMap);
+        ComparisonUtil.writeToFile(comparisonTxt, comparisonFile);
+        AggregatedComparisonResult aggregatedComparisonResult = ComparisonUtil.aggregateComparisonMap(resultMap);
         comparisonResults.add(aggregatedComparisonResult);
         log.info("Aggregated Comparison Result: {}", aggregatedComparisonResult);
       }
-      AggregatedComparisonResult modelResults = combine(comparisonResults);
+      AggregatedComparisonResult modelResults = ComparisonUtil.aggregate(comparisonResults);
       log.info("Final results for model {}: {}", modelFolder.getFileName(), modelResults);
-      writeComparisonResult(modelResults, modelFolder.resolve("comparison_results.json"));
-    }
-  }
-
-  private AggregatedComparisonResult aggregateComparisonMap(Map<Trace.Entry, TraceComparisonResult> resultMap) {
-    long noResponses = resultMap.keySet().stream()
-        .filter(entry -> entry instanceof Trace.Response)
-        .count();
-    long noFunctionCalls = resultMap.keySet().stream()
-        .filter(entry -> entry instanceof Trace.FunctionCall)
-        .count();
-    double avgCorrectResponses = (double) resultMap.entrySet().stream()
-        .filter(entry -> entry.getKey() instanceof Trace.Response && entry.getValue().isCorrect())
-        .count() / noResponses;
-    double avgCorrectFunctionCalls = (double) resultMap.entrySet().stream()
-        .filter(entry -> entry.getKey() instanceof Trace.FunctionCall && entry.getValue().isCorrect())
-        .count() / noFunctionCalls;
-    double avgCorrect = (double) resultMap.values().stream()
-        .filter(TraceComparisonResult::isCorrect)
-        .count() / resultMap.size();
-    double avgJudgeScore = resultMap.values().stream()
-        .filter(result -> result instanceof QualitativeTraceJudge.QualitativeResult)
-        .mapToDouble(result -> ((QualitativeTraceJudge.QualitativeResult) result).getQualityScore())
-        .average()
-        .orElse(0.0);
-    return new AggregatedComparisonResult(1, Math.toIntExact(noResponses), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectResponses, avgCorrectFunctionCalls, avgJudgeScore);
-  }
-
-  private AggregatedComparisonResult combine(List<AggregatedComparisonResult> aggregatedComparisonResults) {
-    int noRuns = aggregatedComparisonResults.size();
-    long noResponses = aggregatedComparisonResults.stream()
-        .mapToInt(AggregatedComparisonResult::noResponses)
-        .sum();
-    long noFunctionCalls = aggregatedComparisonResults.stream()
-        .mapToInt(AggregatedComparisonResult::noFunctionCalls)
-        .sum();
-    double avgCorrectResponses = aggregatedComparisonResults.stream()
-        .mapToDouble(AggregatedComparisonResult::avgCorrectResponses)
-        .average()
-        .orElse(0.0);
-    double avgCorrectFunctionCalls = aggregatedComparisonResults.stream()
-        .mapToDouble(AggregatedComparisonResult::avgCorrectFunctionCalls)
-        .average()
-        .orElse(0.0);
-    double avgCorrect = aggregatedComparisonResults.stream()
-        .mapToDouble(AggregatedComparisonResult::avgCorrect)
-        .average()
-        .orElse(0.0);
-    double avgJudgeScore = aggregatedComparisonResults.stream()
-        .mapToDouble(AggregatedComparisonResult::avgJudgeScore)
-        .average()
-        .orElse(0.0);
-    return new AggregatedComparisonResult(noRuns, Math.toIntExact(noResponses), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectResponses, avgCorrectFunctionCalls, avgJudgeScore);
-  }
-
-  private void createDirectories(Path path) {
-    try {
-      Files.createDirectories(path);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @SneakyThrows
-  private void writeComparisonResult(AggregatedComparisonResult result, Path file) {
-    Files.createDirectories(file.getParent());
-    String resultTxt = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
-    log.info("Saved AggregatedComparisonResult to file: {}", file);
-  }
-
-  @SneakyThrows
-  private void writeTrace(Trace trace, Path file) {
-    Files.createDirectories(file.getParent());
-    trace.writeToFile(file);
-    log.info("Saved trace {} to file: {}", trace.getId(), file);
-  }
-
-  private void writeToFile(String message, Path file) {
-    try {
-      Files.write(file, message.getBytes());
-    } catch (IOException e) {
-      log.error("Could not write {} to file: {}", message, file, e);
+      ComparisonUtil.writeComparisonResultJson(modelResults, modelFolder.resolve("comparison_results.json"));
+      ComparisonUtil.writeComparisonResultCsv(modelResults, modelFolder.resolve("comparison_results.csv"));
     }
   }
 
@@ -231,11 +150,6 @@ public class TraceComparison {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @SneakyThrows
-  private Trace loadTraceFromFile(Path path) {
-    return mapper.readValue(path.toFile(), Trace.class);
   }
 
   private String getCurrentTime() {
@@ -275,16 +189,6 @@ public class TraceComparison {
     Path runPath = runner.runTraces();
     runner.evaluateTraces(runPath, judgeConfig);
 //    runner.evaluateTraces(basePath.resolve("2024-08-20_17:28"), judgeConfig);
-
-//    Trace referenceTrace = Trace.loadFromFile(Path.of(referenceTraceFile));
-//    Trace trace = Trace.loadFromFile(Path.of(traceFile));
-//    log.info("Loaded reference Trace with {} entries from {}", referenceTrace.getEntries().size(), referenceTraceFile);
-//    log.info("Loaded Trace to compare with {} entries from {}", trace.getEntries().size(), traceFile);
-//
-//
-//    log.info("Trace comparison results: {}", resultMap);
-//    TraceComparisonResult result = evaluator.combinedJudgeOrCompare(referenceTrace, trace);
-//    log.info("Combined trace comparison results:\ncorrect: {}\nmessage: {}", result.isCorrect(), result.getMessage());
   }
 
 }
