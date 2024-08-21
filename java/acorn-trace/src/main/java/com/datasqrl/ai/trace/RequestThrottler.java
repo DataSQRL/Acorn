@@ -3,9 +3,9 @@ package com.datasqrl.ai.trace;
 import com.datasqrl.ai.tool.Context;
 
 @FunctionalInterface
-public interface RequestObserver {
+public interface RequestThrottler {
 
-  public static final RequestObserver NONE = (context) -> {};
+  public static final RequestThrottler NONE = (context) -> {};
 
   void observe(Context context);
 

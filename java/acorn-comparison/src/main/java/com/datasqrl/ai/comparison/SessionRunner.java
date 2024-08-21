@@ -31,6 +31,7 @@ public class SessionRunner {
         log.info("Response: {}", response.getContent());
       } catch (Exception e) {
         log.error("Query failed", e);
+        context.nextRequest();
       }
     });
   }

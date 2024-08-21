@@ -7,14 +7,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class TraceUtil {
 
-  public static RequestObserver waitingRequestObserver(String modelProvider) {
+  public static RequestThrottler waitingRequestObserver(String modelProvider) {
     return switch (modelProvider) {
       case "groq" -> waitFor(30);
-      default -> RequestObserver.NONE;
+      default -> RequestThrottler.NONE;
     };
   }
 
-  private static RequestObserver waitFor(final int seconds) {
+  private static RequestThrottler waitFor(final int seconds) {
     return ctx -> {
       try {
         TimeUnit.SECONDS.sleep(seconds);

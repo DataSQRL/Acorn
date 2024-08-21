@@ -21,18 +21,19 @@ public class TraceRecordingToolManager implements ToolManager {
   @NonNull ToolManager manager;
   @NonNull Trace.TraceBuilder traceBuilder;
   @NonNull Optional<Trace> referenceTrace;
-  @NonNull RequestObserver observer;
+  @NonNull
+  RequestThrottler observer;
 
   public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder, @NonNull Optional<Trace> referenceTrace) {
-    this(manager, traceBuilder, referenceTrace, RequestObserver.NONE);
+    this(manager, traceBuilder, referenceTrace, RequestThrottler.NONE);
   }
 
   public TraceRecordingToolManager(@NonNull ToolManager manager, @NonNull Trace.TraceBuilder traceBuilder,
-      @NonNull Optional<Trace> referenceTrace, @NonNull RequestObserver requestObserver) {
+      @NonNull Optional<Trace> referenceTrace, @NonNull RequestThrottler requestThrottler) {
     this.manager = manager;
     this.traceBuilder = traceBuilder;
     this.referenceTrace = referenceTrace;
-    this.observer = requestObserver;
+    this.observer = requestThrottler;
   }
 
   @Override
