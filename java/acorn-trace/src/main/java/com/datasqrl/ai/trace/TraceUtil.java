@@ -9,7 +9,7 @@ public class TraceUtil {
 
   public static RequestThrottler waitingRequestObserver(String modelProvider) {
     return switch (modelProvider) {
-      case "groq" -> waitFor(30);
+      case "groq" -> waitFor(45);
       default -> RequestThrottler.NONE;
     };
   }
