@@ -190,9 +190,11 @@ public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunc
       int endJson = failedGeneration.lastIndexOf("}");
       String jsonText = failedGeneration.substring(startJson, endJson + 1);
       json = mapper.readTree(jsonText);
-      JsonNode toolJson = json.get("tool_calls").get(0);
+      JsonNode toolCalls = json.get("tool_calls");
+      JsonNode toolCall = json.get("tool_call");
+      JsonNode toolJson = toolCalls != null ? toolCalls.get(0) : toolCall;
       return new ChatFunctionCall(toolJson.get("function").get("name").asText(), toolJson.get("parameters"));
-    } catch (JsonProcessingException e) {
+    } catch (Exception e) {
       log.error("Could not parse groq error [{}]:\n", errorText, e);
       return null;
     }
