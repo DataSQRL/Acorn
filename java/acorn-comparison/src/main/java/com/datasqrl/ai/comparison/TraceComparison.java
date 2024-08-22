@@ -8,7 +8,7 @@ import com.datasqrl.ai.trace.QualitativeTraceJudge;
 import com.datasqrl.ai.trace.RequestThrottler;
 import com.datasqrl.ai.trace.Trace;
 import com.datasqrl.ai.trace.TraceChatProvider;
-import com.datasqrl.ai.trace.TraceComparisonResult;
+import com.datasqrl.ai.trace.TraceComparisonEvaluation;
 import com.datasqrl.ai.trace.TraceContext;
 import com.datasqrl.ai.trace.TraceEvaluator;
 import com.datasqrl.ai.trace.TraceRecordingToolManager;
@@ -120,11 +120,11 @@ public class TraceComparison {
       for (Path path : tracePaths) {
         log.info("Evaluating model trace {}", path);
         Trace trace = ComparisonUtil.loadTraceFromFile(path);
-        Map<Trace.Entry, TraceComparisonResult> resultMap = evaluator.judgeOrCompare(referenceTrace, trace, false);
-        String comparisonTxt = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultMap);
+        TraceComparisonEvaluation comparisonEvaluation = evaluator.judgeComparison(referenceTrace, trace);
+        String comparisonTxt = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(comparisonEvaluation);
         Path comparisonFile = modelFolder.resolve(trace.getId() + "_" + modelFolder.getFileName() + ".comparison.json");
         ComparisonUtil.writeToFile(comparisonTxt, comparisonFile);
-        AggregatedComparisonResult aggregatedComparisonResult = ComparisonUtil.aggregateComparisonMap(resultMap);
+        AggregatedComparisonResult aggregatedComparisonResult = ComparisonUtil.convertToAggregatedResult(comparisonEvaluation);
         comparisonResults.add(aggregatedComparisonResult);
         log.info("Aggregated Comparison Result: {}", aggregatedComparisonResult);
       }
@@ -187,7 +187,7 @@ public class TraceComparison {
     TraceComparison runner = new TraceComparison(modelFiles, useCaseFolders, referenceTraceFile);
     Path runPath = runner.runTraces();
     runner.evaluateTraces(runPath, judgeConfig);
-//    runner.evaluateTraces(basePath.resolve("2024-08-20_17:28"), judgeConfig);
+//    runner.evaluateTraces(basePath.resolve("2024-08-22_11:28"), judgeConfig);
   }
 
 }

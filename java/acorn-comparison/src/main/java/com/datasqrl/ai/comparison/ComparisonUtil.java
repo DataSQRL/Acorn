@@ -1,7 +1,9 @@
 package com.datasqrl.ai.comparison;
 
+import com.datasqrl.ai.trace.EntryComparisonEvaluation;
 import com.datasqrl.ai.trace.QualitativeTraceJudge;
 import com.datasqrl.ai.trace.Trace;
+import com.datasqrl.ai.trace.TraceComparisonEvaluation;
 import com.datasqrl.ai.trace.TraceComparisonResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
@@ -35,6 +37,34 @@ public class ComparisonUtil {
         .filter(TraceComparisonResult::isCorrect)
         .count() / resultMap.size();
     double avgJudgeScore = resultMap.values().stream()
+        .filter(result -> result instanceof QualitativeTraceJudge.QualitativeResult)
+        .mapToDouble(result -> ((QualitativeTraceJudge.QualitativeResult) result).getQualityScore())
+        .average()
+        .orElse(0.0);
+    return new AggregatedComparisonResult(1, Math.toIntExact(noResponses), Math.toIntExact(noFunctionCalls), avgCorrect, avgCorrectResponses, avgCorrectFunctionCalls, avgJudgeScore);
+  }
+
+  public static AggregatedComparisonResult convertToAggregatedResult(TraceComparisonEvaluation evaluation) {
+    long noResponses = evaluation.evaluations().stream()
+        .map(EntryComparisonEvaluation::reference)
+        .filter(entry -> entry instanceof Trace.Response)
+        .count();
+    long noFunctionCalls = evaluation.evaluations().stream()
+        .map(EntryComparisonEvaluation::reference)
+        .filter(entry -> entry instanceof Trace.FunctionCall)
+        .count();
+    double avgCorrectResponses = (double) evaluation.evaluations().stream()
+        .filter(eval -> eval.reference() instanceof Trace.Response && eval.comparisonResult().isCorrect())
+        .count() / noResponses;
+    double avgCorrectFunctionCalls = (double) evaluation.evaluations().stream()
+        .filter(entry -> entry.reference() instanceof Trace.FunctionCall && entry.comparisonResult().isCorrect())
+        .count() / noFunctionCalls;
+    double avgCorrect = (double) evaluation.evaluations().stream()
+        .map(EntryComparisonEvaluation::comparisonResult)
+        .filter(TraceComparisonResult::isCorrect)
+        .count() / evaluation.evaluations().size();
+    double avgJudgeScore = evaluation.evaluations().stream()
+        .map(EntryComparisonEvaluation::comparisonResult)
         .filter(result -> result instanceof QualitativeTraceJudge.QualitativeResult)
         .mapToDouble(result -> ((QualitativeTraceJudge.QualitativeResult) result).getQualityScore())
         .average()

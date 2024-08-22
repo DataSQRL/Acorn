@@ -6,6 +6,7 @@ import com.datasqrl.ai.trace.Trace.FunctionCall;
 import com.datasqrl.ai.trace.Trace.Judgement;
 import com.datasqrl.ai.trace.Trace.Response;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
@@ -33,12 +35,12 @@ public class TraceEvaluator<R extends TraceComparisonResult> {
     this(strict, judge, DELTA, DEFAULT_DELIMITER);
   }
 
-  public Map<Entry,TraceComparisonResult> judgeOrCompare(Trace reference, Trace given) {
+  public Map<Entry, TraceComparisonResult> judgeOrCompare(Trace reference, Trace given) {
     return judgeOrCompare(reference, given, true);
   }
 
-  public Map<Entry,TraceComparisonResult> judgeOrCompare(Trace reference, Trace given, boolean eagerTermination) {
-    Map<Entry,TraceComparisonResult> results = new HashMap<>();
+  public Map<Entry, TraceComparisonResult> judgeOrCompare(Trace reference, Trace given, boolean eagerTermination) {
+    Map<Entry, TraceComparisonResult> results = new HashMap<>();
     //First, do all comparisons
     reference.getAll(Response.class).stream().filter(Judgement::evalWithComparison)
         .forEach(r -> results.put(r, compare(r, given.getResponse(r.requestId()))));
@@ -52,6 +54,44 @@ public class TraceEvaluator<R extends TraceComparisonResult> {
     reference.getAll(FunctionCall.class).stream().filter(Judgement::evalWithJudge)
         .forEach(r -> results.put(r, judge.judge(r, given.getFunctionCall(r.requestId(), r.invocationId()))));
     return results;
+  }
+
+  public TraceComparisonEvaluation judgeComparison(Trace reference, Trace given) {
+    List<EntryComparisonEvaluation> evaluations = new ArrayList<>();
+    for (Entry entry : reference.getEntries()) {
+      if (entry instanceof Response) {
+        Response givenResponse = given.getResponse(entry.requestId());
+        if (((Response) entry).evalWithComparison()) {
+          evaluations.add(new EntryComparisonEvaluation(
+              entry,
+              givenResponse,
+              compare((Response) entry, givenResponse)
+          ));
+        } else {
+          evaluations.add(new EntryComparisonEvaluation(
+              entry,
+              givenResponse,
+              judge.judge((Response) entry, givenResponse)
+          ));
+        }
+      } else if (entry instanceof FunctionCall) {
+        FunctionCall givenFunctionCall = given.getFunctionCall(entry.requestId(),((FunctionCall) entry).invocationId());
+        if (((FunctionCall) entry).evalWithComparison()) {
+          evaluations.add(new EntryComparisonEvaluation(
+              entry,
+              givenFunctionCall,
+              compare((FunctionCall) entry, givenFunctionCall)
+          ));
+        } else {
+          evaluations.add(new EntryComparisonEvaluation(
+              entry,
+              givenFunctionCall,
+              judge.judge((FunctionCall) entry, givenFunctionCall)
+          ));
+        }
+      }
+    }
+    return new TraceComparisonEvaluation(evaluations);
   }
 
   public TraceComparisonResult combinedJudgeOrCompare(Trace reference, Trace given) {
@@ -69,12 +109,12 @@ public class TraceEvaluator<R extends TraceComparisonResult> {
         totalQuality += quality.getQualityScore();
       }
     }
-    return new TraceScore(count, incorrect, totalQuality*1.0/count);
+    return new TraceScore(count, incorrect, totalQuality * 1.0 / count);
   }
 
   public TraceEquality compare(Response expected, Response given) {
     if (strict) {
-      if (!expected.content().trim().equalsIgnoreCase(given.content().trim()))  {
+      if (!expected.content().trim().equalsIgnoreCase(given.content().trim())) {
         return notEqual("Content is not equal", expected.content(), given.content());
       } else {
         return TraceEquality.equal();
@@ -96,7 +136,7 @@ public class TraceEvaluator<R extends TraceComparisonResult> {
     if (given == null || expected == null) return notEqual("Function call not found", expected, given);
     if (!expected.name().equalsIgnoreCase(given.name())) {
       return notEqual("Function names are different", expected.name(), given.name());
-    } else if (expected.internal()!=given.internal()) {
+    } else if (expected.internal() != given.internal()) {
       return notEqual("Function types are different", expected.internal(), given.internal());
 
     }
@@ -108,12 +148,12 @@ public class TraceEvaluator<R extends TraceComparisonResult> {
     TraceEquality combined = TraceEquality.equal();
     while (fieldNames.hasNext()) {
       String fieldName = fieldNames.next();
-      if (!fieldEquals(expectedArguments.get(fieldName),givenArguments.get(fieldName))) {
+      if (!fieldEquals(expectedArguments.get(fieldName), givenArguments.get(fieldName))) {
         combined = combined.combine(notEqual("Argument field " + fieldName + " is different",
             expectedArguments.get(fieldName), givenArguments.get(fieldName)));
       }
     }
-    if (strict && expectedArguments.size()!=givenArguments.size()) {
+    if (strict && expectedArguments.size() != givenArguments.size()) {
       combined = combined.combine(notEqual("Given arguments contains extra fields", expectedArguments, givenArguments));
     }
     return combined;
@@ -129,7 +169,7 @@ public class TraceEvaluator<R extends TraceComparisonResult> {
       return Math.abs(expected.asDouble() - provided.asDouble()) < delta;
     } else if (expected.isArray()) {
       if (!provided.isArray()) return false;
-      if (provided.size()!=expected.size()) return false;
+      if (provided.size() != expected.size()) return false;
       for (int i = 0; i < expected.size(); i++) {
         if (!fieldEquals(expected.get(i), provided.get(i))) return false;
       }

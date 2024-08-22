@@ -28,6 +28,7 @@ import org.apache.commons.configuration2.Configuration;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
@@ -78,10 +79,10 @@ public class QualitativeTraceJudge implements TraceJudge<QualitativeResult> {
   @Override
   public QualitativeResult judge(FunctionCall reference, FunctionCall given) {
     if (given == null) {
-     return new QualitativeResult(false ,"Function call missing", 0,"Function call missing");
+     return new QualitativeResult(false ,"Function call not found: " + reference.name(), 0,"");
     }
     if (!reference.name().equalsIgnoreCase(given.name())) {
-     return new QualitativeResult(false ,"Not the same functions", 0,"Not the same functions");
+     return new QualitativeResult(false ,"Not the same functions:" + reference.name() + " vs " + given.name(), 0,"");
     }
     String message = String.format(MESSAGE_TEMPLATE, specificJudgementInstructions(reference),
         reference.arguments(), given.arguments());
