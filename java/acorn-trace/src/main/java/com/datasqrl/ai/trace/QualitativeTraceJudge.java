@@ -17,8 +17,8 @@ import com.datasqrl.ai.trace.Trace.Judgement;
 import com.datasqrl.ai.trace.Trace.Response;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Value;
@@ -77,7 +77,12 @@ public class QualitativeTraceJudge implements TraceJudge<QualitativeResult> {
 
   @Override
   public QualitativeResult judge(FunctionCall reference, FunctionCall given) {
-    Preconditions.checkArgument(reference.name().equalsIgnoreCase(given.name()),"Not the same functions");
+    if (given == null) {
+     return new QualitativeResult(false ,"Function call missing", 0,"Function call missing");
+    }
+    if (!reference.name().equalsIgnoreCase(given.name())) {
+     return new QualitativeResult(false ,"Not the same functions", 0,"Not the same functions");
+    }
     String message = String.format(MESSAGE_TEMPLATE, specificJudgementInstructions(reference),
         reference.arguments(), given.arguments());
     log.info(message);
@@ -88,6 +93,7 @@ public class QualitativeTraceJudge implements TraceJudge<QualitativeResult> {
   @FunctionDescription("Judge the provided answer against the reference answer")
   @Data
   @NoArgsConstructor
+  @AllArgsConstructor
   public static class QualitativeResult implements TraceComparisonResult, UserDefinedFunction {
 
     @JsonPropertyDescription("Whether the provided answer is factually correct compared to the reference answer.")
