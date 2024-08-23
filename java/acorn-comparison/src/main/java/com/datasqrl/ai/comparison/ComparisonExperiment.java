@@ -35,10 +35,9 @@ import java.util.stream.Stream;
 import static com.datasqrl.ai.comparison.config.ComparisonConfiguration.MODEL_PREFIX;
 import static com.datasqrl.ai.models.ChatProviderFactory.MODEL_PROVIDER_KEY;
 
-//TODO: Find better name
 @Slf4j
 @Value
-public class TraceComparison {
+public class ComparisonExperiment {
 
   List<String> modelFiles;
   List<String> useCaseFolders;
@@ -48,7 +47,7 @@ public class TraceComparison {
   SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'_'HH:mm");
   ObjectMapper mapper = new ObjectMapper();
 
-  public TraceComparison(List<String> modelFiles, List<String> useCaseFolders, String referenceTraceFile) {
+  public ComparisonExperiment(List<String> modelFiles, List<String> useCaseFolders, String referenceTraceFile) {
     this.modelFiles = modelFiles;
     this.useCaseFolders = useCaseFolders;
     this.referenceTrace = ComparisonUtil.loadTraceFromFile(Paths.get(referenceTraceFile));
@@ -184,10 +183,9 @@ public class TraceComparison {
         "max_output_tokens", 512
     ));
 
-    TraceComparison runner = new TraceComparison(modelFiles, useCaseFolders, referenceTraceFile);
+    ComparisonExperiment runner = new ComparisonExperiment(modelFiles, useCaseFolders, referenceTraceFile);
     Path runPath = runner.runTraces();
     runner.evaluateTraces(runPath, judgeConfig);
-//    runner.evaluateTraces(basePath.resolve("2024-08-22_11:28"), judgeConfig);
   }
 
 }
