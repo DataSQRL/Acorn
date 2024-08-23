@@ -1,0 +1,9 @@
+{
+  "runs" : 2,
+  "noResponses" : 2,
+  "noFunctionCalls" : 16,
+  "avgCorrect" : 0.2777777777777778,
+  "avgCorrectResponses" : 0.5,
+  "avgCorrectFunctionCalls" : 0.25,
+  "avgJudgeScore" : 2.5
+}

@@ -1,0 +1,2 @@
+model.execution.time.count, model.execution.time.total, model.execution.time.mean, model.execution.time.max, model.tokens.input.count, model.tokens.input.mean, model.tokens.output.count, model.tokens.output.mean, tool.call.invalid
+19, 52067.850186, 2740.4131676842107, 5564.898249, 9728.0, 512.0, 2015.0, 106.05263157894737, 0.0

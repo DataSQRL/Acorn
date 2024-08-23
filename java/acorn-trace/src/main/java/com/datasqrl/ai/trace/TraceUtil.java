@@ -9,7 +9,7 @@ public class TraceUtil {
 
   public static RequestThrottler waitingRequestObserver(String modelProvider) {
     return switch (modelProvider) {
-      case "groq" -> waitFor(45);
+      case "groq", "vertex" -> waitFor(60);
       default -> RequestThrottler.NONE;
     };
   }
@@ -17,6 +17,7 @@ public class TraceUtil {
   private static RequestThrottler waitFor(final int seconds) {
     return ctx -> {
       try {
+        log.info("Sleeping for {} seconds", seconds);
         TimeUnit.SECONDS.sleep(seconds);
       } catch (InterruptedException e) {
         log.error("Could not to sleep {} seconds", seconds, e);

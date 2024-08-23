@@ -1,0 +1,282 @@
+{
+  "evaluations" : [ {
+    "reference" : {
+      "type" : "Response",
+      "requestId" : 0,
+      "content" : "I can assist you with questions about your past transactions and spending history. Here are some examples of what I can do:\n\n1. **Provide a list of your credit card transactions** within a specified time period.\n2. **Summarize your spending by category** for recent weeks.\n3. **Show your total spending by day** for a specified time period.\n4. **Visualize your spending data** in various chart formats like bar, line, column, or pie charts.\n\nPlease let me know what specific information or assistance you need!",
+      "judge" : "The content must be similar, but not necessarily word for word"
+    },
+    "given" : {
+      "type" : "Response",
+      "requestId" : 0,
+      "content" : "I can assist you with inquiries related to your past transactions and spending history, including:\n\n- Providing details on specific transactions within a given time frame.\n- Summarizing your spending by category over a specified period.\n- Displaying your spending trends by day or week.\n- Offering insights into your overall spending patterns.\n\nIf you have a specific question or request, please let me know!",
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "correct" : true,
+      "incorrectAnalysis" : "",
+      "qualityScore" : 5,
+      "qualityAnalysis" : "The provided answer accurately reflects the content and intent of the reference answer while using different wording. It covers all the main points, maintains clarity, and is easy to understand."
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 1,
+      "invocationId" : 1,
+      "name" : "transactions",
+      "internal" : true,
+      "arguments" : {
+        "fromTime" : "2024-05-01T00:00:00-00:00",
+        "toTime" : "2024-06-01T00:00:00-00:00"
+      },
+      "judge" : null
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 1,
+      "invocationId" : 1,
+      "name" : "transactions",
+      "internal" : true,
+      "arguments" : {
+        "fromTime" : "2024-05-01T00:00:00-00:00",
+        "toTime" : "2024-05-31T00:00:00-00:00"
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "equal" : false,
+      "differences" : [ "Argument field toTime is different: \"2024-06-01T00:00:00-00:00\" vs \"2024-05-31T00:00:00-00:00\"" ]
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 1,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 2601.59, 2730.05, 2328.52, 2344.55, 2218.76 ],
+        "chartType" : "bar",
+        "caption" : "The chart below displays your top 5 most expensive transactions from May 2024.",
+        "title" : "Top 5 Most Expensive Transactions - May 2024",
+        "labels" : [ "Schaden-Goldner (Housing & Utilities) - $2601.59", "Renner Group (Housing & Utilities) - $2730.05", "Hartmann, Dooley and Hagenes (Housing & Utilities) - $2328.52", "Mann-Bahringer (Housing & Utilities) - $2344.55", "Wehner, Ledner and Altenwerth (Housing & Utilities) - $2218.76" ]
+      },
+      "judge" : "Values are allowed to be in any order but should be set-equivalent."
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 1,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 2721.59, 2328.52, 2218.76, 2061.1, 2043.1 ],
+        "chartType" : "bar",
+        "caption" : "This chart displays the five most expensive credit card transactions from May 2024.",
+        "title" : "Top 5 Most Expensive Transactions in May 2024",
+        "labels" : [ "Transaction 1: Hartmann, Dooley and Hagenes", "Transaction 2: Hartmann, Dooley and Hagenes", "Transaction 3: Wehner, Ledner and Altenwerth", "Transaction 4: Corwin and Sons", "Transaction 5: Corwin and Sons" ]
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "correct" : false,
+      "incorrectAnalysis" : "The provided values do not match the reference values, and the labels do not correspond to the correct transactions or amounts. Additionally, the caption and title have slight variations that do not align with the reference.",
+      "qualityScore" : 1,
+      "qualityAnalysis" : "The provided answer lacks correctness as the values and labels do not match the reference. The quality is low due to the incorrect data representation and lack of clarity in the labels."
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 2,
+      "invocationId" : 1,
+      "name" : "spending_by_category",
+      "internal" : true,
+      "arguments" : {
+        "limit" : 12
+      },
+      "judge" : null
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 2,
+      "invocationId" : 1,
+      "name" : "spending_by_category",
+      "internal" : true,
+      "arguments" : {
+        "limit" : 60
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "equal" : false,
+      "differences" : [ "Argument field limit is different: 12 vs 60" ]
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 2,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 1945.54, 352.26, 374.79, 214.94, 930.29, 7353.99, 1275.92, 1521.56, 2652.66, 2869.62, 614.45, 439.4 ],
+        "chartType" : "bar",
+        "title" : "Spending by Category",
+        "labels" : [ "Childcare (May 29)", "Clothing & Apparel (May 29)", "Communication (May 29)", "Entertainment (May 29)", "Health & Wellness (May 29)", "Housing & Utilities (May 29)", "Miscellaneous (May 29)", "Restaurants & Dining (May 29)", "Travel & Vacations (May 29)", "Childcare (May 22)", "Clothing & Apparel (May 22)", "Communication (May 22)" ],
+        "caption" : "Breakdown of spending by category for the weeks ending May 29 and May 22, 2024."
+      },
+      "judge" : "Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories, but other words or dates are allowed without being incorrect"
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 2,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 1945.54, 352.26, 374.79, 214.94, 930.29, 7353.99, 1275.92, 1521.56, 2652.66, 2869.62, 614.45, 439.4 ],
+        "chartType" : "bar",
+        "caption" : "This chart shows the breakdown of your spending by category over the last two weeks.",
+        "title" : "Spending Breakdown by Category",
+        "labels" : [ "Childcare", "Clothing & Apparel", "Communication", "Entertainment", "Health & Wellness", "Housing & Utilities", "Miscellaneous", "Restaurants & Dining", "Travel & Vacations", "Childcare (Previous Week)", "Clothing & Apparel (Previous Week)", "Communication (Previous Week)" ]
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "correct" : false,
+      "incorrectAnalysis" : "The provided arguments are mostly correct but differ in the title and the labels. The title in the provided arguments is 'Spending Breakdown by Category' instead of 'Spending by Category'. Additionally, the labels in the provided arguments do not include the specific dates (May 29 and May 22) as in the reference, which affects the specificity of the information.",
+      "qualityScore" : 3,
+      "qualityAnalysis" : "The provided answer maintains the structure and most of the values from the reference but lacks some specificity in the title and labels. The quality is decent, but the absence of dates in the labels and the change in title reduces clarity and comprehensiveness."
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 3,
+      "invocationId" : 1,
+      "name" : "spending_by_category",
+      "internal" : true,
+      "arguments" : {
+        "limit" : 12
+      },
+      "judge" : null
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 3,
+      "invocationId" : 1,
+      "name" : "spending_by_category",
+      "internal" : true,
+      "arguments" : {
+        "limit" : 12
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "equal" : true,
+      "differences" : [ ]
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 3,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 1945.54, 352.26, 374.79, 214.94, 930.29, 7353.99, 1275.92, 1521.56, 2652.66, 2869.62, 614.45, 439.4 ],
+        "chartType" : "pie",
+        "caption" : "Breakdown of spending by category for the most recent week",
+        "title" : "Spending by Category",
+        "labels" : [ "Childcare", "Clothing & Apparel", "Communication", "Entertainment", "Health & Wellness", "Housing & Utilities", "Miscellaneous", "Restaurants & Dining", "Travel & Vacations", "Childcare (Previous Week)", "Clothing & Apparel (Previous Week)", "Communication (Previous Week)" ]
+      },
+      "judge" : "chartType should be 'pie'. Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories, but other words or dates are allowed without being incorrect"
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 3,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 1945.54, 352.26, 374.79, 214.94, 930.29, 7353.99, 1275.92, 1521.56, 2652.66, 2869.62, 614.45, 439.4 ],
+        "chartType" : "pie",
+        "caption" : "This pie chart shows the breakdown of your spending by category for the most recent weeks.",
+        "title" : "Spending Breakdown by Category",
+        "labels" : [ "Childcare", "Clothing & Apparel", "Communication", "Entertainment", "Health & Wellness", "Housing & Utilities", "Miscellaneous", "Restaurants & Dining", "Travel & Vacations", "Childcare (Previous Week)", "Clothing & Apparel (Previous Week)", "Communication (Previous Week)" ]
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "correct" : true,
+      "incorrectAnalysis" : null,
+      "qualityScore" : 4,
+      "qualityAnalysis" : "The provided answer is factually correct as it matches the reference in terms of values, chart type, and labels. However, the caption and title are slightly different in wording, which affects the overall quality. The provided caption is more descriptive, while the title is less precise compared to the reference."
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 4,
+      "invocationId" : 1,
+      "name" : "spending_by_day",
+      "internal" : true,
+      "arguments" : {
+        "fromTime" : "2024-05-21T00:00:00-00:00",
+        "toTime" : "2024-06-04T00:00:00-00:00"
+      },
+      "judge" : null
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 4,
+      "invocationId" : 1,
+      "name" : "spending_by_day",
+      "internal" : true,
+      "arguments" : {
+        "fromTime" : "2024-05-20T00:00:00-00:00",
+        "toTime" : "2024-06-03T00:00:00-00:00"
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "equal" : false,
+      "differences" : [ "Argument field fromTime is different: \"2024-05-21T00:00:00-00:00\" vs \"2024-05-20T00:00:00-00:00\"", "Argument field toTime is different: \"2024-06-04T00:00:00-00:00\" vs \"2024-06-03T00:00:00-00:00\"" ]
+    }
+  }, {
+    "reference" : {
+      "type" : "FunctionCall",
+      "requestId" : 4,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 668.92, 3908.72, 1323.71, 1190.96, 661.8, 1408.73, 4131, 4122.81, 6959.41, 2425.54, 5917.4 ],
+        "labels" : [ "2024-06-03", "2024-06-02", "2024-06-01", "2024-05-31", "2024-05-30", "2024-05-29", "2024-05-28", "2024-05-24", "2024-05-23", "2024-05-22", "2024-05-21" ],
+        "chartType" : "line",
+        "title" : "Daily Spending Over the Last 2 Weeks",
+        "caption" : "This chart shows how your spending has developed on a daily basis from May 21, 2024, to June 3, 2024."
+      },
+      "judge" : "The numbers in the 'values' list must be the same in order, but their order can be reversed"
+    },
+    "given" : {
+      "type" : "FunctionCall",
+      "requestId" : 4,
+      "invocationId" : 2,
+      "name" : "data_visualization",
+      "internal" : false,
+      "arguments" : {
+        "values" : [ 668.92, 3908.72, 1323.71, 1190.96, 661.8, 1408.73, 4131, 4122.81, 6959.41, 2425.54, 5917.4 ],
+        "chartType" : "line",
+        "caption" : "This chart shows the daily spending over the last two weeks, highlighting fluctuations in spending.",
+        "title" : "Daily Spending Over the Last Two Weeks",
+        "labels" : [ "2024-06-03", "2024-06-02", "2024-06-01", "2024-05-31", "2024-05-30", "2024-05-29", "2024-05-28", "2024-05-24", "2024-05-23", "2024-05-22", "2024-05-21" ]
+      },
+      "judge" : ""
+    },
+    "comparisonResult" : {
+      "correct" : true,
+      "incorrectAnalysis" : "",
+      "qualityScore" : 4,
+      "qualityAnalysis" : "The provided answer is correct as it contains the same values and labels as the reference, albeit in a different order. However, the caption in the provided answer is slightly less detailed than in the reference, which affects the quality score."
+    }
+  } ]
+}

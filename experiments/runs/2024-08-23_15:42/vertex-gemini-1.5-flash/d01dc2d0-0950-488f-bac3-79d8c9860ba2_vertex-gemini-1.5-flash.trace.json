@@ -1,0 +1,126 @@
+{
+  "id" : "d01dc2d0-0950-488f-bac3-79d8c9860ba2",
+  "referenceTraceId" : "f97dde36-9fa2-4f7c-8c3d-93efb61fbc79",
+  "entries" : [ {
+    "type" : "Message",
+    "requestId" : 0,
+    "content" : "What can you do for me?"
+  }, {
+    "type" : "Response",
+    "requestId" : 0,
+    "content" : "I can help you with your credit card transactions and spending history. For example, I can tell you your spending by category for the last few weeks, or your spending by day for a specific time period. I can also show you your transaction history. What would you like to know? \n",
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 1,
+    "content" : "Show me my most expensive 5 creditcard transactions from last month"
+  }, {
+    "type" : "Response",
+    "requestId" : 1,
+    "content" : "{\"error\": \"The response is blocked due to safety reason.\"}",
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 2,
+    "content" : "Show me a breakdown of my spending by category"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 2,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "internal" : true,
+    "arguments" : {
+      "limit" : 12.0
+    },
+    "judge" : ""
+  }, {
+    "type" : "FunctionResponse",
+    "requestId" : 2,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "response" : "{\"data\":{\"SpendingByCategory\":[{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":1945.54},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":352.26},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":374.79},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Entertainment\",\"spending\":214.94},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Health & Wellness\",\"spending\":930.29},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Housing & Utilities\",\"spending\":7353.99},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Miscellaneous\",\"spending\":1275.92},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Restaurants & Dining\",\"spending\":1521.56},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Travel & Vacations\",\"spending\":2652.66},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":2869.62},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":614.45},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":439.4}]}}"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 2,
+    "invocationId" : 2,
+    "name" : "data_visualization",
+    "internal" : false,
+    "arguments" : {
+      "caption" : "This chart shows your spending by category for the last two weeks.",
+      "labels" : [ "Childcare", "Clothing & Apparel", "Communication", "Entertainment", "Health & Wellness", "Housing & Utilities", "Miscellaneous", "Restaurants & Dining", "Travel & Vacations", "Childcare", "Clothing & Apparel", "Communication" ],
+      "values" : [ 1945.54, 352.26, 374.79, 214.94, 930.29, 7353.99, 1275.92, 1521.56, 2652.66, 2869.62, 614.45, 439.4 ],
+      "title" : "Spending by Category",
+      "chartType" : "column"
+    },
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 3,
+    "content" : "Show me a breakdown of my spending by category as a pie chart"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 3,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "internal" : true,
+    "arguments" : {
+      "limit" : 12.0
+    },
+    "judge" : ""
+  }, {
+    "type" : "FunctionResponse",
+    "requestId" : 3,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "response" : "{\"data\":{\"SpendingByCategory\":[{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":1945.54},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":352.26},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":374.79},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Entertainment\",\"spending\":214.94},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Health & Wellness\",\"spending\":930.29},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Housing & Utilities\",\"spending\":7353.99},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Miscellaneous\",\"spending\":1275.92},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Restaurants & Dining\",\"spending\":1521.56},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Travel & Vacations\",\"spending\":2652.66},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":2869.62},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":614.45},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":439.4}]}}"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 3,
+    "invocationId" : 2,
+    "name" : "data_visualization",
+    "internal" : false,
+    "arguments" : {
+      "caption" : "This pie chart shows the breakdown of your spending by category for the week of May 29th, 2024.",
+      "labels" : [ "Childcare", "Clothing & Apparel", "Communication", "Entertainment", "Health & Wellness", "Housing & Utilities", "Miscellaneous", "Restaurants & Dining", "Travel & Vacations" ],
+      "chartType" : "pie",
+      "title" : "Spending by Category for the week of May 29th, 2024",
+      "values" : [ 1945.54, 352.26, 374.79, 214.94, 930.29, 7353.99, 1275.92, 1521.56, 2652.66 ]
+    },
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 4,
+    "content" : "show me a chart of how my spending per day developed in the last 2 weeks"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 4,
+    "invocationId" : 1,
+    "name" : "spending_by_day",
+    "internal" : true,
+    "arguments" : {
+      "toTime" : "2024-06-03T00:00:00-00:00",
+      "fromTime" : "2024-05-20T00:00:00-00:00"
+    },
+    "judge" : ""
+  }, {
+    "type" : "FunctionResponse",
+    "requestId" : 4,
+    "invocationId" : 1,
+    "name" : "spending_by_day",
+    "response" : "{\"data\":{\"SpendingByDay\":[{\"timeDay\":\"2024-06-03T23:59:59.999Z\",\"spending\":668.92},{\"timeDay\":\"2024-06-02T23:59:59.999Z\",\"spending\":3908.72},{\"timeDay\":\"2024-06-01T23:59:59.999Z\",\"spending\":1323.71},{\"timeDay\":\"2024-05-31T23:59:59.999Z\",\"spending\":1190.96},{\"timeDay\":\"2024-05-30T23:59:59.999Z\",\"spending\":661.8},{\"timeDay\":\"2024-05-29T23:59:59.999Z\",\"spending\":1408.73},{\"timeDay\":\"2024-05-28T23:59:59.999Z\",\"spending\":4131},{\"timeDay\":\"2024-05-24T23:59:59.999Z\",\"spending\":4122.81},{\"timeDay\":\"2024-05-23T23:59:59.999Z\",\"spending\":6959.41},{\"timeDay\":\"2024-05-22T23:59:59.999Z\",\"spending\":2425.54},{\"timeDay\":\"2024-05-21T23:59:59.999Z\",\"spending\":5917.4}]}}"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 4,
+    "invocationId" : 2,
+    "name" : "data_visualization",
+    "internal" : false,
+    "arguments" : {
+      "labels" : [ "Jun 3", "Jun 2", "Jun 1", "May 31", "May 30", "May 29", "May 28", "May 24", "May 23", "May 22", "May 21" ],
+      "title" : "Spending per Day in the Last Two Weeks",
+      "caption" : "This chart shows your spending per day over the last two weeks, starting from May 21st, 2024.",
+      "chartType" : "line",
+      "values" : [ 668.92, 3908.72, 1323.71, 1190.96, 661.8, 1408.73, 4131.0, 4122.81, 6959.41, 2425.54, 5917.4 ]
+    },
+    "judge" : ""
+  } ]
+}
