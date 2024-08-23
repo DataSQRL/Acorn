@@ -10,7 +10,7 @@
       "type": "Response",
       "requestId": 0,
       "content": "I can assist you with questions about your past transactions and spending history. Here are some examples of what I can do:\n\n1. **Provide a list of your credit card transactions** within a specified time period.\n2. **Summarize your spending by category** for recent weeks.\n3. **Show your total spending by day** for a specified time period.\n4. **Visualize your spending data** in various chart formats like bar, line, column, or pie charts.\n\nPlease let me know what specific information or assistance you need!",
-      "judge" : "The content must be similar"
+      "judge" : "The content must be similar, but not necessarily word for word"
     },
     {
       "type": "Message",
@@ -123,7 +123,7 @@
         ],
         "caption": "Breakdown of spending by category for the weeks ending May 29 and May 22, 2024."
       },
-      "judge" : "Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories"
+      "judge" : "Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories, but other words or dates are allowed without being incorrect"
     },
     {
       "type": "Message",
@@ -186,7 +186,7 @@
           "Communication (Previous Week)"
         ]
       },
-      "judge" : "chartType should be 'pie'. Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories"
+      "judge" : "chartType should be 'pie'. Values are allowed to be in any order but should be set-equivalent. Labels should contain the categories, but other words or dates are allowed without being incorrect"
     },
     {
       "type": "Message",
