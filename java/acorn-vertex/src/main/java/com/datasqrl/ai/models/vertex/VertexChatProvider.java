@@ -97,44 +97,46 @@ public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCa
 
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       log.debug("and message {}", chatMessage);
-      ModelInvocation invocation = observability.start();
+      GenerateContentResponse generatedResponse;
       context.nextInvocation();
+      ModelInvocation invocation = observability.start();
       try {
-        GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
-        Content response = ResponseHandler.getContent(generatedResponse);
-        invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response));
-        log.debug("Response:\n{}", generatedResponse);
-        session.addMessage(chatMessage);
-        GenericChatMessage genericResponse = session.addMessage(response);
-        Optional<FunctionCall> functionCall = response.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
-        if (functionCall.isPresent()) {
-          ChatSession.FunctionExecutionOutcome<Content> outcome = session.validateAndExecuteFunctionCall(functionCall.get(), false);
-          switch (outcome.status()) {
-            case EXECUTE_ON_CLIENT -> {
-              return genericResponse;
-            }
-            case EXECUTED -> {
-              chatMessage = outcome.functionResponse();
-            }
-            case VALIDATION_ERROR_RETRY -> {
-              if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
-                throw new RuntimeException("Too many function call retries for the same function.");
-              } else {
-                retryCount++;
-                log.debug("Failed function call: {}", functionCall);
-                log.info("Function call failed. Retrying ...");
-                chatMessage = outcome.functionResponse();
-              }
-            }
-          }
-        } else {
-          //The text answer
-          return genericResponse;
-        }
+        generatedResponse = chatSession.sendMessage(chatMessage);
       } catch (IOException e) {
         invocation.fail(e);
         throw new RuntimeException(e);
       }
+      Content response = ResponseHandler.getContent(generatedResponse);
+      invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response));
+      log.debug("Response:\n{}", generatedResponse);
+      session.addMessage(chatMessage);
+      GenericChatMessage genericResponse = session.addMessage(response);
+      Optional<FunctionCall> functionCall = response.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
+      if (functionCall.isPresent()) {
+        ChatSession.FunctionExecutionOutcome<Content> outcome = session.validateAndExecuteFunctionCall(functionCall.get(), false);
+        switch (outcome.status()) {
+          case EXECUTE_ON_CLIENT -> {
+            return genericResponse;
+          }
+          case EXECUTED -> {
+            chatMessage = outcome.functionResponse();
+          }
+          case VALIDATION_ERROR_RETRY -> {
+            if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+              throw new RuntimeException("Too many function call retries for the same function.");
+            } else {
+              retryCount++;
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retrying ...");
+              chatMessage = outcome.functionResponse();
+            }
+          }
+        }
+      } else {
+        //The text answer
+        return genericResponse;
+      }
+
     }
   }
 

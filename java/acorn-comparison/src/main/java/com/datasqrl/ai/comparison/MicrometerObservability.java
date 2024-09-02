@@ -10,6 +10,7 @@ import io.micrometer.core.instrument.Timer;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.threeten.bp.temporal.TemporalUnit;
 
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +73,7 @@ public class MicrometerObservability implements ModelObservability, ToolObservab
     s.append("model.tokens.input.mean").append(", ");
     s.append("model.tokens.output.count").append(", ");
     s.append("model.tokens.output.mean").append(", ");
+    s.append("model.execution.failed").append(", ");
     s.append("tool.call.invalid").append("\n");
     s.append(modelLatencyTimer.count()).append(", ");
     s.append(modelLatencyTimer.totalTime(TimeUnit.MILLISECONDS)).append(", ");
@@ -81,6 +83,7 @@ public class MicrometerObservability implements ModelObservability, ToolObservab
     s.append(inputTokenCounter.mean()).append(", ");
     s.append(outputTokenCounter.totalAmount()).append(", ");
     s.append(outputTokenCounter.mean()).append(", ");
+    s.append(failedModelCounter.count()).append(", ");
     s.append(toolInvalidCounter.count());
     return s.toString();
   }
@@ -97,6 +100,7 @@ public class MicrometerObservability implements ModelObservability, ToolObservab
       modelLatencyTimer.record(timer.elapsed());
       inputTokenCounter.record(numInputTokens);
       outputTokenCounter.record(numOutputTokens);
+      log.info("Request: {} ms, {} tokens, Response: {} tokens", timer.elapsed().getSeconds(), numInputTokens, numOutputTokens);
     }
 
     @Override

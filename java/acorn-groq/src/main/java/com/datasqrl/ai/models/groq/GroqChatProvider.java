@@ -101,11 +101,10 @@ public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunc
       }
       ChatCompletionRequest chatCompletionRequest = builder.build();
       AssistantMessage responseMessage;
-      ModelInvocation invocation = observability.start();
       context.nextInvocation();
+      ModelInvocation invocation = observability.start();
       try {
         responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
-        invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
       } catch (OpenAiHttpException e) {
         invocation.fail(e);
         // Workaround for groq API bug that throws 400 on some function calls
@@ -116,6 +115,7 @@ public class GroqChatProvider extends AbstractChatProvider<ChatMessage, ChatFunc
           throw e;
         }
       }
+      invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
       // Workaround for openai4j who doesn't recognize some function calls

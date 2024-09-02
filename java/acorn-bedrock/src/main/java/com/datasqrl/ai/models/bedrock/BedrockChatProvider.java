@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -139,8 +140,14 @@ public class BedrockChatProvider extends
         .body(SdkBytes.fromUtf8String(request.toString()))
         .build();
     log.debug("Bedrock prompt: {}", prompt);
+    InvokeModelResponse invokeModelResponse;
     ModelInvocation invocation = observability.start();
-    InvokeModelResponse invokeModelResponse = client.invokeModel(invokeModelRequest);
+    try {
+      invokeModelResponse = client.invokeModel(invokeModelRequest);
+    } catch (Exception e) {
+      invocation.fail(e);
+      throw e;
+    }
     JSONObject jsonObject = new JSONObject(invokeModelResponse.body().asUtf8String());
     String generatedResponse = jsonObject.get("generation").toString();
     invocation.stop(tokenCounter.countTokens(prompt), tokenCounter.countTokens(generatedResponse));

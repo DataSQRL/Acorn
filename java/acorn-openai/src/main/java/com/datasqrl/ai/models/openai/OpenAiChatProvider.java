@@ -11,6 +11,7 @@ import com.datasqrl.ai.tool.ToolManager;
 import com.datasqrl.ai.util.ConfigurationUtil;
 import com.datasqrl.ai.util.JsonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.theokanning.openai.OpenAiHttpException;
 import com.theokanning.openai.completion.chat.AssistantMessage;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatFunctionCall;
@@ -63,9 +64,15 @@ public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFu
         builder.maxTokens(config.getMaxOutputTokens());
       }
       ChatCompletionRequest chatCompletionRequest = builder.build();
-      ModelInvocation invocation = observability.start();
+      AssistantMessage responseMessage;
       context.nextInvocation();
-      AssistantMessage responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
+      ModelInvocation invocation = observability.start();
+      try {
+        responseMessage = service.createChatCompletion(chatCompletionRequest).getChoices().get(0).getMessage();
+      } catch (OpenAiHttpException e) {
+        invocation.fail(e);
+        throw e;
+      }
       invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(responseMessage));
       log.debug("Response:\n{}", responseMessage);
       String res = responseMessage.getTextContent();
@@ -75,8 +82,8 @@ public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFu
         if (responseText.startsWith("{\"function\"") && responseMessage.getFunctionCall() == null) {
           ChatFunctionCall functionCall = getFunctionCallFromText(responseText).orElse(null);
           if (functionCall != null) {
-          responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
-          log.info("!!!Remapped content to function call");
+            responseMessage = new AssistantMessage("", functionCall.getName(), null, functionCall);
+            log.info("!!!Remapped content to function call");
           }
         }
       }
@@ -102,6 +109,7 @@ public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFu
         // The text answer
         return genericResponse;
       }
+
     }
   }
 

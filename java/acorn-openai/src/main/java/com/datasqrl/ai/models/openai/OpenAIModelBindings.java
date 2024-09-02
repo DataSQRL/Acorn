@@ -110,7 +110,7 @@ public class OpenAIModelBindings implements ModelBindings<ChatMessage, ChatFunct
     return new UserMessage(text);
   }
 
-  private static String functionCall2String(ChatFunctionCall fctCall) {
+  static String functionCall2String(ChatFunctionCall fctCall) {
     return "{"
         + "\"function\": \"" + fctCall.getName() + "\", "
         + "\"parameters\": " + fctCall.getArguments().toString()

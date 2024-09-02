@@ -110,7 +110,7 @@ public class GroqModelBindings implements ModelBindings<ChatMessage, ChatFunctio
     return new UserMessage(text);
   }
 
-  private static String functionCall2String(ChatFunctionCall fctCall) {
+  static String functionCall2String(ChatFunctionCall fctCall) {
     return "{"
         + "\"function\": \"" + fctCall.getName() + "\", "
         + "\"parameters\": " + fctCall.getArguments().toString()
