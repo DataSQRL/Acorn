@@ -1,5 +1,6 @@
 package com.datasqrl.ai.comparison;
 
+import com.datasqrl.ai.tool.FunctionValidation;
 import com.datasqrl.ai.tool.ModelObservability;
 import com.datasqrl.ai.tool.ToolObservability;
 import com.google.common.base.Stopwatch;
@@ -10,7 +11,6 @@ import io.micrometer.core.instrument.Timer;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.threeten.bp.temporal.TemporalUnit;
 
 import java.util.concurrent.TimeUnit;
 
@@ -106,6 +106,11 @@ public class MicrometerObservability implements ModelObservability, ToolObservab
     @Override
     public void fail(Exception e) {
       failedModelCounter.increment();
+    }
+
+    @Override
+    public void toolCallInvalid(FunctionValidation.ValidationError<String> stringValidationError) {
+      toolInvalidCounter.increment();
     }
   }
 

@@ -35,6 +35,7 @@ public class BedrockChatProvider extends
   private final BedrockRuntimeClient client;
   private final ChatMessageEncoder<BedrockChatMessage> encoder;
   private final String systemPrompt;
+  ModelInvocation invocation = null;
 
   private final String FUNCTION_CALLING_PROMPT = "To call a function, respond only with JSON text in the following format: "
       + "{\"function\": \"$FUNCTION_NAME\","
@@ -88,6 +89,7 @@ public class BedrockChatProvider extends
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
+            invocation.toolCallInvalid(outcome.validationError());
             if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
@@ -141,7 +143,7 @@ public class BedrockChatProvider extends
         .build();
     log.debug("Bedrock prompt: {}", prompt);
     InvokeModelResponse invokeModelResponse;
-    ModelInvocation invocation = observability.start();
+    invocation = observability.start();
     try {
       invokeModelResponse = client.invokeModel(invokeModelRequest);
     } catch (Exception e) {

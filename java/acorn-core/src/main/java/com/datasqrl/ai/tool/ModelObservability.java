@@ -10,6 +10,8 @@ public interface ModelObservability {
 
     void fail(Exception e);
 
+    void toolCallInvalid(FunctionValidation.ValidationError<String> stringValidationError);
+
   }
 
   public static final ModelObservability NOOP = new ModelObservability() {
@@ -23,6 +25,11 @@ public interface ModelObservability {
 
         @Override
         public void fail(Exception e) {
+
+        }
+
+        @Override
+        public void toolCallInvalid(FunctionValidation.ValidationError<String> stringValidationError) {
 
         }
       };

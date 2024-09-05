@@ -96,6 +96,7 @@ public class OpenAiChatProvider extends AbstractChatProvider<ChatMessage, ChatFu
             return genericResponse;
           }
           case VALIDATION_ERROR_RETRY -> {
+            invocation.toolCallInvalid(outcome.validationError());
             if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
               throw new RuntimeException("Too many function call retries for the same function.");
             } else {
