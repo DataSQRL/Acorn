@@ -100,14 +100,15 @@ public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCa
       GenerateContentResponse generatedResponse;
       context.nextInvocation();
       ModelInvocation invocation = observability.start();
+      Content response;
       try {
         generatedResponse = chatSession.sendMessage(chatMessage);
-      } catch (IOException e) {
+        response = ResponseHandler.getContent(generatedResponse);
+        invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response));
+      } catch (Exception e) {
         invocation.fail(e);
         throw new RuntimeException(e);
       }
-      Content response = ResponseHandler.getContent(generatedResponse);
-      invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response));
       log.debug("Response:\n{}", generatedResponse);
       session.addMessage(chatMessage);
       GenericChatMessage genericResponse = session.addMessage(response);
