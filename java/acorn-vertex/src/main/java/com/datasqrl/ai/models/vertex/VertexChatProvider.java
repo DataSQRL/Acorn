@@ -1,11 +1,14 @@
 package com.datasqrl.ai.models.vertex;
 
-import com.datasqrl.ai.models.ChatProvider;
+import com.datasqrl.ai.models.AbstractChatProvider;
 import com.datasqrl.ai.models.ChatSession;
 import com.datasqrl.ai.models.ContextWindow;
+import com.datasqrl.ai.tool.Context;
 import com.datasqrl.ai.tool.GenericChatMessage;
-import com.datasqrl.ai.tool.ToolsBackend;
+import com.datasqrl.ai.tool.ModelObservability;
+import com.datasqrl.ai.tool.ModelObservability.ModelInvocation;
 import com.datasqrl.ai.tool.RuntimeFunctionDefinition;
+import com.datasqrl.ai.tool.ToolManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,18 +30,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
+public class VertexChatProvider extends AbstractChatProvider<Content, FunctionCall> {
 
   private final GenerativeModel chatModel;
   private final String systemPrompt;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  public VertexChatProvider(VertexModelConfiguration config, ToolsBackend backend, String systemPrompt) {
-    super(backend, new VertexModelBindings(config));
+  public VertexChatProvider(VertexModelConfiguration config, ToolManager backend, String systemPrompt, ModelObservability observability) {
+    super(backend, new VertexModelBindings(config), observability);
     this.systemPrompt = systemPrompt;
     VertexAI vertexAI = new VertexAI(config.getProjectId(), config.getLocation());
     GenerationConfig.Builder builder =
@@ -81,7 +84,7 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
   }
 
   @Override
-  public GenericChatMessage chat(String message, Map<String, Object> context) {
+  public GenericChatMessage chat(String message, Context context) {
     ChatSession<Content, FunctionCall> session = new ChatSession<>(backend, context, systemPrompt, bindings);
     Content chatMessage = ContentMaker.fromString(message);
 
@@ -94,37 +97,48 @@ public class VertexChatProvider extends ChatProvider<Content, FunctionCall> {
 
       log.info("Calling Google Vertex with model {}", chatModel.getModelName());
       log.debug("and message {}", chatMessage);
+      GenerateContentResponse generatedResponse;
+      context.nextInvocation();
+      ModelInvocation invocation = observability.start();
+      Content response;
       try {
-        GenerateContentResponse generatedResponse = chatSession.sendMessage(chatMessage);
-        session.addMessage(chatMessage);
-        Content response = ResponseHandler.getContent(generatedResponse);
-        GenericChatMessage genericResponse = session.addMessage(response);
-        Optional<FunctionCall> functionCall = response.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
-        if (functionCall.isPresent()) {
-          ChatSession.FunctionExecutionOutcome<Content> outcome = session.validateAndExecuteFunctionCall(functionCall.get(), false);
-          switch (outcome.status()) {
-            case EXECUTE_ON_CLIENT -> {
-              return genericResponse;
-            }
-            case EXECUTED -> chatMessage = outcome.functionResponse();
-            case VALIDATION_ERROR_RETRY -> {
-              if (retryCount >= ChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
-                throw new RuntimeException("Too many function call retries for the same function.");
-              } else {
-                retryCount++;
-                log.debug("Failed function call: {}", functionCall);
-                log.info("Function call failed. Retrying ...");
-                chatMessage = outcome.functionResponse();
-              }
-            }
-          }
-        } else {
-          //The text answer
-          return genericResponse;
-        }
-      } catch (IOException e) {
+        generatedResponse = chatSession.sendMessage(chatMessage);
+        response = ResponseHandler.getContent(generatedResponse);
+        invocation.stop(contextWindow.getNumTokens(), bindings.getTokenCounter().countTokens(response));
+      } catch (Exception e) {
+        invocation.fail(e);
         throw new RuntimeException(e);
       }
+      log.debug("Response:\n{}", generatedResponse);
+      session.addMessage(chatMessage);
+      GenericChatMessage genericResponse = session.addMessage(response);
+      Optional<FunctionCall> functionCall = response.getPartsList().stream().filter(Part::hasFunctionCall).map(Part::getFunctionCall).findFirst();
+      if (functionCall.isPresent()) {
+        ChatSession.FunctionExecutionOutcome<Content> outcome = session.validateAndExecuteFunctionCall(functionCall.get(), false);
+        switch (outcome.status()) {
+          case EXECUTE_ON_CLIENT -> {
+            return genericResponse;
+          }
+          case EXECUTED -> {
+            chatMessage = outcome.functionResponse();
+          }
+          case VALIDATION_ERROR_RETRY -> {
+            invocation.toolCallInvalid(outcome.validationError());
+            if (retryCount >= AbstractChatProvider.FUNCTION_CALL_RETRIES_LIMIT) {
+              throw new RuntimeException("Too many function call retries for the same function.");
+            } else {
+              retryCount++;
+              log.debug("Failed function call: {}", functionCall);
+              log.info("Function call failed. Retrying ...");
+              chatMessage = outcome.functionResponse();
+            }
+          }
+        }
+      } else {
+        //The text answer
+        return genericResponse;
+      }
+
     }
   }
 

@@ -1,0 +1,91 @@
+{
+  "id" : "4d7d2928-8f51-4f19-a99f-16efbe409d91",
+  "referenceTraceId" : "f97dde36-9fa2-4f7c-8c3d-93efb61fbc79",
+  "entries" : [ {
+    "type" : "Message",
+    "requestId" : 0,
+    "content" : "What can you do for me?"
+  }, {
+    "type" : "Response",
+    "requestId" : 0,
+    "content" : "{\"error\": \"io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: Quota exceeded for aiplatform.googleapis.com/generate_content_requests_per_minute_per_project_per_base_model with base model: gemini-1.5-flash. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.\"}",
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 1,
+    "content" : "Show me my most expensive 5 creditcard transactions from last month"
+  }, {
+    "type" : "Response",
+    "requestId" : 1,
+    "content" : "{\"error\": \"io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: Quota exceeded for aiplatform.googleapis.com/generate_content_requests_per_minute_per_project_per_base_model with base model: gemini-1.5-flash. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.\"}",
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 2,
+    "content" : "Show me a breakdown of my spending by category"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 2,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "internal" : true,
+    "arguments" : {
+      "limit" : 12.0
+    },
+    "judge" : ""
+  }, {
+    "type" : "FunctionResponse",
+    "requestId" : 2,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "response" : "{\"data\":{\"SpendingByCategory\":[{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":1945.54},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":352.26},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":374.79},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Entertainment\",\"spending\":214.94},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Health & Wellness\",\"spending\":930.29},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Housing & Utilities\",\"spending\":7353.99},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Miscellaneous\",\"spending\":1275.92},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Restaurants & Dining\",\"spending\":1521.56},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Travel & Vacations\",\"spending\":2652.66},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":2869.62},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":614.45},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":439.4}]}}"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 2,
+    "invocationId" : 2,
+    "name" : "data_visualization",
+    "internal" : false,
+    "arguments" : {
+      "title" : "Spending by Category",
+      "chartType" : "column",
+      "caption" : "This chart shows your spending by category for the last two weeks. The most recent week is shown first.",
+      "labels" : [ "Childcare", "Clothing & Apparel", "Communication", "Entertainment", "Health & Wellness", "Housing & Utilities", "Miscellaneous", "Restaurants & Dining", "Travel & Vacations", "Childcare", "Clothing & Apparel", "Communication" ],
+      "values" : [ 1945.54, 352.26, 374.79, 214.94, 930.29, 7353.99, 1275.92, 1521.56, 2652.66, 2869.62, 614.45, 439.4 ]
+    },
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 3,
+    "content" : "Show me a breakdown of my spending by category as a pie chart"
+  }, {
+    "type" : "FunctionCall",
+    "requestId" : 3,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "internal" : true,
+    "arguments" : {
+      "limit" : 12.0
+    },
+    "judge" : ""
+  }, {
+    "type" : "FunctionResponse",
+    "requestId" : 3,
+    "invocationId" : 1,
+    "name" : "spending_by_category",
+    "response" : "{\"data\":{\"SpendingByCategory\":[{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":1945.54},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":352.26},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":374.79},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Entertainment\",\"spending\":214.94},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Health & Wellness\",\"spending\":930.29},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Housing & Utilities\",\"spending\":7353.99},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Miscellaneous\",\"spending\":1275.92},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Restaurants & Dining\",\"spending\":1521.56},{\"timeWeek\":\"2024-05-29T23:59:59.999Z\",\"category\":\"Travel & Vacations\",\"spending\":2652.66},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Childcare\",\"spending\":2869.62},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Clothing & Apparel\",\"spending\":614.45},{\"timeWeek\":\"2024-05-22T23:59:59.999Z\",\"category\":\"Communication\",\"spending\":439.4}]}}"
+  }, {
+    "type" : "Response",
+    "requestId" : 3,
+    "content" : "{\"error\": \"io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: Quota exceeded for aiplatform.googleapis.com/generate_content_requests_per_minute_per_project_per_base_model with base model: gemini-1.5-flash. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.\"}",
+    "judge" : ""
+  }, {
+    "type" : "Message",
+    "requestId" : 4,
+    "content" : "show me a chart of how my spending per day developed in the last 2 weeks"
+  }, {
+    "type" : "Response",
+    "requestId" : 4,
+    "content" : "{\"error\": \"io.grpc.StatusRuntimeException: RESOURCE_EXHAUSTED: Quota exceeded for aiplatform.googleapis.com/generate_content_requests_per_minute_per_project_per_base_model with base model: gemini-1.5-flash. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.\"}",
+    "judge" : ""
+  } ]
+}

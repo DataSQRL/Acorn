@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-// Added `BedrockTokenCounter` in order to keep the class separation, although it's the same as the `GroqTokenCounter`.
-// Think of merging these two into a `HuggingFaceTokenCounter` in the future
 @Slf4j
 public record BedrockTokenCounter(HuggingFaceTokenizer tokenizer) implements ModelAnalyzer<BedrockChatMessage> {
 
@@ -18,7 +16,7 @@ public record BedrockTokenCounter(HuggingFaceTokenizer tokenizer) implements Mod
     return numTokens + numTokens / 10; //Add a 10% buffer
   }
 
-  private int countTokens(String message) {
+  public int countTokens(String message) {
     if (message == null) {
       return 0;
     }

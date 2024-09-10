@@ -4,7 +4,10 @@ import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
 import com.datasqrl.ai.tool.FunctionDefinition;
 import com.datasqrl.ai.models.ModelAnalyzer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.theokanning.openai.completion.chat.AssistantMessage;
+import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,11 +16,20 @@ public record GroqTokenCounter(HuggingFaceTokenizer tokenizer) implements ModelA
 
   @Override
   public int countTokens(ChatMessage message) {
-    int numTokens = countTokens(message.getTextContent());
+    int numTokens = 0;
+    ChatFunctionCall fctCall = null;
+    if (ChatMessageRole.valueOf(message.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT) {
+      fctCall = ((AssistantMessage) message).getFunctionCall();
+    }
+    if (fctCall != null) {
+      numTokens = countTokens(GroqModelBindings.functionCall2String(fctCall));
+    } else {
+      numTokens = countTokens(message.getTextContent());
+    }
     return numTokens + numTokens / 10; //Add a 10% buffer
   }
 
-  private int countTokens(String message) {
+  public int countTokens(String message) {
     if (message == null) {
       return 0;
     }

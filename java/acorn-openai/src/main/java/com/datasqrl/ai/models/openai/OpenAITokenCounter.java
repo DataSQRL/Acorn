@@ -1,12 +1,15 @@
 package com.datasqrl.ai.models.openai;
 
-import com.datasqrl.ai.tool.FunctionDefinition;
 import com.datasqrl.ai.models.ModelAnalyzer;
+import com.datasqrl.ai.tool.FunctionDefinition;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knuddels.jtokkit.Encodings;
 import com.knuddels.jtokkit.api.Encoding;
 import com.knuddels.jtokkit.api.EncodingType;
+import com.theokanning.openai.completion.chat.AssistantMessage;
+import com.theokanning.openai.completion.chat.ChatFunctionCall;
 import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,15 +20,24 @@ public record OpenAITokenCounter(Encoding encoding) implements ModelAnalyzer<Cha
 
   @Override
   public int countTokens(ChatMessage message) {
-    int numTokens = countTokens(message.getTextContent());
+    int numTokens = 0;
+    ChatFunctionCall fctCall = null;
+    if (ChatMessageRole.valueOf(message.getRole().toUpperCase()) == ChatMessageRole.ASSISTANT) {
+      fctCall = ((AssistantMessage) message).getFunctionCall();
+    }
+    if (fctCall != null) {
+      numTokens = countTokens(OpenAIModelBindings.functionCall2String(fctCall));
+    } else {
+      numTokens = countTokens(message.getTextContent());
+    }
     return numTokens + numTokens / 10; //Add a 10% buffer
   }
 
-  private int countTokens(String message) {
+  public int countTokens(String message) {
     return encoding.countTokens(message);
   }
 
-//TODO: This method is the same in every token counter. Move this logic to the caller and just call countTokens(String)
+  //TODO: This method is the same in every token counter. Move this logic to the caller and just call countTokens(String)
   @Override
   @SneakyThrows
   public int countTokens(FunctionDefinition function) {
